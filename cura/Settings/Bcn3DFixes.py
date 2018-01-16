@@ -130,13 +130,12 @@ class Bcn3DFixes(Job):
         scene = Application.getInstance().getController().getScene()
         setattr(scene, "gcode_list", self._gcode_list)
         self.setResult(self._gcode_list)
-        # return self._gcode_list
 
     def _handleActiveExtruders(self):
-        if self._activeExtruders and not self._both_extruders:
-            if not self._both_extruders:
-                self._startGcodeInfo.append("; - Heat only essentials")
-                startGcodeCorrected = False
+        if self._activeExtruders and (not self._both_extruders or ((self._both_extruders or self._container.getProperty("print_mode", "value") != 'regular') and self._container.getProperty("print_mode", "enabled"))):
+            self._startGcodeInfo.append("; - Heat only essentials")
+            startGcodeCorrected = False
+            if not self._both_extruders and self._container.getProperty("print_mode", "value") == 'regular':
                 for index, layer in enumerate(self._gcode_list):
                     lines = layer.split("\n")
                     temp_index = 0
@@ -174,10 +173,7 @@ class Bcn3DFixes(Job):
                         temp_index += 1
                     layer = "\n".join(lines)
                     self._gcode_list[index] = layer
-                Logger.log("d", "active_extruders applied")
-            elif self._both_extruders and container.getProperty("active_extruders", "enabled"):
-                self._startGcodeInfo.append("; - Heat only essentials")
-                startGcodeCorrected = False
+            elif (self._both_extruders or self._container.getProperty("print_mode", "value") != 'regular') and self._container.getProperty("print_mode", "enabled"):
                 for index, layer in enumerate(self._gcode_list):
                     lines = layer.split("\n")
                     temp_index = 0
@@ -197,24 +193,16 @@ class Bcn3DFixes(Job):
                                     del lines[temp_index]
                                     del lines[temp_index]
                                     del lines[temp_index]
-                                    lines[temp_index] = lines[temp_index]+"M605 S4      ;Clone extruders steps\n"
-                                    lines[temp_index + 5] = lines[temp_index + 5]+"M605 S3      ;Back to independent extruder steps\n"
+                                    lines[temp_index] = lines[temp_index]+"\nM605 S4      ;clone extruders steps"
+                                    lines[temp_index + 5] = lines[temp_index + 5]+"\nM605 S3      ;back to independent extruder steps"
                                     startGcodeCorrected = True
                                     break
                             except:
                                 pass
-                        if self._idle_extruder == "T1":
-                            if "T1" in line:
-                                del lines[temp_index]
-                                temp_index -= 1
-                        elif self._idle_extruder == "T0":
-                            if index < 2 and (line.startswith("M104 S") or line.startswith("M109 S")) and "T1" not in line:
-                                del lines[temp_index]
-                                temp_index -= 1
                         temp_index += 1
                     layer = "\n".join(lines)
                     self._gcode_list[index] = layer
-                Logger.log("d", "active_extruders applied")
+            Logger.log("d", "active_extruders applied")
     
     def _handleFixTemperatureOscilation(self):
         if self._fixTemperatureOscilation and self._both_extruders and (self._materialFlowDependentTemperature[0] or self._materialFlowDependentTemperature[1]):
