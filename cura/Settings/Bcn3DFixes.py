@@ -112,6 +112,7 @@ class Bcn3DFixes(Job):
         self._handleSmartPurge()
         self._handleRetractReduction()
         self._handleAvoidGrindingFilament()
+        self._handleCoolDownToZeroAtEnd()
 
         written_info = False
         # Write Sigma Vitamins info
@@ -298,6 +299,36 @@ class Bcn3DFixes(Job):
                 layer = "\n".join(lines)
                 self._gcode_list[index] = layer
             Logger.log("d", "fix_temperature_oscilation applied")
+
+    def _handleCoolDownToZeroAtEnd(self):
+        if self._both_extruders:
+            self._startGcodeInfo.append("; - Cool Down To Zero At End")
+            cooledDownToZero = False
+            self._gcode_list.reverse()
+            for index, layer in enumerate(self._gcode_list):
+                lines = layer.split("\n")
+                lines.reverse()
+                temp_index = 0
+                while temp_index < len(lines):
+                    try:
+                        line = lines[temp_index]
+                        if GCodeUtils.charsInLine(["M104 T0 S"+str(self._materialStandByTemperature[0])], line) or GCodeUtils.charsInLine(["M104 T1 S"+str(self._materialStandByTemperature[1])], line):
+                            if "T1" in line:
+                                lines[temp_index] = "M104 T1 S0 ;Standby Temperature set to Zero\n"
+                            else:
+                                lines[temp_index] = "M104 T0 S0 ;Standby Temperature set to Zero\n"
+                            cooledDownToZero = True
+                            break
+                        temp_index += 1
+                    except:
+                        break
+                if cooledDownToZero:
+                    lines.reverse()
+                    layer = "\n".join(lines)
+                    self._gcode_list[index] = layer
+                    break
+            self._gcode_list.reverse()
+            Logger.log("d", "cool_down_to_zero_at_end applied")
 
     def _handleFixToolChangeZHop(self):
         if self._fixToolChangeZHop and self._both_extruders:
