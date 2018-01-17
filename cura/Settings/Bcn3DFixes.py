@@ -45,8 +45,12 @@ class Bcn3DFixes(Job):
                                   extruder_right.getProperty("retraction_amount", "value")]
         self._retractionExtrusionWindow = [extruder_left.getProperty("retraction_extrusion_window", "value"),
                                           extruder_right.getProperty("retraction_extrusion_window", "value")]
+        self._machineMinCoolHeatTimeWindow = [extruder_left.getProperty("machine_min_cool_heat_time_window", "value"),
+                                                 extruder_right.getProperty("machine_min_cool_heat_time_window", "value")]
 
         #Temperatures
+        self._materialPrintTemperatureLayer0 = [extruder_left.getProperty("material_print_temperature_layer_0", "value"),
+                                                 extruder_right.getProperty("material_print_temperature_layer_0", "value")]
         self._materialInitialPrintTemperature = [extruder_left.getProperty("material_initial_print_temperature", "value"),
                                                  extruder_right.getProperty("material_initial_print_temperature", "value")]
         self._materialFinalPrintTemperature = [extruder_left.getProperty("material_final_print_temperature", "value"),
@@ -180,9 +184,9 @@ class Bcn3DFixes(Job):
     
     def _handleFixTemperatureOscilation(self):
         if self._fixTemperatureOscilation and self._IDEXPrint:
+            self._startGcodeInfo.append("; - Fix Temperature Oscilation")
+            # Fix oscilation when using Auto Temperature
             if self._materialFlowDependentTemperature[0] or self._materialFlowDependentTemperature[1]:
-                # Fix oscilation when using Auto Temperature
-                self._startGcodeInfo.append("; - Fix Temperature Oscilation")
                 # Scan all temperatures
                 temperatures = []  # [(layerIndex, lineIndex, action, line)]
                 for index, layer in enumerate(self._gcode_list):
@@ -273,6 +277,46 @@ class Bcn3DFixes(Job):
                         temp_index += 1
                     layer = "\n".join(lines)
                     self._gcode_list[index] = layer
+            # Force standby temperature if it exceeds Minimal Time before first print of this hotend
+            idleTime = 0
+            lookingForIdleExtruder = True
+            applied = False
+            for index, layer in enumerate(self._gcode_list):
+                lines = layer.split("\n")
+                if layer.startswith(";LAYER:"):
+                    temp_index = 0
+                    while not applied and temp_index < len(lines):
+                        # look for the idle extruder at start
+                        if lookingForIdleExtruder:
+                            if lines[temp_index].startswith("T1"):
+                                idleExtruder = 0
+                                lookingForIdleExtruder = False
+                            elif GCodeUtils.charsInLine(["G1", "F", "X", "Y", "E"], lines[temp_index]):
+                                idleExtruder = 1
+                                lookingForIdleExtruder = False
+                        # once idle extruder is found, look when it enters
+                        elif (idleExtruder == 0 and lines[temp_index].startswith("T0")) or (idleExtruder == 1 and lines[temp_index].startswith("T1")):
+                            # apply fix if needed
+                            if layer.startswith(";LAYER:0"):
+                                applied = True
+                                break
+                            else:
+                                idleTime = float(lines[-2].split('TIME_ELAPSED:')[1])
+                                if self._machineMinCoolHeatTimeWindow[idleExtruder] > 0 and idleTime >= self._machineMinCoolHeatTimeWindow[idleExtruder]:
+                                    lines[temp_index] = "M109 T"+str(idleExtruder)+" S"+str(self._materialPrintTemperatureLayer0[idleExtruder])+" ;T"+str(idleExtruder)+" set to initial layer temperature\n" + lines[temp_index]
+                                    applied = True
+                        temp_index += 1
+                    if applied:
+                        if not layer.startswith(";LAYER:0"):
+                            layer = "\n".join(lines)
+                            self._gcode_list[index] = layer
+                        break
+            if applied and not layer.startswith(";LAYER:0"):
+                for index, layer in enumerate(self._gcode_list):
+                    if layer.startswith(";LAYER:"):
+                        layer = "M104 T"+str(idleExtruder)+" S"+str(self._materialStandByTemperature[idleExtruder])+" ;T"+str(idleExtruder)+" set to standby temperature\n" + layer
+                        break
+                self._gcode_list[index] = layer
             Logger.log("d", "fix_temperature_oscilation applied")
 
     def _handleCoolDownToZeroAtEnd(self):
