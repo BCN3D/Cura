@@ -19,6 +19,10 @@ class FirmwareVersion(object):
         except ValueError:
             pass
 
+    @classmethod
+    def isVersion(cls, version):
+        return re.match(r'^[0-9]+-[0-9]+\.[0-9]+\.[0-9]+.*$', version) is not None
+
     def isPrerelease(self):
         return self._is_prerelease
 
