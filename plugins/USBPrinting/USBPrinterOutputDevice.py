@@ -416,16 +416,16 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
             self._serial = programmer.leaveISP()
         except ispBase.IspError as e:
             programmer.close()
-            Logger.log("i", "Could not establish connection on %s: %s. Device is not arduino based." %(self._serial_port,str(e)))
+            Logger.log("i", "Could not establish connection on %s: %s. Device is not arduino based.", self._serial_port, str(e))
         except Exception as e:
             programmer.close()
-            Logger.log("i", "Could not establish connection on %s, unknown reasons.  Device is not arduino based." % self._serial_port)
+            Logger.log("i", "Could not establish connection on %s, unknown reasons.  Device is not arduino based.", self._serial_port)
 
         baudrate = self._global_stack.getProperty("baudrate", "value")
 
         if self._serial is None:
             try:
-                self._serial = serial.Serial(str(self._serial_port), baudrate, timeout = 3, writeTimeout = 10000)
+                self._serial = serial.Serial(str(self._serial_port), baudrate, timeout=3, writeTimeout=10000)
                 time.sleep(10)
             except serial.SerialException:
                 Logger.log("d", "Could not open port %s and baudrate %d" % self._serial_port, baudrate)
