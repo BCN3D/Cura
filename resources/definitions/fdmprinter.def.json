@@ -591,6 +591,16 @@
                     "settable_per_mesh": false,
                     "settable_per_extruder": false,
                     "settable_per_meshgroup": false
+                },
+                "baudrate":
+                {
+                    "label": "Baudrate",
+                    "description": "",
+                    "type": "int",
+                    "default_value": 250000,
+                    "settable_per_mesh": false,
+                    "settable_per_extruder": false,
+                    "settable_per_meshgroup": false
                 }
             }
         },
@@ -5856,7 +5866,7 @@
                     "description": "When printing with one hotend only, avoid heating the other one.",
                     "type": "bool",
                     "default_value": false,
-                    "value": "auto_apply_fixes and print_mode == 'regular'",
+                    "value": "auto_apply_fixes",
                     "settable_per_extruder": false,
                     "enabled": false
                 },

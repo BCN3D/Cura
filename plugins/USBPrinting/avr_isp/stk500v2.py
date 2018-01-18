@@ -149,8 +149,14 @@ class Stk500v2(ispBase.IspBase):
         state = "Start"
         checksum = 0
         while True:
-            s = self.serial.read()
-            if len(s) < 1:
+            # s = self.serial.read()
+            # if len(s) < 1:
+            #     raise ispBase.IspError("Timeout")
+            for _ in range(0, 5):
+                s = self.serial.read()
+                if len(s) > 0:
+                    break
+            else:
                 raise ispBase.IspError("Timeout")
             b = struct.unpack(">B", s)[0]
             checksum ^= b

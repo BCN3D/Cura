@@ -32,9 +32,9 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         self.setIconName("print")
         self.setConnectionText(catalog.i18nc("@info:status", "Connected via USB"))
 
-        Application.getInstance().globalContainerStackChanged.connect(self._onGlobalStackChanged)
-
         self._global_stack = None
+
+        Application.getInstance().globalContainerStackChanged.connect(self._onGlobalStackChanged)
 
         self._serial = None
         self._serial_port = serial_port
@@ -102,6 +102,8 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         self._firmware_latest_version = None
         self._version_command_sent = False
 
+        self._tmp_file = False
+
         self._machine_dict = {
             "bcn3dsigma": {
                 "latest_release_api": "http://api.github.com/repos/bcn3d/bcn3dsigma-firmware/releases/latest"
@@ -128,6 +130,8 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
 
         if self._global_stack:
             self._getFirmwareLatestVersion()
+            if self._connection_state == ConnectionState.closed and not self._connect_thread.isAlive():
+                self._connect_thread.start()
 
     def _setTargetBedTemperature(self, temperature):
         Logger.log("d", "Setting bed temperature to %s", temperature)
@@ -218,7 +222,7 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
 
     ##  Try to connect the serial. This simply starts the thread, which runs _connect.
     def connect(self):
-        if not self._updating_firmware and not self._connect_thread.isAlive():
+        if not self._updating_firmware and not self._connect_thread.isAlive() and self._global_stack is not None:
             self._connect_thread.start()
 
     ##  Private function (threaded) that actually uploads the firmware.
@@ -231,6 +235,7 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
             self.close()
 
         if self._firmware_file_name == "":
+            self._tmp_file = True
             headers = {
                 "User-Agent": "BCN3D Cura"
             }
@@ -250,32 +255,28 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
                 return
             reader = codecs.getreader("utf-8")
             data = json.load(reader(latest_release))
-            if self._firmware_version is not None:
-                if str(self._firmware_version) == "UNKNOWN" or self._firmware_latest_version > self._firmware_version or self._firmware_version.isPrerelease():
-                    Logger.log("d", "Dowloading the firmware latest version")
-                    download_url = None
-                    for asset in data["assets"]:
-                        if asset["name"].endswith(".hex"):
-                            download_url = asset["browser_download_url"]
-                    if download_url:
-                        try:
-                            self._firmware_file_name, headers = urllib.request.urlretrieve(download_url)
-                        except Exception as e:
-                            Logger.log("e", "Exception when downloading the firmware from github: %s", repr(e))
-                            self._updateFirmwareFailedMissingFirmware()
-                            return
-                    if self._firmware_file_name is None:
-                        Logger.log("e", "Unable to download firmware latest version")
+
+            if self._firmware_version is None or self._firmware_version.isPrerelease() or self._firmware_latest_version > self._firmware_version:
+                Logger.log("d", "Dowloading the firmware latest version")
+                download_url = None
+                for asset in data["assets"]:
+                    if asset["name"].endswith(".hex"):
+                        download_url = asset["browser_download_url"]
+                if download_url:
+                    try:
+                        self._firmware_file_name, headers = urllib.request.urlretrieve(download_url)
+                    except Exception as e:
+                        Logger.log("e", "Exception when downloading the firmware from github: %s", repr(e))
                         self._updateFirmwareFailedMissingFirmware()
                         return
-                    Logger.log("d", "Firmware file stored in temp file: %s", self._firmware_file_name)
-                else:
-                    Logger.log("i", "You already have the latest firmware version (%s) installed", self._firmware_latest_version)
-                    self._updateFirmwareLatestVersionUploaded()
+                if self._firmware_file_name is None:
+                    Logger.log("e", "Unable to download firmware latest version")
+                    self._updateFirmwareFailedMissingFirmware()
                     return
+                Logger.log("d", "Firmware file stored in temp file: %s", self._firmware_file_name)
             else:
-                self._updateFirmwareFailedMissingFirmware()
-                Logger.log("w", "Couldn't get the current firmware version")
+                Logger.log("i", "You already have the latest firmware version (%s) installed", self._firmware_latest_version)
+                self._updateFirmwareLatestVersionUploaded()
                 return
 
         hex_file = intelHex.readHex(self._firmware_file_name)
@@ -350,7 +351,8 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         self.resetFirmwareUpdate(update_has_finished = True)
         self.progressChanged.emit()
         self.firmwareUpdateComplete.emit()
-
+        if self._tmp_file and code != 5:
+            self._deleteTmpFile()
         return
 
     ##  Private function which makes sure that firmware update process has successfully completed
@@ -361,10 +363,13 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         self._firmware_update_finished = True
         self.resetFirmwareUpdate(update_has_finished = True)
         self.firmwareUpdateComplete.emit()
-        if "/tmp/" in self._firmware_file_name:
-            os.remove(self._firmware_file_name)
-            Logger.log("d", "Firmware file deleted: %s", self._firmware_file_name)
+        if self._tmp_file:
+            self._deleteTmpFile()
         return
+
+    def _deleteTmpFile(self):
+        os.remove(self._firmware_file_name)
+        Logger.log("d", "Firmware file deleted: %s", self._firmware_file_name)
 
     ##  Upload new firmware to machine
     #   \param filename full path of firmware file to be uploaded
@@ -402,6 +407,8 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
 
     ##  Private connect function run by thread. Can be started by calling connect.
     def _connect(self):
+        self._updateJobState("connecting")
+        self._global_stack = Application.getInstance().getGlobalContainerStack()
         Logger.log("d", "Attempting to connect to %s", self._serial_port)
         self.setConnectionState(ConnectionState.connecting)
         programmer = stk500v2.Stk500v2()
@@ -410,61 +417,33 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
             self._serial = programmer.leaveISP()
         except ispBase.IspError as e:
             programmer.close()
-            Logger.log("i", "Could not establish connection on %s: %s. Device is not arduino based." %(self._serial_port,str(e)))
+            Logger.log("i", "Could not establish connection on %s: %s. Device is not arduino based.", self._serial_port, str(e))
         except Exception as e:
             programmer.close()
-            Logger.log("i", "Could not establish connection on %s, unknown reasons.  Device is not arduino based." % self._serial_port)
+            Logger.log("i", "Could not establish connection on %s, unknown reasons.  Device is not arduino based.", self._serial_port)
 
-        # If the programmer connected, we know its an atmega based version.
-        # Not all that useful, but it does give some debugging information.
-        for baud_rate in self._getBaudrateList(): # Cycle all baud rates (auto detect)
-            Logger.log("d", "Attempting to connect to printer with serial %s on baud rate %s", self._serial_port, baud_rate)
-            if self._serial is None:
-                try:
-                    self._serial = serial.Serial(str(self._serial_port), baud_rate, timeout = 3, writeTimeout = 10000)
-                    time.sleep(10)
-                except serial.SerialException:
-                    Logger.log("d", "Could not open port %s" % self._serial_port)
-                    continue
-            else:
-                if not self.setBaudRate(baud_rate):
-                    continue  # Could not set the baud rate, go to the next
+        baudrate = self._global_stack.getProperty("baudrate", "value")
 
-            time.sleep(1.5) # Ensure that we are not talking to the bootloader. 1.5 seconds seems to be the magic number
-            sucesfull_responses = 0
+        if self._serial is None:
             try:
-                timeout_time = time.time() + 5
-                self._serial.write(b"\n")
-            except:
+                self._serial = serial.Serial(str(self._serial_port), baudrate, timeout=3, writeTimeout=10000)
+                time.sleep(10)
+            except serial.SerialException:
+                Logger.log("d", "Could not open port %s and baudrate %d" % self._serial_port, baudrate)
                 self.close()
+                self.setConnectionState(ConnectionState.closed)
                 return
-            self._sendCommand("M105")  # Request temperature, as this should (if baudrate is correct) result in a command with "T:" in it
-            while timeout_time > time.time():
-                line = self._readline()
-                if line is None:
-                    Logger.log("d", "No response from serial connection received.")
-                    # Something went wrong with reading, could be that close was called.
-                    self.setConnectionState(ConnectionState.closed)
-                    return
+        elif not self.setBaudRate(baudrate):
+            Logger.log("d", "Could not open port %s and baudrate %d" % self._serial_port, baudrate)
+            self.close()
+            self.setConnectionState(ConnectionState.closed)
+            return
 
-                if b"T:" in line:
-                    Logger.log("d", "Correct response for auto-baudrate detection received.")
-                    self._serial.timeout = 0.5
-                    sucesfull_responses += 1
-                    if sucesfull_responses >= self._required_responses_auto_baud:
-                        if self._firmware_latest_version is None and self._global_stack is not None:
-                            self._getFirmwareLatestVersion()
-                        self._serial.timeout = 2 # Reset serial timeout
-                        self.setConnectionState(ConnectionState.connected)
-                        self._listen_thread.start()  # Start listening
-                        Logger.log("i", "Established printer connection on port %s and baudrate %d" % (self._serial_port, baud_rate))
-                        return
-
-                self._sendCommand("M105")  # Send M105 as long as we are listening, otherwise we end up in an undefined state
-
-        Logger.log("e", "Baud rate detection for %s failed", self._serial_port)
-        self.close()  # Unable to connect, wrap up.
-        self.setConnectionState(ConnectionState.closed)
+        self._serial.timeout = 2  # Reset serial timeout
+        self.setConnectionState(ConnectionState.connected)
+        self._listen_thread.start()  # Start listening
+        self._updateJobState("")
+        Logger.log("i", "Established printer connection on port %s" % (self._serial_port))
 
     def _getFirmwareVersion(self, line):
         try:
@@ -622,11 +601,14 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         ok_timeout = time.time()
         while self._connection_state == ConnectionState.connected:
             line = self._readline()
-            if not self._version_command_sent and self._firmware_version is None:
-                self._sendCommand("M115")
-                self._version_command_sent = True
-            if self._version_command_sent and self._firmware_version is None:
-                self._getFirmwareVersion(line)
+            if self._firmware_version is None and FirmwareVersion.isVersion(line.decode("utf-8")):
+                self._firmware_version = FirmwareVersion(line.decode("utf-8").split("\n")[0])
+                self.firmwareChange.emit()
+            # if not self._version_command_sent and self._firmware_version is None:
+            #     self._sendCommand("M115")
+            #     self._version_command_sent = True
+            # if self._version_command_sent and self._firmware_version is None:
+            #     self._getFirmwareVersion(line)
 
             if line is None:
                 break  # None is only returned when something went wrong. Stop listening
@@ -688,13 +670,13 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
                         if b"rs" in line:
                             self._gcode_position = int(line.split()[1])
 
-            # Request the temperature on comm timeout (every 2 seconds) when we are not printing.)
-            # if line == b"":
-            #     # if self._num_extruders > 1:
-            #     #     self._temperature_requested_extruder_index = (self._temperature_requested_extruder_index + 1) % self._num_extruders
-            #     #     self.sendCommand("M105 T%d" % self._temperature_requested_extruder_index)
-            #     # else:
-            #     self.sendCommand("M105")
+                            # Request the temperature on comm timeout (every 2 seconds) when we are not printing.)
+                            # if line == b"":
+                            #     # if self._num_extruders > 1:
+                            #     #     self._temperature_requested_extruder_index = (self._temperature_requested_extruder_index + 1) % self._num_extruders
+                            #     #     self.sendCommand("M105 T%d" % self._temperature_requested_extruder_index)
+                            #     # else:
+                            #     self.sendCommand("M105")
 
         Logger.log("i", "Printer connection listen thread stopped for %s" % self._serial_port)
 
