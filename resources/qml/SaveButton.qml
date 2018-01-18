@@ -372,8 +372,12 @@ Item {
                             UM.OutputDeviceManager.setActiveDevice(model.id);
                         }
                     }
-                    onObjectAdded: devicesMenu.insertItem(index, object)
-                    onObjectRemoved: devicesMenu.removeItem(object)
+                    onObjectAdded: {
+                        if (object.text != "Print via USB") {
+                            devicesMenu.insertItem(index, object);
+                        }
+                    }
+                    onObjectRemoved: devicesMenu.removeItem(object);
                 }
                 ExclusiveGroup { id: devicesMenuGroup; }
             }
