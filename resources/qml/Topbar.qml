@@ -52,89 +52,89 @@ Rectangle
             style:  UM.Theme.styles.topbar_header_tab
         }
 
-//        Button
-//        {
-//            id: showMonitor
-//            height: UM.Theme.getSize("sidebar_header").height
-//            onClicked: base.startMonitoringPrint()
-//            text: catalog.i18nc("@title:tab", "Print")
-//            iconSource: printerConnected ? UM.Theme.getIcon("tab_monitor_with_status") : UM.Theme.getIcon("tab_monitor")
-//            property color overlayColor:
-//            {
-//                if(!printerAcceptsCommands)
-//                {
-//                    return UM.Theme.getColor("status_unknown");
-//                }
-//
-//                if(Cura.MachineManager.printerOutputDevices[0].printerState == "maintenance")
-//                {
-//                    return UM.Theme.getColor("status_busy");
-//                }
-//                switch(Cura.MachineManager.printerOutputDevices[0].jobState)
-//                {
-//                    case "printing":
-//                    case "pre_print":
-//                    case "wait_cleanup":
-//                    case "pausing":
-//                    case "resuming":
-//                        return UM.Theme.getColor("status_busy");
-//                    case "ready":
-//                    case "":
-//                        return UM.Theme.getColor("status_ready");
-//                    case "paused":
-//                        return UM.Theme.getColor("status_paused");
-//                    case "error":
-//                        return UM.Theme.getColor("status_stopped");
-//                    case "offline":
-//                        return UM.Theme.getColor("status_offline");
-//                    default:
-//                        return UM.Theme.getColor("text_reversed");
-//                }
-//            }
-//            property string overlayIconSource:
-//            {
-//                if(!printerConnected)
-//                {
-//                    return "";
-//                }
-//                else if(!printerAcceptsCommands)
-//                {
-//                    return UM.Theme.getIcon("tab_status_unknown");
-//                }
-//
-//                if(Cura.MachineManager.printerOutputDevices[0].printerState == "maintenance")
-//                {
-//                    return UM.Theme.getIcon("tab_status_busy");
-//                }
-//
-//                switch(Cura.MachineManager.printerOutputDevices[0].jobState)
-//                {
-//                    case "printing":
-//                    case "pre_print":
-//                    case "wait_cleanup":
-//                    case "pausing":
-//                    case "resuming":
-//                        return UM.Theme.getIcon("tab_status_busy");
-//                    case "ready":
-//                    case "":
-//                        return UM.Theme.getIcon("tab_status_connected")
-//                    case "paused":
-//                        return UM.Theme.getIcon("tab_status_paused")
-//                    case "error":
-//                        return UM.Theme.getIcon("tab_status_stopped")
-//                    case "offline":
-//                        return UM.Theme.getIcon("tab_status_offline")
-//                    default:
-//                        return ""
-//                }
-//            }
-//
-//            checkable: true
-//            checked: base.monitoringPrint
-//            exclusiveGroup: sidebarHeaderBarGroup
-//
-//            style:  UM.Theme.styles.topbar_header_tab
-//        }
+        Button
+        {
+            id: showMonitor
+            height: UM.Theme.getSize("sidebar_header").height
+            onClicked: base.startMonitoringPrint()
+            text: catalog.i18nc("@title:tab", "Print")
+            iconSource: printerConnected ? UM.Theme.getIcon("tab_monitor_with_status") : UM.Theme.getIcon("tab_monitor")
+            property color overlayColor:
+            {
+                if(!printerAcceptsCommands)
+                {
+                    return UM.Theme.getColor("status_unknown");
+                }
+
+                if(Cura.MachineManager.printerOutputDevices[0].printerState == "maintenance")
+                {
+                    return UM.Theme.getColor("status_busy");
+                }
+                switch(Cura.MachineManager.printerOutputDevices[0].jobState)
+                {
+                    case "printing":
+                    case "pre_print":
+                    case "wait_cleanup":
+                    case "pausing":
+                    case "resuming":
+                        return UM.Theme.getColor("status_busy");
+                    case "ready":
+                    case "":
+                        return UM.Theme.getColor("status_ready");
+                    case "paused":
+                        return UM.Theme.getColor("status_paused");
+                    case "error":
+                        return UM.Theme.getColor("status_stopped");
+                    case "offline":
+                        return UM.Theme.getColor("status_offline");
+                    default:
+                        return UM.Theme.getColor("text_reversed");
+                }
+            }
+            property string overlayIconSource:
+            {
+                if(!printerConnected)
+                {
+                    return "";
+                }
+                else if(!printerAcceptsCommands)
+                {
+                    return UM.Theme.getIcon("tab_status_unknown");
+                }
+
+                if(Cura.MachineManager.printerOutputDevices[0].printerState == "maintenance")
+                {
+                    return UM.Theme.getIcon("tab_status_busy");
+                }
+
+                switch(Cura.MachineManager.printerOutputDevices[0].jobState)
+                {
+                    case "printing":
+                    case "pre_print":
+                    case "wait_cleanup":
+                    case "pausing":
+                    case "resuming":
+                        return UM.Theme.getIcon("tab_status_busy");
+                    case "ready":
+                    case "":
+                        return UM.Theme.getIcon("tab_status_connected")
+                    case "paused":
+                        return UM.Theme.getIcon("tab_status_paused")
+                    case "error":
+                        return UM.Theme.getIcon("tab_status_stopped")
+                    case "offline":
+                        return UM.Theme.getIcon("tab_status_offline")
+                    default:
+                        return ""
+                }
+            }
+
+            checkable: true
+            checked: base.monitoringPrint
+            exclusiveGroup: sidebarHeaderBarGroup
+
+            style:  UM.Theme.styles.topbar_header_tab
+        }
 
         ExclusiveGroup { id: sidebarHeaderBarGroup }
     }
