@@ -407,6 +407,7 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
 
     ##  Private connect function run by thread. Can be started by calling connect.
     def _connect(self):
+        self._updateJobState("connecting")
         self._global_stack = Application.getInstance().getGlobalContainerStack()
         Logger.log("d", "Attempting to connect to %s", self._serial_port)
         self.setConnectionState(ConnectionState.connecting)
@@ -441,6 +442,7 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         self._serial.timeout = 2  # Reset serial timeout
         self.setConnectionState(ConnectionState.connected)
         self._listen_thread.start()  # Start listening
+        self._updateJobState("")
         Logger.log("i", "Established printer connection on port %s" % (self._serial_port))
 
     def _getFirmwareVersion(self, line):

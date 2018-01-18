@@ -76,6 +76,7 @@ Rectangle
                     case "pre_print":
                     case "wait_cleanup":
                     case "pausing":
+                    case "connecting":
                     case "resuming":
                         return UM.Theme.getColor("status_busy");
                     case "ready":
@@ -113,6 +114,7 @@ Rectangle
                     case "pre_print":
                     case "wait_cleanup":
                     case "pausing":
+                    case "connecting":
                     case "resuming":
                         return UM.Theme.getIcon("tab_status_busy");
                     case "ready":
