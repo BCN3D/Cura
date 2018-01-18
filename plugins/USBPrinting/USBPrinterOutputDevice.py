@@ -102,6 +102,8 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         self._firmware_latest_version = None
         self._version_command_sent = False
 
+        self._tmp_file = False
+
         self._machine_dict = {
             "bcn3dsigma": {
                 "latest_release_api": "http://api.github.com/repos/bcn3d/bcn3dsigma-firmware/releases/latest"
@@ -233,6 +235,7 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
             self.close()
 
         if self._firmware_file_name == "":
+            self._tmp_file = True
             headers = {
                 "User-Agent": "BCN3D Cura"
             }
@@ -252,32 +255,28 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
                 return
             reader = codecs.getreader("utf-8")
             data = json.load(reader(latest_release))
-            if self._firmware_version is not None:
-                if str(self._firmware_version) == "UNKNOWN" or self._firmware_latest_version > self._firmware_version or self._firmware_version.isPrerelease():
-                    Logger.log("d", "Dowloading the firmware latest version")
-                    download_url = None
-                    for asset in data["assets"]:
-                        if asset["name"].endswith(".hex"):
-                            download_url = asset["browser_download_url"]
-                    if download_url:
-                        try:
-                            self._firmware_file_name, headers = urllib.request.urlretrieve(download_url)
-                        except Exception as e:
-                            Logger.log("e", "Exception when downloading the firmware from github: %s", repr(e))
-                            self._updateFirmwareFailedMissingFirmware()
-                            return
-                    if self._firmware_file_name is None:
-                        Logger.log("e", "Unable to download firmware latest version")
+
+            if self._firmware_version is None or self._firmware_version.isPrerelease() or self._firmware_latest_version > self._firmware_version:
+                Logger.log("d", "Dowloading the firmware latest version")
+                download_url = None
+                for asset in data["assets"]:
+                    if asset["name"].endswith(".hex"):
+                        download_url = asset["browser_download_url"]
+                if download_url:
+                    try:
+                        self._firmware_file_name, headers = urllib.request.urlretrieve(download_url)
+                    except Exception as e:
+                        Logger.log("e", "Exception when downloading the firmware from github: %s", repr(e))
                         self._updateFirmwareFailedMissingFirmware()
                         return
-                    Logger.log("d", "Firmware file stored in temp file: %s", self._firmware_file_name)
-                else:
-                    Logger.log("i", "You already have the latest firmware version (%s) installed", self._firmware_latest_version)
-                    self._updateFirmwareLatestVersionUploaded()
+                if self._firmware_file_name is None:
+                    Logger.log("e", "Unable to download firmware latest version")
+                    self._updateFirmwareFailedMissingFirmware()
                     return
+                Logger.log("d", "Firmware file stored in temp file: %s", self._firmware_file_name)
             else:
-                self._updateFirmwareFailedMissingFirmware()
-                Logger.log("w", "Couldn't get the current firmware version")
+                Logger.log("i", "You already have the latest firmware version (%s) installed", self._firmware_latest_version)
+                self._updateFirmwareLatestVersionUploaded()
                 return
 
         hex_file = intelHex.readHex(self._firmware_file_name)
@@ -352,7 +351,8 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         self.resetFirmwareUpdate(update_has_finished = True)
         self.progressChanged.emit()
         self.firmwareUpdateComplete.emit()
-
+        if self._tmp_file and code != 5:
+            self._deleteTmpFile()
         return
 
     ##  Private function which makes sure that firmware update process has successfully completed
@@ -363,10 +363,13 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         self._firmware_update_finished = True
         self.resetFirmwareUpdate(update_has_finished = True)
         self.firmwareUpdateComplete.emit()
-        if "/tmp/" in self._firmware_file_name:
-            os.remove(self._firmware_file_name)
-            Logger.log("d", "Firmware file deleted: %s", self._firmware_file_name)
+        if self._tmp_file:
+            self._deleteTmpFile()
         return
+
+    def _deleteTmpFile(self):
+        os.remove(self._firmware_file_name)
+        Logger.log("d", "Firmware file deleted: %s", self._firmware_file_name)
 
     ##  Upload new firmware to machine
     #   \param filename full path of firmware file to be uploaded
