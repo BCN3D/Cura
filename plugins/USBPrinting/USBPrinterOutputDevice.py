@@ -601,6 +601,10 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         ok_timeout = time.time()
         while self._connection_state == ConnectionState.connected:
             line = self._readline()
+
+            if line is None:
+                break  # None is only returned when something went wrong. Stop listening
+
             if self._firmware_version is None and FirmwareVersion.isVersion(line.decode("utf-8")):
                 self._firmware_version = FirmwareVersion(line.decode("utf-8").split("\n")[0])
                 self.firmwareChange.emit()
@@ -609,9 +613,6 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
             #     self._version_command_sent = True
             # if self._version_command_sent and self._firmware_version is None:
             #     self._getFirmwareVersion(line)
-
-            if line is None:
-                break  # None is only returned when something went wrong. Stop listening
 
             if time.time() > temperature_request_timeout:
                 # if self._num_extruders > 1:
