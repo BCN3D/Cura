@@ -2,6 +2,8 @@
 *Upgrade to latest firmware version (internet connection required).
 *Upload custom firmware.
 *New parameter to set minimum time to cool down to standby temperature.
+*Start gcode for the Sigmax clones Purge movements (2x faster).
+*Improved USB printer detection.
 *New arranging strategy.
 Objects in platform will be sorted following a grid pattern.
 *New Configuration profiles
