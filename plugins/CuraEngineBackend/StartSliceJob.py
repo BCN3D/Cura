@@ -269,6 +269,11 @@ class StartSliceJob(Job):
         settings = {}
         for key in keys:
             settings[key] = stack.getProperty(key, "value")
+            if key == "adhesion_extruder_nr" and int(stack.getProperty(key, "value")) == -1:
+                if "Left" in ExtruderManager.getInstance().getUsedExtruderStacks()[0].getName():
+                    settings[key] = "0"
+                else:
+                    settings[key] = "1"
             Job.yieldThread()
 
         start_gcode = settings["machine_start_gcode"]
@@ -305,6 +310,11 @@ class StartSliceJob(Job):
     def _buildGlobalInheritsStackMessage(self, stack):
         for key in stack.getAllKeys():
             extruder = int(round(float(stack.getProperty(key, "limit_to_extruder"))))
+            if key == "adhesion_extruder_nr" and int(stack.getProperty(key, "value")) == -1:
+                if "Left" in ExtruderManager.getInstance().getUsedExtruderStacks()[0].getName():
+                    extruder = 0
+                else:
+                    extruder = 1
             if extruder >= 0: #Set to a specific extruder.
                 setting_extruder = self._slice_message.addRepeatedMessage("limit_to_extruder")
                 setting_extruder.name = key
