@@ -1793,6 +1793,16 @@
                     "settable_per_mesh": false,
                     "settable_per_extruder": true
                 },
+                "retraction_amount_multiplier":
+                {
+                    "label": "Retraction Distance Multiplier",
+                    "description": "Multiplier for the length of material retracted during a retraction move.",
+                    "type": "float",
+                    "default_value": 1,
+                    "enabled": false,
+                    "settable_per_mesh": false,
+                    "settable_per_extruder": true
+                },
                 "retraction_speed":
                 {
                     "label": "Retraction Speed",
