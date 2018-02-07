@@ -16,7 +16,7 @@ UM.MainWindow
 {
     id: base
     //: Cura application window title
-    title: catalog.i18nc("@title:window","Ultimaker Cura");
+    title: catalog.i18nc("@title:window","BCN3D Cura");
     viewportRect: Qt.rect(0, 0, (base.width - sidebar.width) / base.width, 1.0)
     property bool showPrintMonitor: false
 
@@ -373,6 +373,26 @@ UM.MainWindow
                     topMargin: UM.Theme.getSize("window_margin").height;
                     left: parent.left;
                 }
+            }
+
+            Image
+            {
+                id: logo
+                anchors
+                {
+                    left: parent.left
+                    leftMargin: UM.Theme.getSize("default_margin").width;
+                    bottom: parent.bottom
+                    bottomMargin: UM.Theme.getSize("default_margin").height;
+                }
+
+                source: UM.Theme.getImage("bcn3dLogo");
+                width: UM.Theme.getSize("logo").width;
+                height: UM.Theme.getSize("logo").height;
+                z: -1;
+
+                sourceSize.width: width;
+                sourceSize.height: height;
             }
 
             ObjectsList

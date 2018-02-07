@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QSplashScreen
 
 from UM.Resources import Resources
 from UM.Application import Application
+from UM.Qt.Bindings.Theme import Theme
 
 
 class CuraSplashScreen(QSplashScreen):
@@ -14,7 +15,7 @@ class CuraSplashScreen(QSplashScreen):
         super().__init__()
         self._scale = 0.7
 
-        splash_image = QPixmap(Resources.getPath(Resources.Images, "cura.png"))
+        splash_image = QPixmap(Resources.getPath(Resources.Images, "cura.jpg"))
         self.setPixmap(splash_image)
 
         self._current_message = ""
@@ -47,7 +48,7 @@ class CuraSplashScreen(QSplashScreen):
             return
 
         painter.save()
-        painter.setPen(QColor(255, 255, 255, 255))
+        painter.setPen(QColor(0, 0, 0, 255))
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setRenderHint(QPainter.Antialiasing, True)
 
@@ -58,34 +59,35 @@ class CuraSplashScreen(QSplashScreen):
 
         # draw version text
         font = QFont()  # Using system-default font here
+        font.setPixelSize(18)
+        painter.setFont(font)
+        painter.drawText(10, 152, 330 * self._scale, 230 * self._scale, Qt.AlignLeft | Qt.AlignBottom, "v")
         font.setPixelSize(37)
         painter.setFont(font)
-        painter.drawText(215, 66, 330 * self._scale, 230 * self._scale, Qt.AlignLeft | Qt.AlignTop, version[0])
+        painter.drawText(23, 265, 330 * self._scale, 230 * self._scale, Qt.AlignLeft | Qt.AlignTop, version[0])
         if len(version) > 1:
             font.setPixelSize(16)
             painter.setFont(font)
-            painter.setPen(QColor(200, 200, 200, 255))
-            painter.drawText(247, 105, 330 * self._scale, 255 * self._scale, Qt.AlignLeft | Qt.AlignTop, version[1])
-        painter.setPen(QColor(255, 255, 255, 255))
+            painter.setPen(QColor(0, 0, 0, 255))
+            painter.drawText(108, 288, 330 * self._scale, 255 * self._scale, Qt.AlignLeft | Qt.AlignTop, version[1])
+        painter.setPen(QColor(100, 100, 100, 255))
 
         # draw the loading image
         pen = QPen()
         pen.setWidth(6 * self._scale)
         pen.setColor(QColor(32, 166, 219, 255))
         painter.setPen(pen)
-        painter.drawArc(60, 150, 32 * self._scale, 32 * self._scale, self._loading_image_rotation_angle * 16, 300 * 16)
+        painter.drawArc(105, 205, 20 * self._scale, 20 * self._scale, self._loading_image_rotation_angle * 16, 300 * 16)
 
         # draw message text
         if self._current_message:
             font = QFont()  # Using system-default font here
             font.setPixelSize(13)
             pen = QPen()
-            pen.setColor(QColor(255, 255, 255, 255))
+            pen.setColor(QColor(0, 0, 0, 255))
             painter.setPen(pen)
             painter.setFont(font)
-            painter.drawText(100, 128, 170, 64,
-                             Qt.AlignLeft | Qt.AlignVCenter | Qt.TextWordWrap,
-                             self._current_message)
+            painter.drawText(130, 200, 170, 64, Qt.TextWordWrap, self._current_message)
 
         painter.restore()
         super().drawContents(painter)

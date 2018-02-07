@@ -34,8 +34,7 @@ Rectangle
             rightMargin = UM.Theme.getSize("sidebar").width + UM.Theme.getSize("default_margin").width;
         }
         allItemsWidth = (
-            logo.width + UM.Theme.getSize("topbar_logo_right_margin").width +
-            UM.Theme.getSize("topbar_logo_right_margin").width + stagesMenuContainer.width +
+            stagesMenuContainer.width +
             UM.Theme.getSize("default_margin").width + viewModeButton.width +
             rightMargin);
     }
@@ -46,26 +45,11 @@ Rectangle
         name:"cura"
     }
 
-    Image
-    {
-        id: logo
-        anchors.left: parent.left
-        anchors.leftMargin: UM.Theme.getSize("default_margin").width
-        anchors.verticalCenter: parent.verticalCenter
-
-        source: UM.Theme.getImage("logo");
-        width: UM.Theme.getSize("logo").width;
-        height: UM.Theme.getSize("logo").height;
-
-        sourceSize.width: width;
-        sourceSize.height: height;
-    }
-
     Row
     {
         id: stagesMenuContainer
-        anchors.left: logo.right
-        anchors.leftMargin: UM.Theme.getSize("topbar_logo_right_margin").width
+        anchors.left: parent.left
+        anchors.leftMargin: UM.Theme.getSize("topbar_left_margin").width
         spacing: UM.Theme.getSize("default_margin").width
 
         // The topbar is dynamically filled with all available stages

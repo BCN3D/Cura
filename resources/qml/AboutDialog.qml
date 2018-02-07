@@ -12,7 +12,7 @@ UM.Dialog
     id: base
 
     //: About dialog title
-    title: catalog.i18nc("@title:window","About Cura")
+    title: catalog.i18nc("@title:window","About BCN3D Cura")
 
     minimumWidth: 500 * screenScaleFactor
     minimumHeight: 650 * screenScaleFactor
@@ -66,7 +66,7 @@ UM.Dialog
         width: parent.width
 
         //: About dialog application author note
-        text: catalog.i18nc("@info:credit","Cura is developed by Ultimaker B.V. in cooperation with the community.\nCura proudly uses the following open source projects:")
+        text: catalog.i18nc("@info:credit","BCN3D Cura is developed by BCN3D Technologies based on the open source project Cura developed by Ultimaker B.V. in cooperation with the community.\nBCN3D Cura uses the following open source projects:")
         font: UM.Theme.getFont("system")
         wrapMode: Text.WordWrap
         anchors.top: description.bottom
@@ -115,8 +115,8 @@ UM.Dialog
             }
             Component.onCompleted:
             {
-                projectsModel.append({ name:"Cura", description: catalog.i18nc("@label", "Graphical user interface"), license: "LGPLv3", url: "https://github.com/Ultimaker/Cura" });
-                projectsModel.append({ name:"Uranium", description: catalog.i18nc("@label", "Application framework"), license: "LGPLv3", url: "https://github.com/Ultimaker/Uranium" });
+                projectsModel.append({ name:"BCN3D Cura", description: catalog.i18nc("@label", "Graphical user interface"), license: "LGPLv3", url: "https://github.com/BCN3D/Cura" });
+                projectsModel.append({ name:"Uranium", description: catalog.i18nc("@label", "Application framework"), license: "LGPLv3", url: "https://github.com/BCN3D/Uranium" });
                 projectsModel.append({ name:"CuraEngine", description: catalog.i18nc("@label", "GCode generator"), license: "AGPLv3", url: "https://github.com/Ultimaker/CuraEngine" });
                 projectsModel.append({ name:"libArcus", description: catalog.i18nc("@label", "Interprocess communication library"), license: "LGPLv3", url: "https://github.com/Ultimaker/libArcus" });
 
@@ -134,7 +134,7 @@ UM.Dialog
                 projectsModel.append({ name:"Clipper", description: catalog.i18nc("@label", "Polygon clipping library"), license: "Boost", url: "http://www.angusj.com/delphi/clipper.php" });
                 projectsModel.append({ name:"Requests", description: catalog.i18nc("@Label", "Python HTTP library"), license: "GPL", url: "http://docs.python-requests.org" });
 
-                projectsModel.append({ name:"Open Sans", description: catalog.i18nc("@label", "Font"), license: "Apache 2.0", url: "https://fonts.google.com/specimen/Open+Sans" });
+                projectsModel.append({ name:"Montserrat", description: catalog.i18nc("@label", "Font"), license: "SIL OFL 1.1", url: "https://fonts.google.com/specimen/Montserrat" });
                 projectsModel.append({ name:"Font-Awesome-SVG-PNG", description: catalog.i18nc("@label", "SVG icons"), license: "SIL OFL 1.1", url: "https://github.com/encharm/Font-Awesome-SVG-PNG" });
             }
         }

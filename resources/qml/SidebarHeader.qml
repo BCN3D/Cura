@@ -336,7 +336,6 @@ Column
 
             UM.RecolorImage {
                 id: warningImage
-                anchors.right: materialInfoLabel.left
                 anchors.rightMargin: UM.Theme.getSize("default_margin").width
                 anchors.verticalCenter: parent.Bottom
                 source: UM.Theme.getIcon("warning")
@@ -344,40 +343,6 @@ Column
                 height: UM.Theme.getSize("section_icon").height
                 color: UM.Theme.getColor("material_compatibility_warning")
                 visible: !Cura.MachineManager.isCurrentSetupSupported
-            }
-
-            Label {
-                id: materialInfoLabel
-                wrapMode: Text.WordWrap
-                text: "<a href='%1'>" + catalog.i18nc("@label", "Check compatibility") + "</a>"
-                font: UM.Theme.getFont("default")
-                color: UM.Theme.getColor("text")
-                linkColor: UM.Theme.getColor("text_link")
-                verticalAlignment: Text.AlignTop
-                anchors.top: parent.top
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
-
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onClicked: {
-                        // open the material URL with web browser
-                        var version = UM.Application.version;
-                        var machineName = Cura.MachineManager.activeMachine.definition.id;
-                        var url = "https://ultimaker.com/materialcompatibility/" + version + "/" + machineName;
-                        Qt.openUrlExternally(url);
-                    }
-                    onEntered: {
-                        var content = catalog.i18nc("@tooltip", "Click to check the material compatibility on Ultimaker.com.");
-                        base.showTooltip(
-                            materialInfoRow,
-                            Qt.point(-UM.Theme.getSize("sidebar_margin").width, 0),
-                            catalog.i18nc("@tooltip", content)
-                        );
-                    }
-                    onExited: base.hideTooltip();
-                }
             }
         }
     }

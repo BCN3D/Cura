@@ -31,7 +31,7 @@ class PrinterOutputDevice(QObject, OutputDevice):
         self._container_registry = ContainerRegistry.getInstance()
         self._target_bed_temperature = 0
         self._bed_temperature = 0
-        self._num_extruders = 1
+        self._num_extruders = 2
         self._hotend_temperatures = [0] * self._num_extruders
         self._target_hotend_temperatures = [0] * self._num_extruders
         self._material_ids = [""] * self._num_extruders

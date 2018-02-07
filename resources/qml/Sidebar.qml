@@ -214,6 +214,7 @@ Rectangle
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                     elide: Text.ElideRight
+                    color: UM.Theme.getColor("action_button_text")
                 }
             }
         }

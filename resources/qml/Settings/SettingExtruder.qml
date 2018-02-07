@@ -151,7 +151,10 @@ SettingItem
             width: control.width
             height: control.height
             highlighted: control.highlightedIndex == index
-
+            background: Rectangle
+            {
+                color: UM.Theme.getColor("setting_control")
+            }
             contentItem: Text
             {
                 text: model.name

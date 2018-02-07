@@ -40,14 +40,14 @@ for dirpath, dirnames, filenames in os.walk(os.path.dirname(UM.__file__)):
 print("Removing previous distribution package")
 shutil.rmtree("dist", True)
 
-setup(name="Cura",
+setup(name="BCN3D Cura",
         version="15.09.80",
-        author="Ultimaker",
-        author_email="a.hiemstra@ultimaker.com",
-        url="http://software.ultimaker.com/",
+        author="BCN3D Technologies",
+        author_email="epardo@fundaciocim.org",
+        url="http://www.bcn3dtechnologies.com/en/3d-printer/bcn3d-cura",
         license="GNU LESSER GENERAL PUBLIC LICENSE (LGPL)",
         scripts=["cura_app.py"],
-        windows=[{"script": "cura_app.py", "dest_name": "Cura", "icon_resources": [(1, "icons/cura.ico")]}],
+        windows=[{"script": "cura_app.py", "dest_name": "BCN3D_Cura", "icon_resources": [(1, "icons/cura.ico")]}],
         #console=[{"script": "cura_app.py"}],
         options={"py2exe": {"skip_archive": False, "includes": includes}})
 
@@ -73,4 +73,4 @@ for site_package in site.getsitepackages():
         print("Copying Angle libraries from %s" % qt_origin_path)
         shutil.copy(os.path.join(qt_origin_path, "libEGL.dll"), "dist/libEGL.dll")
         shutil.copy(os.path.join(qt_origin_path, "libGLESv2.dll"), "dist/libGLESv2.dll")
-os.rename("dist/cura_app.exe", "dist/Cura.exe")
+os.rename("dist/cura_app.exe", "dist/BCN3D_Cura.exe")

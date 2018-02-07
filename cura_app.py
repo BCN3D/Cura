@@ -9,7 +9,7 @@ import sys
 
 from UM.Platform import Platform
 
-parser = argparse.ArgumentParser(prog = "cura",
+parser = argparse.ArgumentParser(prog = "BCN3D Cura",
                                  add_help = False)
 parser.add_argument('--debug',
                     action='store_true',
@@ -21,11 +21,11 @@ known_args = vars(parser.parse_known_args()[0])
 if not known_args["debug"]:
     def get_cura_dir_path():
         if Platform.isWindows():
-            return os.path.expanduser("~/AppData/Roaming/cura/")
+            return os.path.expanduser("~/AppData/Roaming/BCN3D Cura/")
         elif Platform.isLinux():
-            return os.path.expanduser("~/.local/share/cura")
+            return os.path.expanduser("~/.local/share/BCN3D Cura")
         elif Platform.isOSX():
-            return os.path.expanduser("~/Library/Logs/cura")
+            return os.path.expanduser("~/Library/Logs/BCN3D Cura")
     
     if hasattr(sys, "frozen"):
         dirpath = get_cura_dir_path()

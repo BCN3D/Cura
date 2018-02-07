@@ -91,11 +91,14 @@ SettingItem
             width: control.width
             height: control.height
             highlighted: control.highlightedIndex == index
-
+            background: Rectangle
+            {
+                color: UM.Theme.getColor("setting_control")
+            }
             contentItem: Text
             {
                 text: modelData.value
-                color: control.contentItem.color
+                color: UM.Theme.getColor("setting_control_text")
                 font: UM.Theme.getFont("default")
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter

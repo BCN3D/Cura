@@ -175,6 +175,8 @@ class CuraEngineBackend(QObject, Backend):
         if self._slicing:  # We were already slicing. Stop the old job.
             self._terminate()
             self._createSocket()
+            if not Preferences.getInstance().getValue("general/auto_slice"):
+                self.needsSlicing()
 
         if self._process_layers_job:  # We were processing layers. Stop that, the layers are going to change soon.
             Logger.log("d", "Aborting process layers job...")
