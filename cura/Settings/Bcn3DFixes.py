@@ -19,68 +19,68 @@ class Bcn3DFixes(Job):
         extruder_right = ExtruderManager.getInstance().getExtruderStack(1)
         active_extruder = ExtruderManager.getInstance().getActiveExtruderStack()
 
-        self._activeExtruders = active_extruder.getProperty("active_extruders", "value")
-        self._fixToolChangeZHop = active_extruder.getProperty("fix_tool_change_retraction_hop", "value")
-        self._fixFirstRetract = active_extruder.getProperty("fix_first_retract", "value")
-        self._fixTemperatureOscilation = active_extruder.getProperty("fix_temperature_oscilation", "value")
-        self._retractionHopHeightAfterExtruderSwitch = [extruder_left.getProperty("retraction_hop_height_after_extruder_switch", "value"),
-                                                        extruder_right.getProperty("retraction_hop_height_after_extruder_switch", "value")]
-        self._smartPurge = [extruder_left.getProperty("smart_purge", "value"),
-                            extruder_right.getProperty("smart_purge", "value")]
-        self._smartPurgeSParameter = [extruder_left.getProperty("smart_purge_slope", "value"),
-                                      extruder_right.getProperty("smart_purge_slope", "value")]
-        self._smartPurgeEParameter = [extruder_left.getProperty("smart_purge_maximum_purge_distance", "value"),
-                                      extruder_right.getProperty("smart_purge_maximum_purge_distance", "value")]
-        self._smartPurgePParameter = [extruder_left.getProperty("smart_purge_minimum_purge_distance", "value"),
-                                      extruder_right.getProperty("smart_purge_minimum_purge_distance", "value")]
-        self._retractReduction = active_extruder.getProperty("retract_reduction", "value")
-        self._avoidGrindingFilament = [extruder_left.getProperty("avoid_grinding_filament", "value"),
-                                       extruder_right.getProperty("avoid_grinding_filament", "value")]
-        self._maxRetracts = [extruder_left.getProperty("max_retract", "value"),
-                             extruder_right.getProperty("max_retract", "value")]
-
-        self._switchExtruderRetractionAmount = [extruder_left.getProperty("switch_extruder_retraction_amount", "value"),
-                                                extruder_right.getProperty("switch_extruder_retraction_amount", "value")]
-        self._retractionAmount = [extruder_left.getProperty("retraction_amount", "value"),
-                                  extruder_right.getProperty("retraction_amount", "value")]
-        self._retractionExtrusionWindow = [extruder_left.getProperty("retraction_extrusion_window", "value"),
-                                          extruder_right.getProperty("retraction_extrusion_window", "value")]
-        self._machineMinCoolHeatTimeWindow = [extruder_left.getProperty("machine_min_cool_heat_time_window", "value"),
-                                                 extruder_right.getProperty("machine_min_cool_heat_time_window", "value")]
-
-        #Temperatures
-        self._materialPrintTemperatureLayer0 = [extruder_left.getProperty("material_print_temperature_layer_0", "value"),
-                                                 extruder_right.getProperty("material_print_temperature_layer_0", "value")]
-        self._materialInitialPrintTemperature = [extruder_left.getProperty("material_initial_print_temperature", "value"),
-                                                 extruder_right.getProperty("material_initial_print_temperature", "value")]
-        self._materialFinalPrintTemperature = [extruder_left.getProperty("material_final_print_temperature", "value"),
-                                                extruder_right.getProperty("material_final_print_temperature", "value")]
-        self._materialPrintTemperature = [extruder_left.getProperty("material_print_temperature", "value"),
-                                          extruder_right.getProperty("material_print_temperature", "value")]
-        self._materialStandByTemperature = [extruder_left.getProperty("material_standby_temperature", "value"),
-                                                 extruder_right.getProperty("material_standby_temperature", "value")]
-        self._materialFlowDependentTemperature = [extruder_left.getProperty("material_flow_dependent_temperature", "value"),
-                                                 extruder_right.getProperty("material_flow_dependent_temperature", "value")]
-
-        #Speeds
-        self._travelSpeed = [str(int(extruder_left.getProperty("speed_travel", "value") * 60)),
-                             str(int(extruder_right.getProperty("speed_travel", "value") * 60))]
-        self._retractionRetractSpeed = [str(int(extruder_left.getProperty("retraction_retract_speed", "value") * 60)),
-                                        str(int(extruder_right.getProperty("retraction_retract_speed", "value") * 60))]
-        self._retractionPrimeSpeed = [str(int(extruder_left.getProperty("retraction_prime_speed", "value") * 60)),
-                                      str(int(extruder_right.getProperty("retraction_prime_speed", "value") * 60))]
-        self._switchExtruderRetractionSpeed = [str(int(extruder_left.getProperty("switch_extruder_retraction_speed", "value") * 60)),
-                                               str(int(extruder_right.getProperty("switch_extruder_retraction_speed", "value") * 60))]
-        self._switchExtruderPrimeSpeed = [str(int(extruder_left.getProperty("switch_extruder_prime_speed", "value") * 60)),
-                                          str(int(extruder_right.getProperty("switch_extruder_prime_speed", "value") * 60))]
-        self._purgeSpeed = [str(int(extruder_left.getProperty("purge_speed", "value") * 60)),
-                            str(int(extruder_right.getProperty("purge_speed", "value") * 60))]
-
-        self._startGcodeInfo = [";BCN3D Fixes applied"]
-
-        self._IDEXPrint = len(ExtruderManager.getInstance().getUsedExtruderStacks()) > 1
-        self._MEXPrint =  not self._IDEXPrint and self._container.getProperty("print_mode", "value") == 'regular'
-        self._MirrorOrDuplicationPrint = not self._IDEXPrint and self._container.getProperty("print_mode", "value") != 'regular'
+        # self._activeExtruders = active_extruder.getProperty("active_extruders", "value")
+        # self._fixToolChangeZHop = active_extruder.getProperty("fix_tool_change_retraction_hop", "value")
+        # self._fixFirstRetract = active_extruder.getProperty("fix_first_retract", "value")
+        # self._fixTemperatureOscilation = active_extruder.getProperty("fix_temperature_oscilation", "value")
+        # self._retractionHopHeightAfterExtruderSwitch = [extruder_left.getProperty("retraction_hop_height_after_extruder_switch", "value"),
+        #                                                 extruder_right.getProperty("retraction_hop_height_after_extruder_switch", "value")]
+        # self._smartPurge = [extruder_left.getProperty("smart_purge", "value"),
+        #                     extruder_right.getProperty("smart_purge", "value")]
+        # self._smartPurgeSParameter = [extruder_left.getProperty("smart_purge_slope", "value"),
+        #                               extruder_right.getProperty("smart_purge_slope", "value")]
+        # self._smartPurgeEParameter = [extruder_left.getProperty("smart_purge_maximum_purge_distance", "value"),
+        #                               extruder_right.getProperty("smart_purge_maximum_purge_distance", "value")]
+        # self._smartPurgePParameter = [extruder_left.getProperty("smart_purge_minimum_purge_distance", "value"),
+        #                               extruder_right.getProperty("smart_purge_minimum_purge_distance", "value")]
+        # self._retractReduction = active_extruder.getProperty("retract_reduction", "value")
+        # self._avoidGrindingFilament = [extruder_left.getProperty("avoid_grinding_filament", "value"),
+        #                                extruder_right.getProperty("avoid_grinding_filament", "value")]
+        # self._maxRetracts = [extruder_left.getProperty("max_retract", "value"),
+        #                      extruder_right.getProperty("max_retract", "value")]
+        #
+        # self._switchExtruderRetractionAmount = [extruder_left.getProperty("switch_extruder_retraction_amount", "value"),
+        #                                         extruder_right.getProperty("switch_extruder_retraction_amount", "value")]
+        # self._retractionAmount = [extruder_left.getProperty("retraction_amount", "value"),
+        #                           extruder_right.getProperty("retraction_amount", "value")]
+        # self._retractionExtrusionWindow = [extruder_left.getProperty("retraction_extrusion_window", "value"),
+        #                                   extruder_right.getProperty("retraction_extrusion_window", "value")]
+        # self._machineMinCoolHeatTimeWindow = [extruder_left.getProperty("machine_min_cool_heat_time_window", "value"),
+        #                                          extruder_right.getProperty("machine_min_cool_heat_time_window", "value")]
+        #
+        # #Temperatures
+        # self._materialPrintTemperatureLayer0 = [extruder_left.getProperty("material_print_temperature_layer_0", "value"),
+        #                                          extruder_right.getProperty("material_print_temperature_layer_0", "value")]
+        # self._materialInitialPrintTemperature = [extruder_left.getProperty("material_initial_print_temperature", "value"),
+        #                                          extruder_right.getProperty("material_initial_print_temperature", "value")]
+        # self._materialFinalPrintTemperature = [extruder_left.getProperty("material_final_print_temperature", "value"),
+        #                                         extruder_right.getProperty("material_final_print_temperature", "value")]
+        # self._materialPrintTemperature = [extruder_left.getProperty("material_print_temperature", "value"),
+        #                                   extruder_right.getProperty("material_print_temperature", "value")]
+        # self._materialStandByTemperature = [extruder_left.getProperty("material_standby_temperature", "value"),
+        #                                          extruder_right.getProperty("material_standby_temperature", "value")]
+        # self._materialFlowDependentTemperature = [extruder_left.getProperty("material_flow_dependent_temperature", "value"),
+        #                                          extruder_right.getProperty("material_flow_dependent_temperature", "value")]
+        #
+        # #Speeds
+        # self._travelSpeed = [str(int(extruder_left.getProperty("speed_travel", "value") * 60)),
+        #                      str(int(extruder_right.getProperty("speed_travel", "value") * 60))]
+        # self._retractionRetractSpeed = [str(int(extruder_left.getProperty("retraction_retract_speed", "value") * 60)),
+        #                                 str(int(extruder_right.getProperty("retraction_retract_speed", "value") * 60))]
+        # self._retractionPrimeSpeed = [str(int(extruder_left.getProperty("retraction_prime_speed", "value") * 60)),
+        #                               str(int(extruder_right.getProperty("retraction_prime_speed", "value") * 60))]
+        # self._switchExtruderRetractionSpeed = [str(int(extruder_left.getProperty("switch_extruder_retraction_speed", "value") * 60)),
+        #                                        str(int(extruder_right.getProperty("switch_extruder_retraction_speed", "value") * 60))]
+        # self._switchExtruderPrimeSpeed = [str(int(extruder_left.getProperty("switch_extruder_prime_speed", "value") * 60)),
+        #                                   str(int(extruder_right.getProperty("switch_extruder_prime_speed", "value") * 60))]
+        # self._purgeSpeed = [str(int(extruder_left.getProperty("purge_speed", "value") * 60)),
+        #                     str(int(extruder_right.getProperty("purge_speed", "value") * 60))]
+        #
+        # self._startGcodeInfo = [";BCN3D Fixes applied"]
+        #
+        # self._IDEXPrint = len(ExtruderManager.getInstance().getUsedExtruderStacks()) > 1
+        # self._MEXPrint =  not self._IDEXPrint and self._container.getProperty("print_mode", "value") == 'regular'
+        # self._MirrorOrDuplicationPrint = not self._IDEXPrint and self._container.getProperty("print_mode", "value") != 'regular'
 
 
         self._message = None
@@ -90,27 +90,27 @@ class Bcn3DFixes(Job):
     def run(self):
         Job.yieldThread()
 
-        self._handleActiveExtruders()
-        self._handleFixToolChangeZHop()
-        self._handleFixFirstRetract()
-        self._handleFixTemperatureOscilation()
-        self._handleSmartPurge()
-        self._handleRetractReduction()
-        self._handleAvoidGrindingFilament()
-        self._handleCoolDownToZeroAtEnd()
+        # self._handleActiveExtruders()
+        # self._handleFixToolChangeZHop()
+        # self._handleFixFirstRetract()
+        # self._handleFixTemperatureOscilation()
+        # self._handleSmartPurge()
+        # self._handleRetractReduction()
+        # self._handleAvoidGrindingFilament()
+        # self._handleCoolDownToZeroAtEnd()
 
-        written_info = False
-        # Write Sigma Vitamins info
-        for index, layer in enumerate(self._gcode_list):
-            lines = layer.split("\n")
-            for temp_index in range(len(lines)):
-                if layer.startswith(";Generated with Cura_SteamEngine ") and lines[temp_index].startswith(";Sigma ProGen"):
-                    lines[temp_index] = lines[temp_index] + "\n" + "\n".join(self._startGcodeInfo)
-                    written_info = True
-            layer = "\n".join(lines)
-            self._gcode_list[index] = layer
-            if written_info:
-                break
+        # written_info = False
+        # # Write Sigma Vitamins info
+        # for index, layer in enumerate(self._gcode_list):
+        #     lines = layer.split("\n")
+        #     for temp_index in range(len(lines)):
+        #         if layer.startswith(";Generated with Cura_SteamEngine ") and lines[temp_index].startswith(";Sigma ProGen"):
+        #             lines[temp_index] = lines[temp_index] + "\n" + "\n".join(self._startGcodeInfo)
+        #             written_info = True
+        #     layer = "\n".join(lines)
+        #     self._gcode_list[index] = layer
+        #     if written_info:
+        #         break
 
         self._gcode_list[0] += ";BCN3D_FIXES\n"
         scene = Application.getInstance().getController().getScene()
