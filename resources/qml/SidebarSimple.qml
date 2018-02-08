@@ -951,7 +951,7 @@ Item
             UM.SettingPropertyProvider
             {
                 id: infillExtruderNumber
-                containerStackId: Cur.MachineManager.activeStackId
+                containerStackId: Cura.MachineManager.activeStackId
                 key: "infill_extruder_nr"
                 watchedProperties: [ "value" ]
                 storeIndex: 0
