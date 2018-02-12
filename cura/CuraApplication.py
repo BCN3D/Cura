@@ -38,10 +38,13 @@ from cura.Arranging.ShapeArray import ShapeArray
 from cura.MultiplyObjectsJob import MultiplyObjectsJob
 from cura.Scene.ConvexHullDecorator import ConvexHullDecorator
 from cura.Operations.SetParentOperation import SetParentOperation
+from cura.Operations.AddNodesOperation import AddNodesOperation
+from cura.Operations.RemoveNodesOperation import RemoveNodesOperation
 from cura.Scene.SliceableObjectDecorator import SliceableObjectDecorator
 from cura.Scene.BlockSlicingDecorator import BlockSlicingDecorator
 from cura.Scene.BuildPlateDecorator import BuildPlateDecorator
 from cura.Scene.CuraSceneNode import CuraSceneNode
+from cura.Scene.DuplicatedNode import DuplicatedNode
 
 from cura.Scene.CuraSceneController import CuraSceneController
 
@@ -66,12 +69,14 @@ from cura.Scene import ZOffsetDecorator
 from . import CuraSplashScreen
 from . import CameraImageProvider
 from . import MachineActionManager
+from . import PrintModeManager
 
 from cura.Settings.MachineManager import MachineManager
 from cura.Settings.MaterialManager import MaterialManager
 from cura.Settings.ExtruderManager import ExtruderManager
 from cura.Settings.UserChangesModel import UserChangesModel
 from cura.Settings.ExtrudersModel import ExtrudersModel
+from cura.Settings.PrintModesModel import PrintModesModel
 from cura.Settings.PostSlicing import PostSlicing
 from cura.Settings.ContainerSettingsModel import ContainerSettingsModel
 from cura.Settings.MaterialSettingsVisibilityHandler import MaterialSettingsVisibilityHandler
@@ -168,6 +173,7 @@ class CuraApplication(QtApplication):
         SettingFunction.registerOperator("extruderValues", ExtruderManager.getExtruderValues)
         SettingFunction.registerOperator("extruderValue", ExtruderManager.getExtruderValue)
         SettingFunction.registerOperator("resolveOrValue", ExtruderManager.getResolveOrValue)
+        SettingFunction.registerOperator("usedExtruders", ExtruderManager.usedExtruders)
 
         ## Add the 4 types of profiles to storage.
         Resources.addStorageType(self.ResourceTypes.QualityInstanceContainer, "quality")
@@ -610,7 +616,7 @@ class CuraApplication(QtApplication):
     def preStartUp(cls, parser = None, parsed_command_line = {}):
         # Peek the arguments and look for the 'single-instance' flag.
         if not parser:
-            parser = argparse.ArgumentParser(prog = "cura", add_help = False)  # pylint: disable=bad-whitespace
+            parser = argparse.ArgumentParser(prog = "BCN3D Cura", add_help = False)  # pylint: disable=bad-whitespace
         CuraApplication.addCommandLineOptions(parser, parsed_command_line = parsed_command_line)
         # Important: It is important to keep this line here!
         #            In Uranium we allow to pass unknown arguments to the final executable or script.
@@ -726,6 +732,8 @@ class CuraApplication(QtApplication):
         self.setMainQml(Resources.getPath(self.ResourceTypes.QmlFiles, "Cura.qml"))
         self._qml_import_paths.append(Resources.getPath(self.ResourceTypes.QmlFiles))
 
+        self._print_mode_manager = PrintModeManager.PrintModeManager().getInstance()
+
         run_without_gui = self.getCommandLineOption("headless", False)
         if not run_without_gui:
             self.initializeEngine()
@@ -820,6 +828,7 @@ class CuraApplication(QtApplication):
 
         qmlRegisterType(InstanceContainer, "Cura", 1, 0, "InstanceContainer")
         qmlRegisterType(ExtrudersModel, "Cura", 1, 0, "ExtrudersModel")
+        qmlRegisterType(PrintModesModel, "Cura", 1, 0, "PrintModesModel")
         qmlRegisterType(PostSlicing, "Cura", 1, 0, "PostSlicing")
         qmlRegisterType(ContainerSettingsModel, "Cura", 1, 0, "ContainerSettingsModel")
         qmlRegisterSingletonType(ProfilesModel, "Cura", 1, 0, "ProfilesModel", ProfilesModel.createProfilesModel)
@@ -1072,7 +1081,12 @@ class CuraApplication(QtApplication):
             op = GroupedOperation()
 
             for node in nodes:
-                op.addOperation(RemoveSceneNodeOperation(node))
+                print_mode_enabled = self.getGlobalContainerStack().getProperty("print_mode", "enabled")
+                if print_mode_enabled:
+                    node_dup = self._print_mode_manager.getDuplicatedNode(node)
+                    op.addOperation(RemoveNodesOperation(node_dup))
+                else:
+                    op.addOperation(RemoveSceneNodeOperation(node))
 
                 # Reset the print information
                 self.getController().getScene().sceneChanged.emit(node)
@@ -1516,7 +1530,12 @@ class CuraApplication(QtApplication):
                 node.addDecorator(build_plate_decorator)
             build_plate_decorator.setBuildPlateNumber(target_build_plate)
 
-            op = AddSceneNodeOperation(node, scene.getRoot())
+            print_mode_enabled = self.getGlobalContainerStack().getProperty("print_mode", "enabled")
+            if print_mode_enabled:
+                node_dup = DuplicatedNode(node)
+                op = AddNodesOperation(node_dup, scene.getRoot())
+            else:
+                op = AddSceneNodeOperation(node, scene.getRoot())
             op.push()
             scene.sceneChanged.emit(node)
 
