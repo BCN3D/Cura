@@ -1,5 +1,6 @@
 from UM.Scene.SceneNodeDecorator import SceneNodeDecorator
 from cura.Scene.CuraSceneNode import CuraSceneNode
+from copy import deepcopy
 
 
 ##  Make a SceneNode build plate aware CuraSceneNode objects all have this decorator.
@@ -23,4 +24,6 @@ class BuildPlateDecorator(SceneNodeDecorator):
         return self._build_plate_number
 
     def __deepcopy__(self, memo):
-        return BuildPlateDecorator()
+        copy = BuildPlateDecorator()
+        copy.setBuildPlateNumber(deepcopy(self._build_plate_number, memo))
+        return copy
