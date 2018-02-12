@@ -245,12 +245,6 @@ class ExtruderManager(QObject):
             result.append(extruder_stack.getProperty(setting_key, prop))
         return result
 
-    ## Gets the used extruders positions
-    # \return \type{List} this list of results
-    def usedExtruders(self):
-        used_extruders = self.getUsedExtruderStacks()
-        return [extruder_stack.getMetadata()["position"] for extruder_stack in used_extruders]
-
     ##  Gets the extruder stacks that are actually being used at the moment.
     #
     #   An extruder stack is being used if it is the extruder to print any mesh
@@ -684,3 +678,12 @@ class ExtruderManager(QObject):
         resolved_value = global_stack.getProperty(key, "value", context = context)
 
         return resolved_value
+
+    ##  Gets the used extruders positions
+    #   This is exposed to SettingFunction to use in value functions.
+    #
+    #   \return \type{List} this list of results
+    @staticmethod
+    def usedExtruders(self):
+        used_extruders = ExtruderManager.getInstance().getUsedExtruderStacks()
+        return [extruder_stack.getMetadata()["position"] for extruder_stack in used_extruders]
