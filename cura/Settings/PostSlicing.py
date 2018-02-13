@@ -19,18 +19,13 @@ class PostSlicing(QObject):
         if self._bcn3d_fixes_job is not None and self._bcn3d_fixes_job.isRunning():
             return
         container = Application.getInstance().getGlobalContainerStack()
-        # auto_apply_fixes = container.getProperty("auto_apply_fixes", "value")
-        auto_apply_fixes = True
-        # if not auto_apply_fixes:
-        #     self._onFinished()
-        #     return
         scene = Application.getInstance().getController().getScene()
         if hasattr(scene, "gcode_dict"):
             gcode_dict = getattr(scene, "gcode_dict")
             if gcode_dict:
                 job_called = False
                 for i in gcode_dict:
-                    if ";BCN3D_FIXES" not in gcode_dict[i][0] and auto_apply_fixes:
+                    if ";BCN3D_FIXES" not in gcode_dict[i][0]:
                         self._bcn3d_fixes_job = Bcn3DFixes(container, gcode_dict[i])
                         self._bcn3d_fixes_job.finished.connect(self._onFinished)
                         message = Message(catalog.i18nc("@info:postslice", "Preparing gcode"), progress=-1)
