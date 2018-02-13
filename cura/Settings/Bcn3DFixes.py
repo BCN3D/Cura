@@ -24,8 +24,11 @@ class Bcn3DFixes(Job):
         # self._fixTemperatureOscilation = active_extruder.getProperty("fix_temperature_oscilation", "value")
 
         self._fixToolChangeTravel = active_extruder.getProperty("fix_tool_change_travel", "value")
+        self._layerHeight = active_extruder.getProperty("layer_height", "value")
         self._retractionHopHeightAfterExtruderSwitch = [extruder_left.getProperty("retraction_hop_height_after_extruder_switch", "value"),
                                                         extruder_right.getProperty("retraction_hop_height_after_extruder_switch", "value")]
+        self._retractionHop = [extruder_left.getProperty("retraction_hop", "value"),
+                               extruder_right.getProperty("retraction_hop", "value")]
         self._avoidGrindingFilament = [extruder_left.getProperty("avoid_grinding_filament", "value"),
                                        extruder_right.getProperty("avoid_grinding_filament", "value")]
         self._maxRetracts = [extruder_left.getProperty("retraction_count_max_avoid_grinding_filament", "value"),
@@ -34,6 +37,8 @@ class Bcn3DFixes(Job):
                                            extruder_right.getProperty("retraction_extrusion_window", "value")]
         self._retractionAmount = [extruder_left.getProperty("retraction_amount", "value"),
                                   extruder_right.getProperty("retraction_amount", "value")]
+        self._ZHopAtLayerChange = [extruder_left.getProperty("hop_at_layer_change", "value"),
+                                   extruder_right.getProperty("hop_at_layer_change", "value")]
         # self._retractReduction = active_extruder.getProperty("retract_reduction", "value")
         # self._switchExtruderRetractionAmount = [extruder_left.getProperty("switch_extruder_retraction_amount", "value"),
         #                                         extruder_right.getProperty("switch_extruder_retraction_amount", "value")]
@@ -95,6 +100,7 @@ class Bcn3DFixes(Job):
         self._handleCoolDownToZeroAtEnd()
         self._handleFixToolChangeTravel()
         self._handleAvoidGrindingFilament()
+        self._handleZHopAtLayerChange()
 
         # self._handleActiveExtruders()
         '''
@@ -318,6 +324,28 @@ class Bcn3DFixes(Job):
                             except:
                                 break
                         temp_index += 1
+                layer = "\n".join(lines)
+                self._gcode_list[index] = layer
+            Logger.log("d", "avoid_grinding_filament applied")
+
+    def _handleZHopAtLayerChange(self):
+        if self._ZHopAtLayerChange[0] or self._ZHopAtLayerChange[1]:
+            self._startGcodeInfo.append("; - Z Hop At Layer Change")
+            countingForTool = 0
+            for index, layer in enumerate(self._gcode_list):
+                lines = layer.split("\n")
+                temp_index = 0
+                while temp_index < len(lines):
+                    line = lines[temp_index]
+                    if self._ZHopAtLayerChange[countingForTool] and line.startswith(";LAYER:") and not line.startswith(";LAYER:0"):
+                        lines[temp_index] += "\nG91" + \
+                                             "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(round(self._layerHeight + self._retractionHop[countingForTool], 5)) + " ;z hop at layer change"\
+                                             "\nG90"
+                    elif line.startswith("T0"):
+                        countingForTool = 0
+                    elif line.startswith("T1"):
+                        countingForTool = 1
+                    temp_index += 1
                 layer = "\n".join(lines)
                 self._gcode_list[index] = layer
             Logger.log("d", "avoid_grinding_filament applied")
