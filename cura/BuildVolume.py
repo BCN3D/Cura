@@ -1,6 +1,7 @@
 # Copyright (c) 2018 Ultimaker B.V.
 # Cura is released under the terms of the LGPLv3 or higher.
 
+from cura.PrintModeManager import PrintModeManager
 from cura.Settings.ExtruderManager import ExtruderManager
 from UM.Settings.ContainerRegistry import ContainerRegistry
 from UM.i18n import i18nCatalog
@@ -235,6 +236,12 @@ class BuildVolume(SceneNode):
                             continue
                         node._outside_buildarea = True
                         continue
+
+        print_mode = self._global_container_stack.getProperty("print_mode", "value")
+        if print_mode != "regular":
+            duplicated_nodes = PrintModeManager.getInstance().getDuplicatedNodes()
+            for node_dup in duplicated_nodes:
+                node_dup._outside_buildarea = node_dup.node._outside_buildarea
 
         # Group nodes should override the _outside_buildarea property of their children.
         for group_node in group_nodes:

@@ -78,6 +78,9 @@ class UserChangesModel(ListModel):
             }
 
             for setting_key in user_changes.getAllKeys():
+                if setting_key == "print_mode":
+                    continue
+
                 original_value = None
 
                 # Find the category of the instance by moving up until we find a category.

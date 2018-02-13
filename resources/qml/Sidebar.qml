@@ -247,12 +247,16 @@ Rectangle
         }
     }
 
+    PrintModeComboBox {
+        id: printMode
+    }
+
     StackView
     {
         id: sidebarContents
 
         anchors.bottom: footerSeparator.top
-        anchors.top: settingsModeSelection.bottom
+        anchors.top: printMode.visible ? printMode.bottom : settingsModeSelection.bottom
         anchors.topMargin: UM.Theme.getSize("sidebar_margin").height
         anchors.left: base.left
         anchors.right: base.right

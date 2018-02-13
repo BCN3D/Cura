@@ -93,8 +93,10 @@ Column
 
                 onClicked:
                 {
-                    forceActiveFocus() // Changing focus applies the currently-being-typed values so it can change the displayed setting values.
-                    Cura.ExtruderManager.setActiveExtruderIndex(index);
+                    if (printMode.properties.value == "regular") {
+                        forceActiveFocus() // Changing focus applies the currently-being-typed values so it can change the displayed setting values.
+                        Cura.ExtruderManager.setActiveExtruderIndex(index);
+                    }
                 }
 
                 style: ButtonStyle
@@ -105,11 +107,13 @@ Column
                         {
                             anchors.fill: parent
                             border.width: control.checked ? UM.Theme.getSize("default_lining").width * 2 : UM.Theme.getSize("default_lining").width
-                            border.color: (control.checked || control.pressed) ? UM.Theme.getColor("action_button_active_border") :
-                                          control.hovered ? UM.Theme.getColor("action_button_hovered_border") :
+                            border.color: control.checked ? UM.Theme.getColor("action_button_active_border") :
+                                          control.pressed && printMode.properties.value == "regular" ? UM.Theme.getColor("action_button_active_border") :
+                                          control.hovered && printMode.properties.value == "regular" ? UM.Theme.getColor("action_button_hovered_border") :
                                           UM.Theme.getColor("action_button_border")
-                            color: (control.checked || control.pressed) ? UM.Theme.getColor("action_button_active") :
-                                   control.hovered ? UM.Theme.getColor("action_button_hovered") :
+                            color: control.checked ? UM.Theme.getColor("action_button_active") :
+                                   control.pressed && printMode.properties.value == "regular" ? UM.Theme.getColor("action_button_border") :
+                                   control.hovered && printMode.properties.value == "regular" ? UM.Theme.getColor("action_button_hovered") :
                                    UM.Theme.getColor("action_button")
                             Behavior on color { ColorAnimation { duration: 50; } }
                         }
@@ -353,6 +357,16 @@ Column
 
         containerStackId: Cura.MachineManager.activeMachineId
         key: "machine_extruder_count"
+        watchedProperties: [ "value" ]
+        storeIndex: 0
+    }
+
+     UM.SettingPropertyProvider
+    {
+        id: printMode
+
+        containerStackId: Cura.MachineManager.activeMachineId
+        key: "print_mode"
         watchedProperties: [ "value" ]
         storeIndex: 0
     }
