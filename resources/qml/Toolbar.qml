@@ -76,9 +76,18 @@ Item
             width: childrenRect.width
             height: childrenRect.height
             property var _model: Cura.ExtrudersModel { id: extrudersModel }
-            model: _model.items.length > 1 ? _model : 0
+            model: _model.items.length > 1 && printMode.properties.value == "regular" ? _model : 0
             ExtruderButton { extruder: model }
         }
+    }
+
+    UM.SettingPropertyProvider
+    {
+        id: printMode
+
+        containerStackId: Cura.MachineManager.activeMachineId
+        key: "print_mode"
+        watchedProperties: [ "value" ]
     }
 
     UM.PointingRectangle
