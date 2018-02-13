@@ -167,7 +167,7 @@ class CuraApplication(QtApplication):
         SettingDefinition.addSupportedProperty("resolve", DefinitionPropertyType.Function, default = None, depends_on = "value")
 
         # For setting which value needs to be restored when in duplication/mirror modes
-        SettingDefinition.addSupportedProperty("restore", DefinitionPropertyType.Any, default = False, read_only = True)
+        SettingDefinition.addSupportedProperty("reset_on_print_mode_change", DefinitionPropertyType.Any, default = False, read_only = True)
 
         SettingDefinition.addSettingType("extruder", None, str, Validator)
         SettingDefinition.addSettingType("optional_extruder", None, str, None)

@@ -155,7 +155,7 @@ class PrintModeManager:
                 self._setActiveExtruder(child)
 
     def _restoreSettingsValue(self):
-        for definition in self._global_stack.definition.findDefinitions(restore = True):
+        for definition in self._global_stack.definition.findDefinitions(reset_on_print_mode_change = True):
             Application.getInstance().getMachineManager().clearUserSettingAllCurrentStacks(definition.key)
 
     @classmethod
