@@ -17,7 +17,7 @@ UM.Dialog
     id: base
     title: catalog.i18nc("@title:window", "Add Printer")
     property bool firstRun: false
-    property string preferredCategory: "Ultimaker"
+    property string preferredCategory: "BCN3D Technologies"
     property string activeCategory: preferredCategory
 
     minimumWidth: UM.Theme.getSize("modal_window_minimum").width
