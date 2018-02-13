@@ -166,6 +166,9 @@ class CuraApplication(QtApplication):
         # A function which determines the glabel/meshgroup value by looking at the values of the setting in all (used) extruders
         SettingDefinition.addSupportedProperty("resolve", DefinitionPropertyType.Function, default = None, depends_on = "value")
 
+        # For setting which value needs to be restored when in duplication/mirror modes
+        SettingDefinition.addSupportedProperty("restore", DefinitionPropertyType.Any, default = False, read_only = True)
+
         SettingDefinition.addSettingType("extruder", None, str, Validator)
         SettingDefinition.addSettingType("optional_extruder", None, str, None)
         SettingDefinition.addSettingType("[int]", None, str, None)
@@ -341,6 +344,8 @@ class CuraApplication(QtApplication):
 
         preferences.addPreference("cura/currency", "€")
         preferences.addPreference("cura/material_settings", "{}")
+        preferences.addPreference("cura/old_material", "")
+
 
         preferences.addPreference("view/invert_zoom", False)
         preferences.addPreference("view/filter_current_build_plate", False)
