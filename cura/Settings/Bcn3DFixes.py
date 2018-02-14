@@ -27,8 +27,8 @@ class Bcn3DFixes(Job):
         self._layerHeight = active_extruder.getProperty("layer_height", "value")
         self._retractionHopHeightAfterExtruderSwitch = [extruder_left.getProperty("retraction_hop_height_after_extruder_switch", "value"),
                                                         extruder_right.getProperty("retraction_hop_height_after_extruder_switch", "value")]
-        self._retractionHop = [extruder_left.getProperty("retraction_hop", "value"),
-                               extruder_right.getProperty("retraction_hop", "value")]
+        # self._retractionHop = [extruder_left.getProperty("retraction_hop", "value"),
+        #                        extruder_right.getProperty("retraction_hop", "value")]
         self._avoidGrindingFilament = [extruder_left.getProperty("avoid_grinding_filament", "value"),
                                        extruder_right.getProperty("avoid_grinding_filament", "value")]
         self._maxRetracts = [extruder_left.getProperty("retraction_count_max_avoid_grinding_filament", "value"),
@@ -39,6 +39,8 @@ class Bcn3DFixes(Job):
                                   extruder_right.getProperty("retraction_amount", "value")]
         self._ZHopAtLayerChange = [extruder_left.getProperty("hop_at_layer_change", "value"),
                                    extruder_right.getProperty("hop_at_layer_change", "value")]
+        self._ZHopHeightAtLayerChange = [extruder_left.getProperty("retraction_hop_height_at_layer_change", "value"),
+                                   extruder_right.getProperty("retraction_hop_height_at_layer_change", "value")]
         # self._retractReduction = active_extruder.getProperty("retract_reduction", "value")
         # self._switchExtruderRetractionAmount = [extruder_left.getProperty("switch_extruder_retraction_amount", "value"),
         #                                         extruder_right.getProperty("switch_extruder_retraction_amount", "value")]
@@ -339,7 +341,7 @@ class Bcn3DFixes(Job):
                     line = lines[temp_index]
                     if self._ZHopAtLayerChange[countingForTool] and line.startswith(";LAYER:") and not line.startswith(";LAYER:0"):
                         lines[temp_index] += "\nG91" + \
-                                             "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(round(self._layerHeight + self._retractionHop[countingForTool], 5)) + " ;z hop at layer change"\
+                                             "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(round(self._layerHeight + self._ZHopHeightAtLayerChange[countingForTool], 5)) + " ;z hop at layer change"\
                                              "\nG90"
                     elif line.startswith("T0"):
                         countingForTool = 0
