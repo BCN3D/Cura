@@ -1,10 +1,13 @@
 # Copyright (c) 2016 Ultimaker B.V.
 # Uranium is released under the terms of the LGPLv3 or higher.
 
+from UM.Application import Application
 from UM.Scene.SceneNode import SceneNode
 from UM.Operations import Operation
-
 from UM.Math.Vector import Vector
+
+from cura.Scene.DuplicatedNode import DuplicatedNode
+from cura.PrintModeManager import PrintModeManager
 
 ##  An operation that parents a scene node to another scene node.
 
@@ -18,14 +21,47 @@ class SetParentOperation(Operation.Operation):
         self._node = node
         self._parent = parent_node
         self._old_parent = node.getParent() # To restore the previous parent in case of an undo.
+        self._scene_root = Application.getInstance().getController().getScene().getRoot()
+        self._print_mode_enabled = Application.getInstance().getGlobalContainerStack().getProperty("print_mode", "enabled")
+        self._is_duplicated_node = type(node) == DuplicatedNode
 
     ##  Undoes the set-parent operation, restoring the old parent.
     def undo(self):
-        self._set_parent(self._old_parent)
+        if self._print_mode_enabled and self._is_duplicated_node:
+            if type(self._parent) == DuplicatedNode:
+                if self._parent in PrintModeManager.getInstance().getDuplicatedNodes():
+                    PrintModeManager.getInstance().deleteDuplicatedNode(self._parent)
+            elif type(self._old_parent) == DuplicatedNode:
+                if self._old_parent not in PrintModeManager.getInstance().getDuplicatedNodes():
+                    PrintModeManager.getInstance().addDuplicatedNode(self._old_parent)
+
+            self._fixAndSetParent(self._old_parent)
+        else:
+            self._set_parent(self._old_parent)
 
     ##  Re-applies the set-parent operation.
     def redo(self):
-        self._set_parent(self._parent)
+        if self._print_mode_enabled and self._is_duplicated_node:
+            if type(self._parent) == DuplicatedNode:
+                if self._parent not in PrintModeManager.getInstance().getDuplicatedNodes():
+                    PrintModeManager.getInstance().addDuplicatedNode(self._parent)
+            elif type(self._old_parent) == DuplicatedNode:
+                if self._old_parent in PrintModeManager.getInstance().getDuplicatedNodes():
+                    PrintModeManager.getInstance().deleteDuplicatedNode(self._old_parent)
+
+            self._fixAndSetParent(self._parent)
+
+        else:
+            self._set_parent(self._parent)
+
+    def _fixAndSetParent(self, parent):
+        print_mode = Application.getInstance().getGlobalContainerStack().getProperty("print_mode", "value")
+        if print_mode == "regular" and parent == self._scene_root:
+            self._set_parent(None)
+        elif print_mode != "regular" and parent is None:
+            self._set_parent(self._scene_root)
+        else:
+            self._set_parent(parent)
 
     ##  Sets the parent of the node while applying transformations to the world-transform of the node stays the same.
     #

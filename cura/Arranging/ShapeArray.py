@@ -2,6 +2,7 @@ import numpy
 import copy
 
 from UM.Math.Polygon import Polygon
+from UM.Preferences import Preferences
 
 
 ##  Polygon representation as an array for use with Arrange
@@ -42,27 +43,36 @@ class ShapeArray:
     #   \param min_offset offset for the offset ShapeArray
     #   \param scale scale the coordinates
     @classmethod
-    def fromNode(cls, node, min_offset, scale = 0.5):
+    def fromNode(cls, node, min_offset, scale = 1):
         transform = node._transformation
         transform_x = transform._data[0][3]
         transform_y = transform._data[2][3]
-        hull_verts = node.callDecoration("getConvexHull")
-        # If a model is too small then it will not contain any points
-        if hull_verts is None or not hull_verts.getPoints().any():
-            return None, None
-        # For one_at_a_time printing you need the convex hull head.
-        hull_head_verts = node.callDecoration("getConvexHullHead") or hull_verts
 
-        offset_verts = hull_head_verts.getMinkowskiHull(Polygon.approximatedCircle(min_offset))
+        arrange_align = Preferences.getInstance().getValue("mesh/arrange_align")
+        if arrange_align:
+            bb = node.getBoundingBox()
+            bb_points = numpy.array(
+                [[bb.right, bb.back], [bb.left, bb.back], [bb.left, bb.front], [bb.right, bb.front]],
+                dtype=numpy.float32)
+            polygon = Polygon(bb_points)
+        else:
+            hull_verts = node.callDecoration("getConvexHull")
+            # If a model is too small then it will not contain any points
+            if hull_verts is None or not hull_verts.getPoints().any():
+                return None, None
+                # For one_at_a_time printing you need the convex hull head.
+            polygon = node.callDecoration("getConvexHullHead") or hull_verts
+
+        offset_verts = polygon.getMinkowskiHull(Polygon.approximatedCircle(min_offset))
         offset_points = copy.deepcopy(offset_verts._points)  # x, y
         offset_points[:, 0] = numpy.add(offset_points[:, 0], -transform_x)
         offset_points[:, 1] = numpy.add(offset_points[:, 1], -transform_y)
-        offset_shape_arr = ShapeArray.fromPolygon(offset_points, scale = scale)
+        offset_shape_arr = ShapeArray.fromPolygon(offset_points, scale=scale)
 
-        hull_points = copy.deepcopy(hull_verts._points)
+        hull_points = copy.deepcopy(polygon._points)
         hull_points[:, 0] = numpy.add(hull_points[:, 0], -transform_x)
         hull_points[:, 1] = numpy.add(hull_points[:, 1], -transform_y)
-        hull_shape_arr = ShapeArray.fromPolygon(hull_points, scale = scale)  # x, y
+        hull_shape_arr = ShapeArray.fromPolygon(hull_points, scale=scale)
 
         return offset_shape_arr, hull_shape_arr
 

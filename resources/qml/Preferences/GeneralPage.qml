@@ -74,6 +74,8 @@ UM.PreferencesPage
         pushFreeCheckbox.checked = boolCheck(UM.Preferences.getValue("physics/automatic_push_free"))
         UM.Preferences.resetPreference("physics/automatic_drop_down")
         dropDownCheckbox.checked = boolCheck(UM.Preferences.getValue("physics/automatic_drop_down"))
+        UM.Preferences.resetPreference("mesh/arrange_align")
+        arrangeAlignCheckbox.checked = boolCheck(UM.Preferences.getValue("mesh/arrange_align"))
         UM.Preferences.resetPreference("mesh/scale_to_fit")
         scaleToFitCheckbox.checked = boolCheck(UM.Preferences.getValue("mesh/scale_to_fit"))
         UM.Preferences.resetPreference("mesh/scale_tiny_meshes")
@@ -97,10 +99,10 @@ UM.PreferencesPage
         UM.Preferences.resetPreference("cura/choice_on_open_project")
         setDefaultOpenProjectOption(UM.Preferences.getValue("cura/choice_on_open_project"))
 
-        if (plugins.find("id", "SliceInfoPlugin") > -1) {
-            UM.Preferences.resetPreference("info/send_slice_info")
-            sendDataCheckbox.checked = boolCheck(UM.Preferences.getValue("info/send_slice_info"))
-        }
+//        if (plugins.find("id", "SliceInfoPlugin") > -1) {
+//            UM.Preferences.resetPreference("info/send_slice_info")
+//            sendDataCheckbox.checked = boolCheck(UM.Preferences.getValue("info/send_slice_info"))
+//        }
         if (plugins.find("id", "UpdateChecker") > -1) {
             UM.Preferences.resetPreference("info/automatic_update_check")
             checkUpdatesCheckbox.checked = boolCheck(UM.Preferences.getValue("info/automatic_update_check"))
@@ -407,6 +409,20 @@ UM.PreferencesPage
                 }
             }
 
+            UM.TooltipArea {
+                width: childrenRect.width
+                height: childrenRect.height
+                text: catalog.i18nc("@info:tooltip", "Should models on the platform be arranged aligned?")
+
+                CheckBox
+                {
+                    id: arrangeAlignCheckbox
+                    text: catalog.i18nc("@option:check", "Arrange models aligned")
+                    checked: boolCheck(UM.Preferences.getValue("mesh/arrange_align"))
+                    onCheckedChanged: UM.Preferences.setValue("mesh/arrange_align", checked)
+                }
+            }
+
 
             UM.TooltipArea
             {
@@ -646,20 +662,20 @@ UM.PreferencesPage
                 }
             }
 
-            UM.TooltipArea {
-                visible: plugins.find("id", "SliceInfoPlugin") > -1
-                width: childrenRect.width
-                height: visible ? childrenRect.height : 0
-                text: catalog.i18nc("@info:tooltip","Should anonymous data about your print be sent to Ultimaker? Note, no models, IP addresses or other personally identifiable information is sent or stored.")
-
-                CheckBox
-                {
-                    id: sendDataCheckbox
-                    text: catalog.i18nc("@option:check","Send (anonymous) print information")
-                    checked: boolCheck(UM.Preferences.getValue("info/send_slice_info"))
-                    onCheckedChanged: UM.Preferences.setValue("info/send_slice_info", checked)
-                }
-            }
+//            UM.TooltipArea {
+//                visible: plugins.find("id", "SliceInfoPlugin") > -1
+//                width: childrenRect.width
+//                height: visible ? childrenRect.height : 0
+//                text: catalog.i18nc("@info:tooltip","Should anonymous data about your print be sent to Ultimaker? Note, no models, IP addresses or other personally identifiable information is sent or stored.")
+//
+//                CheckBox
+//                {
+//                    id: sendDataCheckbox
+//                    text: catalog.i18nc("@option:check","Send (anonymous) print information")
+//                    checked: boolCheck(UM.Preferences.getValue("info/send_slice_info"))
+//                    onCheckedChanged: UM.Preferences.setValue("info/send_slice_info", checked)
+//                }
+//            }
 
             Item
             {

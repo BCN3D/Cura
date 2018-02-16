@@ -105,9 +105,17 @@ class PrintModeManager:
                 max_offset = 0
                 machine_head_with_fans_polygon = self._global_stack.getProperty("machine_head_with_fans_polygon", "value")
                 machine_head_size = abs(machine_head_with_fans_polygon[0][0] - machine_head_with_fans_polygon[2][0])
-                # TODO think how to handle the margin
-                # margin = Application.getInstance().getBuildVolume().margin
-                margin = 0
+
+                adhesion_type = self._global_stack.getProperty("adhesion_type", "value")
+                if adhesion_type == "skirt":
+                    margin = self._global_stack.getProperty("skirt_gap", "value")
+                elif adhesion_type == "brim":
+                    margin = self._global_stack.getProperty("brim_width", "value")
+                elif adhesion_type == "raft":
+                    margin = self._global_stack.getProperty("raft_margin", "value")
+                else:
+                    margin = 0
+
                 if print_mode == "mirror":
                     margin += machine_head_size/2
                 sliceable_nodes = []

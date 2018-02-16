@@ -1,8 +1,11 @@
+from UM.Application import Application
 from UM.Scene.Iterator.DepthFirstIterator import DepthFirstIterator
 from UM.Logger import Logger
 from UM.Math.Vector import Vector
+from UM.Preferences import Preferences
 from cura.Arranging.ShapeArray import ShapeArray
 from cura.Scene import ZOffsetDecorator
+from cura.Scene.DuplicatedNode import DuplicatedNode
 
 from collections import namedtuple
 
@@ -22,7 +25,7 @@ class Arrange:
     build_volume = None
 
     def __init__(self, x, y, offset_x, offset_y, scale= 1.0):
-        self.shape = (y, x)
+        self.shape = (x, y)
         self._priority = numpy.zeros((x, y), dtype=numpy.int32)
         self._priority_unique_values = []
         self._occupied = numpy.zeros((x, y), dtype=numpy.int32)
@@ -39,23 +42,32 @@ class Arrange:
     #   \param scene_root   Root for finding all scene nodes
     #   \param fixed_nodes  Scene nodes to be placed
     @classmethod
-    def create(cls, scene_root = None, fixed_nodes = None, scale = 0.5, x = 220, y = 220):
-        arranger = Arrange(x, y, x // 2, y // 2, scale = scale)
+    def create(cls, scene_root = None, fixed_nodes = None, scale = 1.0):
+        global_stack = Application.getInstance().getGlobalContainerStack()
+        machine_width = int(global_stack.getProperty("machine_width", "value"))
+        machine_depth = int(global_stack.getProperty("machine_depth", "value"))
+        arranger = Arrange(machine_depth, machine_width, int(machine_width / 2), int(machine_depth / 2), scale = scale)
         arranger.centerFirst()
 
         if fixed_nodes is None:
             fixed_nodes = []
             for node_ in DepthFirstIterator(scene_root):
                 # Only count sliceable objects
-                if node_.callDecoration("isSliceable"):
+                if node_.callDecoration("isSliceable") and not isinstance(node_, DuplicatedNode):
                     fixed_nodes.append(node_)
 
         # Place all objects fixed nodes
         for fixed_node in fixed_nodes:
-            vertices = fixed_node.callDecoration("getConvexHull")
-            if not vertices:
-                continue
-            points = copy.deepcopy(vertices._points)
+            arrange_align = Preferences.getInstance().getValue("mesh/arrange_align")
+            if arrange_align:
+                bb = fixed_node.getBoundingBox()
+                points = numpy.array([[bb.right, bb.back], [bb.left, bb.back], [bb.left, bb.front], [bb.right, bb.front]], dtype=numpy.float32)
+            else:
+                vertices = fixed_node.callDecoration("getConvexHull")
+                if not vertices:
+                    continue
+                points = copy.deepcopy(vertices._points)
+
             shape_arr = ShapeArray.fromPolygon(points, scale = scale)
             arranger.place(0, 0, shape_arr)
 
@@ -103,8 +115,17 @@ class Arrange:
     #   This is a strategy for the arranger.
     def centerFirst(self):
         # Square distance: creates a more round shape
+        offset = 0
+        print_mode = Application.getInstance().getGlobalContainerStack().getProperty("print_mode", "value")
+        if print_mode != "regular":
+            offset = self._offset_x/2
+            if print_mode == "mirror":
+                machine_head_with_fans_polygon = Application.getInstance().getGlobalContainerStack().getProperty("machine_head_with_fans_polygon", "value")
+                machine_head_size = abs(machine_head_with_fans_polygon[0][0] - machine_head_with_fans_polygon[2][0])
+                offset += machine_head_size/4
+
         self._priority = numpy.fromfunction(
-            lambda i, j: (self._offset_x - i) ** 2 + (self._offset_y - j) ** 2, self.shape, dtype=numpy.int32)
+            lambda i, j: (self._offset_y - i) ** 2 + (self._offset_x - j - int(offset)) ** 2, self.shape, dtype=numpy.int32)
         self._priority_unique_values = numpy.unique(self._priority)
         self._priority_unique_values.sort()
 
@@ -153,8 +174,8 @@ class Arrange:
         for priority in self._priority_unique_values[start_idx::step]:
             tryout_idx = numpy.where(self._priority == priority)
             for idx in range(len(tryout_idx[0])):
-                x = tryout_idx[0][idx]
-                y = tryout_idx[1][idx]
+                y = tryout_idx[0][idx]
+                x = tryout_idx[1][idx]
                 projected_x = x - self._offset_x
                 projected_y = y - self._offset_y
 

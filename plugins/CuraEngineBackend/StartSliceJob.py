@@ -210,7 +210,14 @@ class StartSliceJob(Job):
 
             # Build messages for extruder stacks
             for extruder_stack in ExtruderManager.getInstance().getMachineExtruders(stack.getId()):
-                self._buildExtruderMessage(extruder_stack)
+                print_mode = Application.getInstance().getGlobalContainerStack().getProperty("print_mode", "value")
+                if print_mode == "regular":
+                    for extruder_stack in ExtruderManager.getInstance().getMachineExtruders(stack.getId()):
+                        self._buildExtruderMessage(extruder_stack)
+                else:
+                    main_extruder_stack = ExtruderManager.getInstance().getActiveExtruderStack()
+                    for extruder_stack in ExtruderManager.getInstance().getMachineExtruders(stack.getId()):
+                        self._buildExtruderMessage(main_extruder_stack, int(extruder_stack.getMetaDataEntry("position")))
 
             for group in object_groups:
                 group_message = self._slice_message.addRepeatedMessage("object_lists")
@@ -306,9 +313,12 @@ class StartSliceJob(Job):
             return str(value)
 
     ##  Create extruder message from stack
-    def _buildExtruderMessage(self, stack):
+    def _buildExtruderMessage(self, stack, message_id = None):
         message = self._slice_message.addRepeatedMessage("extruders")
-        message.id = int(stack.getMetaDataEntry("position"))
+        if message_id is not None:
+            message.id = message_id
+        else:
+            message.id = int(stack.getMetaDataEntry("position"))
 
         settings = self._buildReplacementTokens(stack)
 

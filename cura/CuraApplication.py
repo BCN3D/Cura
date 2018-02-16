@@ -335,6 +335,7 @@ class CuraApplication(QtApplication):
         preferences.addPreference("view/center_on_select", False)
         preferences.addPreference("mesh/scale_to_fit", False)
         preferences.addPreference("mesh/scale_tiny_meshes", True)
+        preferences.addPreference("mesh/arrange_align", False)
         preferences.addPreference("cura/dialog_on_project_save", True)
         preferences.addPreference("cura/asked_dialog_on_project_save", False)
         preferences.addPreference("cura/choice_on_profile_override", "always_ask")
@@ -1009,7 +1010,7 @@ class CuraApplication(QtApplication):
     #   \param min_offset minimum offset to other objects.
     @pyqtSlot("quint64", int)
     @deprecated("Use CuraActions::multiplySelection", "2.6")
-    def multiplyObject(self, object_id, count, min_offset = 8):
+    def multiplyObject(self, object_id, count, min_offset = 4):
         node = self.getController().getScene().findObject(object_id)
         if not node:
             node = Selection.getSelectedObject(0)
@@ -1334,8 +1335,23 @@ class CuraApplication(QtApplication):
         group_node.setPosition(center)
         group_node.setCenterPosition(center)
 
-        # Move selected nodes into the group-node
-        Selection.applyOperation(SetParentOperation, group_node)
+        print_mode_enabled = self.getGlobalContainerStack().getProperty("print_mode", "enabled")
+        if print_mode_enabled:
+            print_mode = self.getGlobalContainerStack().getProperty("print_mode", "value")
+            if print_mode != "regular":
+                duplicated_group_node = DuplicatedNode(group_node, self.getController().getScene().getRoot())
+            else:
+                duplicated_group_node = DuplicatedNode(group_node)
+
+        op = GroupedOperation()
+        for node in Selection.getAllSelectedObjects():
+            if print_mode_enabled:
+                node_dup = self._print_mode_manager.getDuplicatedNode(node)
+                op.addOperation(SetParentOperation(node_dup, duplicated_group_node))
+
+            op.addOperation(SetParentOperation(node, group_node))
+
+        op.push()
 
         # Deselect individual nodes and select the group-node instead
         for node in group_node.getChildren():
@@ -1357,6 +1373,14 @@ class CuraApplication(QtApplication):
 
                     # Add all individual nodes to the selection
                     Selection.add(child)
+
+                print_mode_enabled = self.getGlobalContainerStack().getProperty("print_mode", "enabled")
+                if print_mode_enabled:
+                    duplicated_group_node = self._print_mode_manager.getDuplicatedNode(node)
+                    duplicated_group_parent = duplicated_group_node.getParent()
+                    duplicated_children = duplicated_group_node.getChildren().copy()
+                    for child in duplicated_children:
+                        op.addOperation(SetParentOperation(child, duplicated_group_parent))
 
                 op.push()
                 # Note: The group removes itself from the scene once all its children have left it,
@@ -1479,7 +1503,7 @@ class CuraApplication(QtApplication):
             if node_.callDecoration("isSliceable") and node_.callDecoration("getBuildPlateNumber") == target_build_plate:
                 fixed_nodes.append(node_)
         arranger = Arrange.create(fixed_nodes = fixed_nodes)
-        min_offset = 8
+        min_offset = 4
 
         for original_node in nodes:
 

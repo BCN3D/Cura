@@ -1,6 +1,8 @@
 # Copyright (c) 2017 Ultimaker B.V.
 # Cura is released under the terms of the LGPLv3 or higher.
 
+import math
+
 from PyQt5.QtCore import QObject, QUrl
 from PyQt5.QtGui import QDesktopServices
 from UM.FlameProfiler import pyqtSlot
@@ -15,10 +17,12 @@ from UM.Operations.RemoveSceneNodeOperation import RemoveSceneNodeOperation
 from UM.Operations.SetTransformOperation import SetTransformOperation
 from UM.Operations.TranslateOperation import TranslateOperation
 
+from cura.Operations.RemoveNodesOperation import RemoveNodesOperation
 from cura.Operations.SetParentOperation import SetParentOperation
 from cura.MultiplyObjectsJob import MultiplyObjectsJob
 from cura.Settings.SetObjectExtruderOperation import SetObjectExtruderOperation
 from cura.Settings.ExtruderManager import ExtruderManager
+from cura.PrintModeManager import PrintModeManager
 
 from cura.Operations.SetBuildPlateNumberOperation import SetBuildPlateNumberOperation
 
@@ -60,12 +64,23 @@ class CuraActions(QObject):
             while current_node.getParent() and current_node.getParent().callDecoration("isGroup"):
                 current_node = current_node.getParent()
 
-            #   This was formerly done with SetTransformOperation but because of
-            #   unpredictable matrix deconstruction it was possible that mirrors
-            #   could manifest as rotations. Centering is therefore done by
-            #   moving the node to negative whatever its position is:
-            center_operation = TranslateOperation(current_node, -current_node._position)
+            vector = current_node._position
+            print_mode_enabled = Application.getInstance().getGlobalContainerStack().getProperty("print_mode", "enabled")
+            if print_mode_enabled:
+                print_mode = Application.getInstance().getGlobalContainerStack().getProperty("print_mode", "value")
+                if print_mode != "regular":
+                    machine_width = Application.getInstance().getGlobalContainerStack().getProperty("machine_width", "value")
+                    center = -machine_width / 4
+                    if print_mode == "mirror":
+                        machine_head_with_fans_polygon = Application.getInstance().getGlobalContainerStack().getProperty(
+                            "machine_head_with_fans_polygon", "value")
+                        machine_head_size = math.fabs( machine_head_with_fans_polygon[0][0] - machine_head_with_fans_polygon[2][0])
+                        center -= machine_head_size / 4
+                    vector = Vector(current_node._position.x - center, current_node._position.y, current_node._position.z)
+
+            center_operation = TranslateOperation(current_node, -vector)
             operation.addOperation(center_operation)
+            # node.setPosition(vector)
         operation.push()
 
     ##  Multiply all objects in the selection
@@ -73,7 +88,7 @@ class CuraActions(QObject):
     #   \param count The number of times to multiply the selection.
     @pyqtSlot(int)
     def multiplySelection(self, count: int) -> None:
-        job = MultiplyObjectsJob(Selection.getAllSelectedObjects(), count, min_offset = 8)
+        job = MultiplyObjectsJob(Selection.getAllSelectedObjects(), count, min_offset = 4)
         job.start()
 
     ##  Delete all selected objects.
@@ -86,7 +101,12 @@ class CuraActions(QObject):
         op = GroupedOperation()
         nodes = Selection.getAllSelectedObjects()
         for node in nodes:
-            op.addOperation(RemoveSceneNodeOperation(node))
+            print_mode_enabled = Application.getInstance().getGlobalContainerStack().getProperty("print_mode", "enabled")
+            if print_mode_enabled:
+                node_dup = PrintModeManager.getInstance().getDuplicatedNode(node)
+                op.addOperation(RemoveNodesOperation(node_dup))
+            else:
+                op.addOperation(RemoveSceneNodeOperation(node))
             group_node = node.getParent()
             if group_node and group_node.callDecoration("isGroup") and group_node not in removed_group_nodes:
                 remaining_nodes_in_group = list(set(group_node.getChildren()) - set(nodes))

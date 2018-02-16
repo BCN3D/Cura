@@ -9,13 +9,15 @@ i18n_catalog = i18nCatalog("cura")
 
 from cura.Arranging.Arrange import Arrange
 from cura.Arranging.ShapeArray import ShapeArray
+from cura.Scene.DuplicatedNode import DuplicatedNode
+from cura.Operations.AddNodesOperation import AddNodesOperation
 
 from UM.Application import Application
 from UM.Operations.AddSceneNodeOperation import AddSceneNodeOperation
 
 
 class MultiplyObjectsJob(Job):
-    def __init__(self, objects, count, min_offset = 8):
+    def __init__(self, objects, count, min_offset = 4):
         super().__init__()
         self._objects = objects
         self._count = count
@@ -70,7 +72,13 @@ class MultiplyObjectsJob(Job):
         if nodes:
             op = GroupedOperation()
             for new_node in nodes:
-                op.addOperation(AddSceneNodeOperation(new_node, current_node.getParent()))
+                print_mode_enabled = Application.getInstance().getGlobalContainerStack().getProperty("print_mode",
+                                                                                                     "enabled")
+                if print_mode_enabled:
+                    node_dup = DuplicatedNode(new_node)
+                    op.addOperation(AddNodesOperation(node_dup, current_node.getParent()))
+                else:
+                    op.addOperation(AddSceneNodeOperation(new_node, current_node.getParent()))
             op.push()
         status_message.hide()
 
