@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import QSplashScreen
 
 from UM.Resources import Resources
 from UM.Application import Application
-from UM.Qt.Bindings.Theme import Theme
 
 
 class CuraSplashScreen(QSplashScreen):
@@ -61,15 +60,15 @@ class CuraSplashScreen(QSplashScreen):
         font = QFont()  # Using system-default font here
         font.setPixelSize(18)
         painter.setFont(font)
-        painter.drawText(10, 152, 330 * self._scale, 230 * self._scale, Qt.AlignLeft | Qt.AlignBottom, "v")
-        font.setPixelSize(37)
+        painter.drawText(0, 0, 25, 316, Qt.AlignRight | Qt.AlignBottom, "v")
+        font.setPixelSize(32)
         painter.setFont(font)
-        painter.drawText(23, 265, 330 * self._scale, 230 * self._scale, Qt.AlignLeft | Qt.AlignTop, version[0])
+        painter.drawText(0, 0, 100, 321, Qt.AlignRight | Qt.AlignBottom, version[0])
         if len(version) > 1:
-            font.setPixelSize(16)
+            font.setPixelSize(18)
             painter.setFont(font)
             painter.setPen(QColor(0, 0, 0, 255))
-            painter.drawText(108, 288, 330 * self._scale, 255 * self._scale, Qt.AlignLeft | Qt.AlignTop, version[1])
+            painter.drawText(0, 0, 140, 315, Qt.AlignRight | Qt.AlignBottom, version[1])
         painter.setPen(QColor(100, 100, 100, 255))
 
         # draw the loading image
@@ -77,7 +76,7 @@ class CuraSplashScreen(QSplashScreen):
         pen.setWidth(6 * self._scale)
         pen.setColor(QColor(32, 166, 219, 255))
         painter.setPen(pen)
-        painter.drawArc(105, 205, 20 * self._scale, 20 * self._scale, self._loading_image_rotation_angle * 16, 300 * 16)
+        painter.drawArc(100, 200, 20 * self._scale, 20 * self._scale, self._loading_image_rotation_angle * 16, 300 * 16)
 
         # draw message text
         if self._current_message:
@@ -87,7 +86,7 @@ class CuraSplashScreen(QSplashScreen):
             pen.setColor(QColor(0, 0, 0, 255))
             painter.setPen(pen)
             painter.setFont(font)
-            painter.drawText(130, 200, 170, 64, Qt.TextWordWrap, self._current_message)
+            painter.drawText(125, 40, 330, 330, Qt.AlignVCenter | Qt.TextWordWrap, self._current_message)
 
         painter.restore()
         super().drawContents(painter)
