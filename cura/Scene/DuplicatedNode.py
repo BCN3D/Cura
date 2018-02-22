@@ -23,7 +23,7 @@ class DuplicatedNode(CuraSceneNode):
             self.addDecorator(deepcopy(decorator))
 
         for child in node.getChildren():
-            if type(child) == SceneNode:
+            if isinstance(child, CuraSceneNode):
                 self.addChild(DuplicatedNode(child))
             else:
                 self.addChild(deepcopy(child))

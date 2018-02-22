@@ -72,8 +72,7 @@ class MultiplyObjectsJob(Job):
         if nodes:
             op = GroupedOperation()
             for new_node in nodes:
-                print_mode_enabled = Application.getInstance().getGlobalContainerStack().getProperty("print_mode",
-                                                                                                     "enabled")
+                print_mode_enabled = Application.getInstance().getGlobalContainerStack().getProperty("print_mode", "enabled")
                 if print_mode_enabled:
                     node_dup = DuplicatedNode(new_node)
                     op.addOperation(AddNodesOperation(node_dup, current_node.getParent()))
