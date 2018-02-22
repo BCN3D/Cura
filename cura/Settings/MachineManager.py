@@ -410,6 +410,11 @@ class MachineManager(QObject):
         # Not a very pretty solution, but the extruder manager doesn't really know how many extruders there are
         machine_extruder_count = self._global_container_stack.getProperty("machine_extruder_count", "value")
         extruder_stacks = ExtruderManager.getInstance().getMachineExtruders(self._global_container_stack.getId())
+        print_mode = Application.getInstance().getGlobalContainerStack().getProperty("print_mode", "value")
+
+        # If we are un duplication/mirror modes we don't care about the right extruder since it's not going to be used
+        if print_mode != "regular":
+            extruder_stacks = [ExtruderManager.getInstance().getActiveExtruderStack()]
         count = 1  # we start with the global stack
         for stack in extruder_stacks:
             md = stack.getMetaData()
@@ -441,9 +446,9 @@ class MachineManager(QObject):
 
         instances = self._global_container_stack.getTop().findInstances()
         if instances:
-            if len(instances) == 1 and instances[0].definition.key == "print_mode":
-                return False
-            return True
+            for instance in instances:
+                if instance.definition.key != "print_mode":
+                    return True
 
         stacks = list(ExtruderManager.getInstance().getMachineExtruders(self._global_container_stack.getId()))
         for stack in stacks:
