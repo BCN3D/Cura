@@ -993,11 +993,7 @@ UM.MainWindow
             }
 
             // check later if the user agreement dialog has been closed
-            if (CuraApplication.needToShowUserAgreement)
-            {
-                restart();
-            }
-            else if(Cura.MachineManager.activeMachineId == null || Cura.MachineManager.activeMachineId == "")
+            if(Cura.MachineManager.activeMachineId == null || Cura.MachineManager.activeMachineId == "")
             {
                 addMachineDialog.open();
             }
