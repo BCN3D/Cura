@@ -9,7 +9,7 @@ import Cura 1.0 as Cura
 Item
 {
     id: printModeCell
-    anchors.top: settingsModeLabel.bottom
+    anchors.top: settingsModeSelection.bottom
     anchors.topMargin: UM.Theme.getSize("sidebar_margin").height * 2
     anchors.left: parent.left
     anchors.right: parent.right
