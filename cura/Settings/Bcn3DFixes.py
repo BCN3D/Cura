@@ -99,7 +99,7 @@ class Bcn3DFixes(Job):
         Job.yieldThread()
 
         self._handleFixStartGcode()
-        self._handleCoolDownToZeroAtEnd()
+        # self._handleCoolDownToZeroAtEnd() # disabled to allow prime at end
         self._handleFixToolChangeTravel()
         self._handleAvoidGrindingFilament()
         self._handleZHopAtLayerChange()
@@ -341,18 +341,22 @@ class Bcn3DFixes(Job):
                 temp_index = 0
                 while temp_index < len(lines):
                     line = lines[temp_index]
+                    temp_index_2 = 1
                     if self._ZHopAtLayerChange[countingForTool] and line.startswith(";LAYER:") and not line.startswith(";LAYER:0"):
                         lines[temp_index] += "\nG91" + \
                                              "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E-" + str(round(self._retractionAmount[countingForTool], 5)) + \
                                              "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(round(self._layerHeight + self._ZHopHeightAtLayerChange[countingForTool], 5)) + " ;z hop at layer change" + \
-                                             "\nG1 F" + self._travelSpeed[countingForTool] + " Z-" + str(round(self._layerHeight + self._ZHopHeightAtLayerChange[countingForTool], 5)) + \
-                                             "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E" + str(round(self._retractionAmount[countingForTool], 5)) + \
-                                             "\nG90"
+                                             "\nG90  ; FixA"+str(countingForTool)
+                        while not GCodeUtils.charsInLine(["E"], lines[temp_index + temp_index_2]):
+                            temp_index_2 += 1
+                        lines[temp_index + temp_index_2] += "\nG91" + \
+                                                            "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E" + str(round(self._retractionAmount[countingForTool], 5)) + \
+                                                            "\nG90 ; FixB"+str(countingForTool)
                     elif line.startswith("T0"):
                         countingForTool = 0
                     elif line.startswith("T1"):
                         countingForTool = 1
-                    temp_index += 1
+                    temp_index += temp_index_2
                 layer = "\n".join(lines)
                 self._gcode_list[index] = layer
             Logger.log("d", "avoid_grinding_filament applied")
