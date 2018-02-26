@@ -48,7 +48,7 @@ fatal_exception_types = [
 
 
 class CrashHandler:
-    crash_url = "https://stats.ultimaker.com/api/cura"
+    crash_url = ""
 
     def __init__(self, exception_type, value, tb, has_started = True):
         self.exception_type = exception_type
@@ -73,7 +73,7 @@ class CrashHandler:
             return
 
         if not has_started:
-            self._send_report_checkbox = None
+            # self._send_report_checkbox = None
             self.early_crash_dialog = self._createEarlyCrashDialog()
 
         self.dialog = QDialog()
@@ -97,14 +97,14 @@ class CrashHandler:
         layout.addWidget(label)
 
         # "send report" check box and show details
-        self._send_report_checkbox = QCheckBox(catalog.i18nc("@action:button", "Send crash report to Ultimaker"), dialog)
-        self._send_report_checkbox.setChecked(True)
+        # self._send_report_checkbox = QCheckBox(catalog.i18nc("@action:button", "Send crash report to Ultimaker"), dialog)
+        # self._send_report_checkbox.setChecked(True)
 
         show_details_button = QPushButton(catalog.i18nc("@action:button", "Show detailed crash report"), dialog)
         show_details_button.setMaximumWidth(200)
         show_details_button.clicked.connect(self._showDetailedReport)
 
-        layout.addWidget(self._send_report_checkbox)
+        # layout.addWidget(self._send_report_checkbox)
         layout.addWidget(show_details_button)
 
         # "backup and start clean" and "close" buttons
@@ -119,8 +119,8 @@ class CrashHandler:
         return dialog
 
     def _closeEarlyCrashDialog(self):
-        if self._send_report_checkbox.isChecked():
-            self._sendCrashReport()
+        # if self._send_report_checkbox.isChecked():
+        #     self._sendCrashReport()
         os._exit(1)
 
     def _backupAndStartClean(self):
@@ -129,7 +129,7 @@ class CrashHandler:
         from UM.Resources import Resources
         # The early crash may happen before those information is set in Resources, so we need to set them here to
         # make sure that Resources can find the correct place.
-        Resources.ApplicationIdentifier = "cura"
+        Resources.ApplicationIdentifier = "BCN3D Cura"
         Resources.ApplicationVersion = CuraVersion
         config_path = Resources.getConfigStoragePath()
         data_path = Resources.getDataStoragePath()
