@@ -24,8 +24,10 @@ Button
                 return UM.Theme.getColor("setting_category_disabled");
             } else if (base.hovered && base.checkable && base.checked) {
                 return UM.Theme.getColor("setting_category_active_hover");
-            } else if (base.pressed || (base.checkable && base.checked)) {
+            } else if (base.pressed) {
                 return UM.Theme.getColor("setting_category_active");
+            } else if (base.checkable && base.checked) {
+                return UM.Theme.getColor("setting_category");
             } else if (base.hovered) {
                 return UM.Theme.getColor("setting_category_hover");
             } else {

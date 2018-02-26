@@ -150,7 +150,7 @@
         "setting_category": [58, 58, 58, 255],
         "setting_category_disabled": [83, 83, 83, 255],
         "setting_category_hover": [0, 151, 217, 100],
-        "setting_category_active": [58, 58, 58, 255],
+        "setting_category_active": [0, 151, 217, 255],
         "setting_category_active_hover": [0, 151, 217, 100],
         "setting_category_text": [255, 255, 255, 255],
         "setting_category_disabled_text": [24, 41, 77, 101],
