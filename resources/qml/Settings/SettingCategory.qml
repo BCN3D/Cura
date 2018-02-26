@@ -22,10 +22,10 @@ Button
                 return base.color;
             } else if (!base.enabled) {
                 return UM.Theme.getColor("setting_category_disabled");
-            } else if (base.hovered && base.checkable && base.checked) {
-                return UM.Theme.getColor("setting_category_active_hover");
             } else if (base.pressed) {
                 return UM.Theme.getColor("setting_category_active");
+            } else if (base.hovered && base.checkable && base.checked) {
+                return UM.Theme.getColor("setting_category_active_hover");
             } else if (base.checkable && base.checked) {
                 return UM.Theme.getColor("setting_category");
             } else if (base.hovered) {
