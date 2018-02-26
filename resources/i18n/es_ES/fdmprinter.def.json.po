@@ -1861,6 +1861,28 @@ msgid "This setting limits the number of retractions occurring within the minimu
 msgstr "Este ajuste limita el número de retracciones que ocurren dentro de la ventana de distancia mínima de extrusión. Dentro de esta ventana se ignorarán las demás retracciones. Esto evita retraer repetidamente el mismo trozo de filamento, ya que esto podría aplanar el filamento y causar problemas de desmenuzamiento."
 
 #: fdmprinter.def.json
+msgctxt "avoid_grinding_filament label"
+msgid "Prevent Filament Grinding"
+msgstr "Prevención de mordedura del filamento"
+
+#: fdmprinter.def.json
+msgctxt "avoid_grinding_filament description"
+msgid "When retracting repeatedly, this option moves the hotend to the purge tray and primes the needed amount of filament to allow working on a new piece of it. Disabling this feature can flatten the filament and cause grinding issues."
+msgstr "Realizar una purga en el cajetín para renovar la parte del hilo en contacto con el grafilado del extrusor en caso de hacer una determinada cantidad de retracciones. Desactivar esta opción puede producir aplastamiento del filamento y/o mordedura del mismo."
+
+#: fdmprinter.def.json
+msgctxt "max_retract label"
+msgid "Maximum Retraction Count"
+msgstr "Recuento máximo de retracciones"
+
+#: fdmprinter.def.json
+msgctxt "max_retract description"
+msgid "Number of retractions occurring within the retraction distance. When the number of retractions is reached, active extruder will park, prime and come back."
+msgstr "Cantidad de retracciones admitidas en un mismo fragmento de filamento. Cuando se supere esta cantidad, el extrusor activo volverá al cajetín, prugará y reprenderá la impresión."
+
+#: fdmprinter.def.json
+
+#: fdmprinter.def.json
 msgctxt "retraction_extrusion_window label"
 msgid "Minimum Extrusion Distance Window"
 msgstr "Ventana de distancia mínima de extrusión"
@@ -2656,6 +2678,26 @@ msgid "The height difference when performing a Z Hop."
 msgstr "Diferencia de altura cuando se realiza un salto en Z."
 
 #: fdmprinter.def.json
+msgctxt "hop_at_layer_change label"
+msgid "Z Hop At Layer Change"
+msgstr "Salto en Z tras cambio de capa"
+
+#: fdmprinter.def.json
+msgctxt "hop_at_layer_change description"
+msgid "Perform a Z Hop when the nozzle is moving to the next layer."
+msgstr "Cuando la máquina cambia de capa, la placa de impresión se baja para crear holgura entre la tobera y la impresión. Esto impide que el material rezumado quede fuera de la impresión."
+
+#: fdmprinter.def.json
+msgctxt "retraction_hop_height_at_layer_change label"
+msgid "Z Hop Height At Layer Change"
+msgstr "Altura del salto en Z tras cambio de capa"
+
+#: fdmprinter.def.json
+msgctxt "retraction_hop_height_at_layer_change description"
+msgid "Distance to lift Z when the nozzle is moving to the next layer."
+msgstr "Diferencia de altura cuando se realiza un salto en Z tras cambio de capa."
+
+#: fdmprinter.def.json
 msgctxt "retraction_hop_after_extruder_switch label"
 msgid "Z Hop After Extruder Switch"
 msgstr "Salto en Z tras cambio de extrusor"
@@ -2664,6 +2706,16 @@ msgstr "Salto en Z tras cambio de extrusor"
 msgctxt "retraction_hop_after_extruder_switch description"
 msgid "After the machine switched from one extruder to the other, the build plate is lowered to create clearance between the nozzle and the print. This prevents the nozzle from leaving oozed material on the outside of a print."
 msgstr "Cuando la máquina cambia de un extrusor a otro, la placa de impresión se baja para crear holgura entre la tobera y la impresión. Esto impide que el material rezumado quede fuera de la impresión."
+
+#: fdmprinter.def.json
+msgctxt "retraction_hop_height_after_extruder_switch label"
+msgid "Z Hop Height After Extruder Switch"
+msgstr "Altura del salto en Z tras cambio de extrusor"
+
+#: fdmprinter.def.json
+msgctxt "retraction_hop_height_after_extruder_switch description"
+msgid "Distance to lift Z when changing toolheads."
+msgstr "Diferencia de altura cuando se realiza un salto en Z tras cambio de extrusor."
 
 #: fdmprinter.def.json
 msgctxt "cooling label"
@@ -2684,6 +2736,16 @@ msgstr "Activar refrigeración de impresión"
 msgctxt "cool_fan_enabled description"
 msgid "Enables the print cooling fans while printing. The fans improve print quality on layers with short layer times and bridging / overhangs."
 msgstr "Habilita ventiladores de refrigeración mientras se imprime. Los ventiladores mejoran la calidad de la impresión en capas con menores tiempos de capas y puentes o voladizos."
+
+#: fdmprinter.def.json
+msgctxt "clone_cool_fan label"
+msgid "Clone Print Cooling"
+msgstr "Clonar refrigeración de impresión"
+
+#: fdmprinter.def.json
+msgctxt "clone_cool_fan description"
+msgid "Enables cooling fan for the idle extruder. This setting allows better temperature control for dual extruder prints."
+msgstr "Habilita ventiladores de refrigeración para el extrusor en inactivo. Esta opción permite un mejor control de la temperatura para impresiones con doble extrusor."
 
 #: fdmprinter.def.json
 msgctxt "cool_fan_speed label"
@@ -3851,6 +3913,56 @@ msgstr "Extrusión doble"
 msgctxt "dual description"
 msgid "Settings used for printing with multiple extruders."
 msgstr "Ajustes utilizados en la impresión con varios extrusores."
+
+#: fdmprinter.def.json
+msgctxt "smart_purge label"
+msgid "Smart Purge"
+msgstr "Purga Inteligente"
+
+#: fdmprinter.def.json
+msgctxt "smart_purge description"
+msgid "Add an extra prime amount to compensate oozed material while the Extruder was idle. Disable Prime tower to save time and filament."
+msgstr "Distancia a elevar el cabezal cuando se cambia de extrusor."
+
+#: fdmprinter.def.json
+msgctxt "purge_speed label"
+msgid "Purge Speed"
+msgstr "Velocidad de Purga"
+
+#: fdmprinter.def.json
+msgctxt "purge_speed description"
+msgid "The speed at which the filament is pushed by the extruder when purging in the purge tray."
+msgstr "Velocidad a la que el filamento es presionado cuando se purga en el cajetín."
+
+#: fdmprinter.def.json
+msgctxt "smart_purge_slope label"
+msgid "Distance Gradient"
+msgstr "Gradiente de purga"
+
+#: fdmprinter.def.json
+msgctxt "smart_purge_slope description"
+msgid "Distance to purge per second idle. Purged distance will increase this amount each second the toolhead remains idle. If the final distance is shorter than the Minimum Purge Distance it will be increased to this value the ensure the right Hotend's pressure. If the final distance is greater than the Maximum Purge Distance it will be decreased to this value to avoid purge tray filling."
+msgstr "Distancia a purgar por segundo inactivo. La distancia purgada incrementará este valor por cada segundo que la herramienta esté inactiva. Si la distancia calculada es inferior a la Mínima distancia a purgar, se incrementara a dicho valor para asegurar una presión correcta en el Hotend. Si la distancia calculada es superior a la Máxima distancia a purgar, se reducirá dicho valor para evitar un excesivo rellenamiento del cajetín de purga."
+
+#: fdmprinter.def.json
+msgctxt "smart_purge_minimum_purge_distance label"
+msgid "Minimum Purge Distance"
+msgstr "Mínima distancia a purgar"
+
+#: fdmprinter.def.json
+msgctxt "smart_purge_minimum_purge_distance description"
+msgid "Minimum distance to purge when changing toolheads."
+msgstr "Distancia mínima a purgar cuando se cambia de cabezal."
+
+#: fdmprinter.def.json
+msgctxt "smart_purge_maximum_purge_distance label"
+msgid "Maximum Purge Distance"
+msgstr "Máxima distancia a purgar"
+
+#: fdmprinter.def.json
+msgctxt "smart_purge_maximum_purge_distance description"
+msgid "Maximum distance to purge when changing toolheads."
+msgstr "Distancia máxima a purgar cuando se cambia de cabezal."
 
 #: fdmprinter.def.json
 msgctxt "prime_tower_enable label"

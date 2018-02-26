@@ -3335,8 +3335,8 @@ msgstr "Agregar impresora"
 
 #: /home/ruben/Projects/Cura/resources/qml/AboutDialog.qml:15
 msgctxt "@title:window"
-msgid "About Cura"
-msgstr "Acerca de Cura"
+msgid "About BCN3D Cura"
+msgstr "Acerca de BCN3D Cura"
 
 #: /home/ruben/Projects/Cura/resources/qml/AboutDialog.qml:43
 msgctxt "@label"
@@ -3350,10 +3350,8 @@ msgstr "Solución completa para la impresión 3D de filamento fundido."
 
 #: /home/ruben/Projects/Cura/resources/qml/AboutDialog.qml:69
 msgctxt "@info:credit"
-msgid ""
-"Cura is developed by Ultimaker B.V. in cooperation with the community.\n"
-"Cura proudly uses the following open source projects:"
-msgstr "Ultimaker B.V. ha desarrollado Cura en cooperación con la comunidad.\nCura se enorgullece de utilizar los siguientes proyectos de código abierto:"
+msgid "BCN3D Cura is developed by BCN3D Technologies based on the open source project Cura developed by Ultimaker B.V. in cooperation with the community.\nBCN3D Cura uses the following open source projects:"
+msgstr "BCN3D Technologies ha desarrollado BCN3D Cura basado en el proyecto de código abierto Cura desarrolado por Ultimaker B.V. en cooperación con la comunidad.\nBCN3D Cura utiliza los siguientes proyectos de código abierto:"
 
 #: /home/ruben/Projects/Cura/resources/qml/AboutDialog.qml:118
 msgctxt "@label"
@@ -4070,8 +4068,8 @@ msgstr "Importar todos como modelos"
 
 #: /home/ruben/Projects/Cura/resources/qml/Cura.qml:19
 msgctxt "@title:window"
-msgid "Ultimaker Cura"
-msgstr "Ultimaker Cura"
+msgid "BCN3D Cura"
+msgstr "BCN3D Cura"
 
 #: /home/ruben/Projects/Cura/resources/qml/Cura.qml:102
 msgctxt "@title:menu menubar:toplevel"
@@ -4351,6 +4349,11 @@ msgstr "Organizar todas las placas de impresión"
 msgctxt "@action:button"
 msgid "Arrange current build plate"
 msgstr "Organizar placa de impresión actual"
+
+#: PostSlicing.py
+msgctxt "@info:postslice"
+msgid "Preparing gcode"
+msgstr "Preparando gcode"
 
 #: MachineSettingsAction/plugin.json
 msgctxt "description"
