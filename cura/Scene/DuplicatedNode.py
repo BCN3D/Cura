@@ -3,9 +3,9 @@ from copy import deepcopy
 from UM.Math.Vector import Vector
 from UM.Operations.MirrorOperation import MirrorOperation
 from UM.Application import Application
-from UM.Scene.SceneNode import SceneNode
 
 from cura.Scene.CuraSceneNode import CuraSceneNode
+from cura.Scene.BuildPlateDecorator import BuildPlateDecorator
 from cura.Settings.ExtruderManager import ExtruderManager
 from cura.Settings.SetObjectExtruderOperation import SetObjectExtruderOperation
 
@@ -19,6 +19,10 @@ class DuplicatedNode(CuraSceneNode):
         self.setVisible(deepcopy(node.isVisible()))
         self._selectable = False
         self._name = deepcopy(node.getName())
+        # Make sure the BuildPlateDecorator is added the first
+        build_plate_decorator = node.getDecorator(BuildPlateDecorator)
+        if build_plate_decorator is not None:
+            self.addDecorator(deepcopy(build_plate_decorator))
         for decorator in node.getDecorators():
             self.addDecorator(deepcopy(decorator))
 

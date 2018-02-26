@@ -2,11 +2,11 @@ from UM.Application import Application
 from UM.Logger import Logger
 from UM.Preferences import Preferences
 from UM.Signal import Signal
-from UM.Scene.SceneNode import SceneNode
 from UM.Operations.AddSceneNodeOperation import AddSceneNodeOperation
 from UM.Operations.RemoveSceneNodeOperation import RemoveSceneNodeOperation
 from UM.Math.Vector import Vector
 
+from cura.Scene.CuraSceneNode import CuraSceneNode
 from cura.Scene.DuplicatedNode import DuplicatedNode
 from cura.Settings.ExtruderManager import ExtruderManager
 from cura.Arranging.ShapeArray import ShapeArray
@@ -86,7 +86,7 @@ class PrintModeManager:
             else:
                 if len(self._duplicated_nodes) == 0:
                     for node in self._scene.getRoot().getChildren():
-                        if type(node) == SceneNode:
+                        if type(node) == CuraSceneNode:
                             self.addDuplicatedNode(DuplicatedNode(node, node.getParent()))
                 self._onPrintModeChanged()
 
@@ -157,7 +157,7 @@ class PrintModeManager:
                     ExtruderManager.getInstance().getExtruderStack(1).setVariant(container)
 
     def _setActiveExtruder(self, node):
-        if type(node) == SceneNode:
+        if type(node) == CuraSceneNode:
             node.callDecoration("setActiveExtruder", ExtruderManager.getInstance().getExtruderStack(0).getId())
             for child in node.getChildren():
                 self._setActiveExtruder(child)
