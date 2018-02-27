@@ -17,10 +17,12 @@ Item
     visible: printModes.visible
     enabled: printModes.visible
 
+    UM.I18nCatalog{id: catalog; name:"cura"}
+
     Text
     {
         id: printModeLabel
-        text: printMode.properties.label
+        text: catalog.i18nc("@label", printMode.properties.label)
         font: UM.Theme.getFont("default");
         color: UM.Theme.getColor("text");
         anchors.left: parent.left

@@ -3547,6 +3547,11 @@ msgid ""
 "G-code files cannot be modified"
 msgstr "Ajustes de impresión deshabilitados\nNo se pueden modificar los archivos GCode"
 
+#: PrintModeCombobox.qml
+msgctxt "@label"
+msgid "Print Mode"
+msgstr "Modo de impresión"
+
 #: /home/ruben/Projects/Cura/resources/qml/Sidebar.qml:342
 msgctxt "@label Hours and minutes"
 msgid "00h 00min"
