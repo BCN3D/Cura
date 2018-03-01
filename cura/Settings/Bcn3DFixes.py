@@ -226,9 +226,9 @@ class Bcn3DFixes(Job):
                     except:
                         break
                 layer = "\n".join(lines)
-                # # Fix strange travel to X105 Y297
-                # regex = r"\n.*X" + str(int(self._container.getProperty("layer_start_x", "value"))) + " Y" + str(int(self._container.getProperty("layer_start_y", "value"))) + ".*"
-                # layer = re.sub(regex, "", layer)
+                # Fix strange travel to X105 Y297
+                regex = r"\n.*X" + str(int(self._container.getProperty("layer_start_x", "value"))) + " Y" + str(int(self._container.getProperty("layer_start_y", "value"))) + ".*"
+                layer = re.sub(regex, "", layer)
                 self._gcode_list[index] = layer
             Logger.log("d", "fix_tool_change_travel applied")
 
