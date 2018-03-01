@@ -366,15 +366,21 @@ class CuraApplication(QtApplication):
             resolution
                 layer_height
             shell
+                wall_extruder_nr
                 wall_thickness
+                top_bottom_extruder_nr
                 top_bottom_thickness
-                z_seam_x
-                z_seam_y
+                top_bottom_pattern
+                z_seam_type
+                z_seam_corner
             infill
+                infill_extruder_nr
                 infill_sparse_density
-                gradual_infill_steps
+                infill_pattern
+                infill_sparse_layer
             material
                 material_print_temperature
+                material_print_temperature_layer_0
                 material_bed_temperature
                 material_diameter
                 material_flow
@@ -382,11 +388,11 @@ class CuraApplication(QtApplication):
             speed
                 speed_print
                 speed_travel
-                acceleration_print
-                acceleration_travel
-                jerk_print
-                jerk_travel
+                acceleration_enabled
+                jerk_enabled
             travel
+                retraction_combing
+                travel_avoid_other_parts
             cooling
                 cool_fan_enabled
             support
@@ -394,23 +400,39 @@ class CuraApplication(QtApplication):
                 support_extruder_nr
                 support_type
             platform_adhesion
+                prime_blob_enable
+                extruder_prime_pos_x
+                extruder_prime_pos_y
                 adhesion_type
                 adhesion_extruder_nr
+                skirt_line_count
+                skirt_gap
+                skirt_brim_minimal_length
                 brim_width
+                brim_outside_only
+                raft_margin
+                raft_smoothing
                 raft_airgap
                 layer_0_z_overlap
                 raft_surface_layers
+                raft_surface_thickness
+                raft_surface_line_width
+                raft_surface_line_spacing
+                raft_interface_thickness
+                raft_interface_line_width
+                raft_interface_line_spacing
             dual
+                smart_purge
                 prime_tower_enable
-                prime_tower_size
                 prime_tower_position_x
                 prime_tower_position_y
             meshfix
             blackmagic
                 print_sequence
-                infill_mesh
-                cutting_mesh
+                magic_spiralize
             experimental
+                coasting_volume
+                adaptive_layer_height_enabled
         """.replace("\n", ";").replace(" ", ""))
 
         self.applicationShuttingDown.connect(self.saveSettings)
