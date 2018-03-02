@@ -102,7 +102,6 @@ class Bcn3DFixes(Job):
 
         self._handleFixStartGcode()
         self._handleChangeLiftHeadMovement()
-        self._handleCoolDownToZeroAtEnd()
         self._handleFixToolChangeTravel()
         self._handleAvoidGrindingFilament()
         self._handleZHopAtLayerChange()
@@ -115,6 +114,7 @@ class Bcn3DFixes(Job):
             - the same for M108 P1
             - it would be interesting to add purge commands, but used extruders need to be retrieved and also force the value calculation according to used extruders (enable _handleFixFirstRetract in that case)
         '''
+        # self._handleCoolDownToZeroAtEnd()      # Not needed after v3.2
         # self._handleFixFirstRetract()          # Not needed if there are no retract commands in the start gcode
         # self._handleFixTemperatureOscilation() # Changes to proper temperatures if auto temperature is on. Auto temperature is not on, so it's not needed
         # self._handleSmartPurge()               # the command is added as parameters in the fdmprinter. Force values to 0 if manually changed but smartpurge is disabled
@@ -164,36 +164,36 @@ class Bcn3DFixes(Job):
                     break
             Logger.log("d", "fix_start_gcode applied")
 
-    def _handleCoolDownToZeroAtEnd(self):
-        # Change last standby temperature of the file to zero
-        if self._IDEXPrint:
-            self._startGcodeInfo.append("; - Cool Down To Zero At End")
-            cooledDownToZero = False
-            self._gcode_list.reverse()
-            for index, layer in enumerate(self._gcode_list):
-                lines = layer.split("\n")
-                lines.reverse()
-                temp_index = 0
-                while temp_index < len(lines):
-                    try:
-                        line = lines[temp_index]
-                        if GCodeUtils.charsInLine(["M104 T0 S"+str(self._materialStandByTemperature[0])], line) or GCodeUtils.charsInLine(["M104 T1 S"+str(self._materialStandByTemperature[1])], line):
-                            if "T1" in line:
-                                lines[temp_index] = "M104 T1 S0 ;Standby Temperature set to Zero\n"
-                            else:
-                                lines[temp_index] = "M104 T0 S0 ;Standby Temperature set to Zero\n"
-                            cooledDownToZero = True
-                            break
-                        temp_index += 1
-                    except:
-                        break
-                if cooledDownToZero:
-                    lines.reverse()
-                    layer = "\n".join(lines)
-                    self._gcode_list[index] = layer
-                    break
-            self._gcode_list.reverse()
-            Logger.log("d", "CoolDownToZeroAtEnd() applied")
+    # def _handleCoolDownToZeroAtEnd(self):
+    #     # Change last standby temperature of the file to zero
+    #     if self._IDEXPrint:
+    #         self._startGcodeInfo.append("; - Cool Down To Zero At End")
+    #         cooledDownToZero = False
+    #         self._gcode_list.reverse()
+    #         for index, layer in enumerate(self._gcode_list):
+    #             lines = layer.split("\n")
+    #             lines.reverse()
+    #             temp_index = 0
+    #             while temp_index < len(lines):
+    #                 try:
+    #                     line = lines[temp_index]
+    #                     if GCodeUtils.charsInLine(["M104 T0 S"+str(self._materialStandByTemperature[0])], line) or GCodeUtils.charsInLine(["M104 T1 S"+str(self._materialStandByTemperature[1])], line):
+    #                         if "T1" in line:
+    #                             lines[temp_index] = "M104 T1 S0 ;Standby Temperature set to Zero\n"
+    #                         else:
+    #                             lines[temp_index] = "M104 T0 S0 ;Standby Temperature set to Zero\n"
+    #                         cooledDownToZero = True
+    #                         break
+    #                     temp_index += 1
+    #                 except:
+    #                     break
+    #             if cooledDownToZero:
+    #                 lines.reverse()
+    #                 layer = "\n".join(lines)
+    #                 self._gcode_list[index] = layer
+    #                 break
+    #         self._gcode_list.reverse()
+    #         Logger.log("d", "CoolDownToZeroAtEnd() applied")
 
     def _handleFixToolChangeTravel(self):
         # Allows the new tool to go straight to the position where it has to print, instead of going to the last position before tool change and then travel to the position where it has to print
