@@ -41,6 +41,8 @@ class Bcn3DFixes(Job):
                                    extruder_right.getProperty("hop_at_layer_change", "value")]
         self._ZHopHeightAtLayerChange = [extruder_left.getProperty("retraction_hop_height_at_layer_change", "value"),
                                    extruder_right.getProperty("retraction_hop_height_at_layer_change", "value")]
+        self._CoolLiftHead = [extruder_left.getProperty("cool_lift_head", "value"),
+                                   extruder_right.getProperty("cool_lift_head", "value")]
         # self._retractReduction = active_extruder.getProperty("retract_reduction", "value")
         # self._switchExtruderRetractionAmount = [extruder_left.getProperty("switch_extruder_retraction_amount", "value"),
         #                                         extruder_right.getProperty("switch_extruder_retraction_amount", "value")]
@@ -99,7 +101,8 @@ class Bcn3DFixes(Job):
         Job.yieldThread()
 
         self._handleFixStartGcode()
-        # self._handleCoolDownToZeroAtEnd() # disabled to allow prime at end
+        self._handleChangeLiftHeadMovement()
+        self._handleCoolDownToZeroAtEnd()
         self._handleFixToolChangeTravel()
         self._handleAvoidGrindingFilament()
         self._handleZHopAtLayerChange()
@@ -190,7 +193,7 @@ class Bcn3DFixes(Job):
                     self._gcode_list[index] = layer
                     break
             self._gcode_list.reverse()
-            Logger.log("d", "cool_down_to_zero_at_end applied")
+            Logger.log("d", "CoolDownToZeroAtEnd() applied")
 
     def _handleFixToolChangeTravel(self):
         # Allows the new tool to go straight to the position where it has to print, instead of going to the last position before tool change and then travel to the position where it has to print
@@ -346,12 +349,12 @@ class Bcn3DFixes(Job):
                         lines[temp_index] += "\nG91" + \
                                              "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E-" + str(round(self._retractionAmount[countingForTool], 5)) + \
                                              "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(round(self._layerHeight + self._ZHopHeightAtLayerChange[countingForTool], 5)) + " ;z hop at layer change" + \
-                                             "\nG90  ; FixA"+str(countingForTool)
+                                             "\nG90"
                         while not GCodeUtils.charsInLine(["E"], lines[temp_index + temp_index_2]):
                             temp_index_2 += 1
                         lines[temp_index + temp_index_2] += "\nG91" + \
                                                             "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E" + str(round(self._retractionAmount[countingForTool], 5)) + \
-                                                            "\nG90 ; FixB"+str(countingForTool)
+                                                            "\nG90"
                     elif line.startswith("T0"):
                         countingForTool = 0
                     elif line.startswith("T1"):
@@ -359,7 +362,29 @@ class Bcn3DFixes(Job):
                     temp_index += temp_index_2
                 layer = "\n".join(lines)
                 self._gcode_list[index] = layer
-            Logger.log("d", "avoid_grinding_filament applied")
+            Logger.log("d", "hop_at_layer_change applied")
+
+    def _handleChangeLiftHeadMovement(self):
+        if self._CoolLiftHead[0] or self._CoolLiftHead[1]:
+            self._startGcodeInfo.append("; - Change Lift Head Movement")
+            fixMovementInNextLayer = False
+            countingForTool = 0
+            for index, layer in enumerate(self._gcode_list):
+                if fixMovementInNextLayer:
+                    lines = layer.split("\n")
+                    temp_index = 0
+                    while temp_index < len(lines):
+                        line = lines[temp_index]
+                        if GCodeUtils.charsInLine(["G0", "X", "Y", "Z"], line):
+                            lines[temp_index] = line.split("Z")[0] + "\nG0 Z"+line.split("Z")[1]
+                            break
+                        temp_index += 1
+                    layer = "\n".join(lines)
+                    self._gcode_list[index] = layer
+                    fixMovementInNextLayer = False
+                if ';Small layer, adding delay' in layer:
+                    fixMovementInNextLayer = True
+            Logger.log("d", "ChangeLiftHeadMovement() applied")
 
     # def _handleActiveExtruders(self):
     #     # Heat and purge only used extruders. Simultaneously if possible.
