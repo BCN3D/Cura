@@ -41,6 +41,8 @@ class Bcn3DFixes(Job):
                                    extruder_right.getProperty("hop_at_layer_change", "value")]
         self._ZHopHeightAtLayerChange = [extruder_left.getProperty("retraction_hop_height_at_layer_change", "value"),
                                    extruder_right.getProperty("retraction_hop_height_at_layer_change", "value")]
+        self._CoolLiftHead = [extruder_left.getProperty("cool_lift_head", "value"),
+                                   extruder_right.getProperty("cool_lift_head", "value")]
         # self._retractReduction = active_extruder.getProperty("retract_reduction", "value")
         # self._switchExtruderRetractionAmount = [extruder_left.getProperty("switch_extruder_retraction_amount", "value"),
         #                                         extruder_right.getProperty("switch_extruder_retraction_amount", "value")]
@@ -99,7 +101,7 @@ class Bcn3DFixes(Job):
         Job.yieldThread()
 
         self._handleFixStartGcode()
-        # self._handleCoolDownToZeroAtEnd() # disabled to allow prime at end
+        self._handleChangeLiftHeadMovement()
         self._handleFixToolChangeTravel()
         self._handleAvoidGrindingFilament()
         self._handleZHopAtLayerChange()
@@ -112,6 +114,7 @@ class Bcn3DFixes(Job):
             - the same for M108 P1
             - it would be interesting to add purge commands, but used extruders need to be retrieved and also force the value calculation according to used extruders (enable _handleFixFirstRetract in that case)
         '''
+        # self._handleCoolDownToZeroAtEnd()      # Not needed after v3.2
         # self._handleFixFirstRetract()          # Not needed if there are no retract commands in the start gcode
         # self._handleFixTemperatureOscilation() # Changes to proper temperatures if auto temperature is on. Auto temperature is not on, so it's not needed
         # self._handleSmartPurge()               # the command is added as parameters in the fdmprinter. Force values to 0 if manually changed but smartpurge is disabled
@@ -161,36 +164,36 @@ class Bcn3DFixes(Job):
                     break
             Logger.log("d", "fix_start_gcode applied")
 
-    def _handleCoolDownToZeroAtEnd(self):
-        # Change last standby temperature of the file to zero
-        if self._IDEXPrint:
-            self._startGcodeInfo.append("; - Cool Down To Zero At End")
-            cooledDownToZero = False
-            self._gcode_list.reverse()
-            for index, layer in enumerate(self._gcode_list):
-                lines = layer.split("\n")
-                lines.reverse()
-                temp_index = 0
-                while temp_index < len(lines):
-                    try:
-                        line = lines[temp_index]
-                        if GCodeUtils.charsInLine(["M104 T0 S"+str(self._materialStandByTemperature[0])], line) or GCodeUtils.charsInLine(["M104 T1 S"+str(self._materialStandByTemperature[1])], line):
-                            if "T1" in line:
-                                lines[temp_index] = "M104 T1 S0 ;Standby Temperature set to Zero\n"
-                            else:
-                                lines[temp_index] = "M104 T0 S0 ;Standby Temperature set to Zero\n"
-                            cooledDownToZero = True
-                            break
-                        temp_index += 1
-                    except:
-                        break
-                if cooledDownToZero:
-                    lines.reverse()
-                    layer = "\n".join(lines)
-                    self._gcode_list[index] = layer
-                    break
-            self._gcode_list.reverse()
-            Logger.log("d", "cool_down_to_zero_at_end applied")
+    # def _handleCoolDownToZeroAtEnd(self):
+    #     # Change last standby temperature of the file to zero
+    #     if self._IDEXPrint:
+    #         self._startGcodeInfo.append("; - Cool Down To Zero At End")
+    #         cooledDownToZero = False
+    #         self._gcode_list.reverse()
+    #         for index, layer in enumerate(self._gcode_list):
+    #             lines = layer.split("\n")
+    #             lines.reverse()
+    #             temp_index = 0
+    #             while temp_index < len(lines):
+    #                 try:
+    #                     line = lines[temp_index]
+    #                     if GCodeUtils.charsInLine(["M104 T0 S"+str(self._materialStandByTemperature[0])], line) or GCodeUtils.charsInLine(["M104 T1 S"+str(self._materialStandByTemperature[1])], line):
+    #                         if "T1" in line:
+    #                             lines[temp_index] = "M104 T1 S0 ;Standby Temperature set to Zero\n"
+    #                         else:
+    #                             lines[temp_index] = "M104 T0 S0 ;Standby Temperature set to Zero\n"
+    #                         cooledDownToZero = True
+    #                         break
+    #                     temp_index += 1
+    #                 except:
+    #                     break
+    #             if cooledDownToZero:
+    #                 lines.reverse()
+    #                 layer = "\n".join(lines)
+    #                 self._gcode_list[index] = layer
+    #                 break
+    #         self._gcode_list.reverse()
+    #         Logger.log("d", "CoolDownToZeroAtEnd() applied")
 
     def _handleFixToolChangeTravel(self):
         # Allows the new tool to go straight to the position where it has to print, instead of going to the last position before tool change and then travel to the position where it has to print
@@ -226,9 +229,9 @@ class Bcn3DFixes(Job):
                     except:
                         break
                 layer = "\n".join(lines)
-                # # Fix strange travel to X105 Y297
-                # regex = r"\n.*X" + str(int(self._container.getProperty("layer_start_x", "value"))) + " Y" + str(int(self._container.getProperty("layer_start_y", "value"))) + ".*"
-                # layer = re.sub(regex, "", layer)
+                # Fix strange travel to X105 Y297
+                regex = r"\n.*X" + str(int(self._container.getProperty("layer_start_x", "value"))) + " Y" + str(int(self._container.getProperty("layer_start_y", "value"))) + ".*"
+                layer = re.sub(regex, "", layer)
                 self._gcode_list[index] = layer
             Logger.log("d", "fix_tool_change_travel applied")
 
@@ -346,12 +349,12 @@ class Bcn3DFixes(Job):
                         lines[temp_index] += "\nG91" + \
                                              "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E-" + str(round(self._retractionAmount[countingForTool], 5)) + \
                                              "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(round(self._layerHeight + self._ZHopHeightAtLayerChange[countingForTool], 5)) + " ;z hop at layer change" + \
-                                             "\nG90  ; FixA"+str(countingForTool)
+                                             "\nG90"
                         while not GCodeUtils.charsInLine(["E"], lines[temp_index + temp_index_2]):
                             temp_index_2 += 1
                         lines[temp_index + temp_index_2] += "\nG91" + \
                                                             "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E" + str(round(self._retractionAmount[countingForTool], 5)) + \
-                                                            "\nG90 ; FixB"+str(countingForTool)
+                                                            "\nG90"
                     elif line.startswith("T0"):
                         countingForTool = 0
                     elif line.startswith("T1"):
@@ -359,7 +362,29 @@ class Bcn3DFixes(Job):
                     temp_index += temp_index_2
                 layer = "\n".join(lines)
                 self._gcode_list[index] = layer
-            Logger.log("d", "avoid_grinding_filament applied")
+            Logger.log("d", "hop_at_layer_change applied")
+
+    def _handleChangeLiftHeadMovement(self):
+        if self._CoolLiftHead[0] or self._CoolLiftHead[1]:
+            self._startGcodeInfo.append("; - Change Lift Head Movement")
+            fixMovementInNextLayer = False
+            countingForTool = 0
+            for index, layer in enumerate(self._gcode_list):
+                if fixMovementInNextLayer:
+                    lines = layer.split("\n")
+                    temp_index = 0
+                    while temp_index < len(lines):
+                        line = lines[temp_index]
+                        if GCodeUtils.charsInLine(["G0", "X", "Y", "Z"], line):
+                            lines[temp_index] = line.split("Z")[0] + "\nG0 Z"+line.split("Z")[1]
+                            break
+                        temp_index += 1
+                    layer = "\n".join(lines)
+                    self._gcode_list[index] = layer
+                    fixMovementInNextLayer = False
+                if ';Small layer, adding delay' in layer:
+                    fixMovementInNextLayer = True
+            Logger.log("d", "ChangeLiftHeadMovement() applied")
 
     # def _handleActiveExtruders(self):
     #     # Heat and purge only used extruders. Simultaneously if possible.
