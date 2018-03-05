@@ -37,13 +37,22 @@ class PrintModeManager:
         self._onPrintModeChanged()
 
     def addDuplicatedNode(self, node):
-        self._duplicated_nodes.append(node)
+        if node not in self._duplicated_nodes:
+            self._duplicated_nodes.append(node)
+        for child in node.getChildren():
+            if isinstance(child, CuraSceneNode):
+                self.addDuplicatedNode(child)
 
     def deleteDuplicatedNodes(self):
         del self._duplicated_nodes[:]
 
-    def deleteDuplicatedNode(self, node):
-        self._duplicated_nodes.remove(node)
+    def deleteDuplicatedNode(self, node, delete_children = True):
+        if node in self._duplicated_nodes:
+            self._duplicated_nodes.remove(node)
+        if delete_children:
+            for child in node.getChildren():
+                if isinstance(child, CuraSceneNode):
+                    self.deleteDuplicatedNode(child)
 
     def getDuplicatedNode(self, node):
         for node_dup in self._duplicated_nodes:

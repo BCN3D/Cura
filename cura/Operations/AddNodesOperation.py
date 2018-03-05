@@ -33,10 +33,6 @@ class AddNodesOperation(Operation):
 
         self._print_mode_manager.deleteDuplicatedNode(self._node_dup)
 
-        for child in self._node_dup.getAllChildren():
-            if type(child) == DuplicatedNode:
-                self._print_mode_manager.deleteDuplicatedNode(child)
-
     def redo(self):
         self._node.setParent(self._parent)
         print_mode = Application.getInstance().getGlobalContainerStack().getProperty("print_mode", "value")
@@ -48,7 +44,3 @@ class AddNodesOperation(Operation):
             Selection.add(self._node)
 
         self._print_mode_manager.addDuplicatedNode(self._node_dup)
-
-        for child in self._node_dup.getAllChildren():
-            if type(child) == DuplicatedNode:
-                self._print_mode_manager.addDuplicatedNode(child)
