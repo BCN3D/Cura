@@ -11,7 +11,7 @@ from UM.Scene.Selection import Selection
 from UM.Preferences import Preferences
 
 from cura.Scene.ConvexHullDecorator import ConvexHullDecorator
-
+from cura.Scene.DuplicatedNode import DuplicatedNode
 from cura.Operations import PlatformPhysicsOperation
 from cura.Scene import ZOffsetDecorator
 
@@ -78,7 +78,7 @@ class PlatformPhysics:
                 node.addDecorator(ConvexHullDecorator())
 
             # only push away objects if this node is a printing mesh
-            if not node.callDecoration("isNonPrintingMesh") and Preferences.getInstance().getValue("physics/automatic_push_free"):
+            if not node.callDecoration("isNonPrintingMesh") and Preferences.getInstance().getValue("physics/automatic_push_free") and type(node) != DuplicatedNode:
                 # Check for collisions between convex hulls
                 for other_node in BreadthFirstIterator(root):
                     # Ignore root, ourselves and anything that is not a normal SceneNode.
