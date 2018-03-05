@@ -27,8 +27,8 @@ class Bcn3DFixes(Job):
         self._layerHeight = active_extruder.getProperty("layer_height", "value")
         self._retractionHopHeightAfterExtruderSwitch = [extruder_left.getProperty("retraction_hop_height_after_extruder_switch", "value"),
                                                         extruder_right.getProperty("retraction_hop_height_after_extruder_switch", "value")]
-        # self._retractionHop = [extruder_left.getProperty("retraction_hop", "value"),
-        #                        extruder_right.getProperty("retraction_hop", "value")]
+        self._retractionHop = [extruder_left.getProperty("retraction_hop", "value"),
+                               extruder_right.getProperty("retraction_hop", "value")]
         self._avoidGrindingFilament = [extruder_left.getProperty("avoid_grinding_filament", "value"),
                                        extruder_right.getProperty("avoid_grinding_filament", "value")]
         self._maxRetracts = [extruder_left.getProperty("retraction_count_max_avoid_grinding_filament", "value"),
@@ -40,7 +40,10 @@ class Bcn3DFixes(Job):
         self._ZHopAtLayerChange = [extruder_left.getProperty("hop_at_layer_change", "value"),
                                    extruder_right.getProperty("hop_at_layer_change", "value")]
         self._ZHopHeightAtLayerChange = [extruder_left.getProperty("retraction_hop_height_at_layer_change", "value"),
-                                   extruder_right.getProperty("retraction_hop_height_at_layer_change", "value")]
+                                         extruder_right.getProperty("retraction_hop_height_at_layer_change", "value")]
+        self._ZHopAfterPrimeTower = [extruder_left.getProperty("retraction_hop_after_prime_tower", "value"),
+                                     extruder_right.getProperty("retraction_hop_after_prime_tower", "value")]
+        self._primeTowerEnabled = active_extruder.getProperty("prime_tower_enable", "value")
         self._CoolLiftHead = [extruder_left.getProperty("cool_lift_head", "value"),
                                    extruder_right.getProperty("cool_lift_head", "value")]
         # self._retractReduction = active_extruder.getProperty("retract_reduction", "value")
@@ -105,6 +108,7 @@ class Bcn3DFixes(Job):
         self._handleFixToolChangeTravel()
         self._handleAvoidGrindingFilament()
         self._handleZHopAtLayerChange()
+        self._handleZHopAfterPrimeTower()
 
         # self._handleActiveExtruders()
         '''
@@ -370,21 +374,83 @@ class Bcn3DFixes(Job):
             fixMovementInNextLayer = False
             countingForTool = 0
             for index, layer in enumerate(self._gcode_list):
+                # Fix movement coming back to the part
+                lines = layer.split("\n")
                 if fixMovementInNextLayer:
-                    lines = layer.split("\n")
                     temp_index = 0
                     while temp_index < len(lines):
                         line = lines[temp_index]
                         if GCodeUtils.charsInLine(["G0", "X", "Y", "Z"], line):
-                            lines[temp_index] = line.split("Z")[0] + "\nG0 Z"+line.split("Z")[1]
+                            zValue = GCodeUtils.getValue(line, "Z")
+                            lines[temp_index] = line.split("Z")[0] + "\nG0 Z"+str(zValue)+' ;fixed movement coming back to the part'
                             break
                         temp_index += 1
-                    layer = "\n".join(lines)
-                    self._gcode_list[index] = layer
-                    fixMovementInNextLayer = False
+                # fix movement leaving the part
                 if ';Small layer, adding delay' in layer:
+                    temp_index = 0
+                    while temp_index < len(lines):
+                        line = lines[temp_index]
+                        if ';Small layer, adding delay' in line:
+                            temp_index_2 = temp_index + 1
+                            while temp_index_2 < len(lines):
+                                if "Z" in lines[temp_index_2]:
+                                    zValue = GCodeUtils.getValue(lines[temp_index_2], "Z")
+                                    fValue = GCodeUtils.getValue(lines[temp_index_2], "F")
+                                    xValue = GCodeUtils.getValue(lines[temp_index_2 + 1], "X")
+                                    yValue = GCodeUtils.getValue(lines[temp_index_2 + 1], "Y")
+                                    lines[temp_index_2] = ";" + lines[temp_index_2]
+                                    lines[temp_index_2 + 1] = ";" + lines[temp_index_2 + 1] + \
+                                                              "\nG0" + str(" F" + str(fValue) if fValue else "") + " X" + str(xValue) + " Y" + str(yValue) + \
+                                                              "\nG0 Z" + str(zValue) + ' ;fixed movement leaving the part'
+                                    break
+                                temp_index_2 += 1
+                        temp_index += 1
                     fixMovementInNextLayer = True
+                layer = "\n".join(lines)
+                self._gcode_list[index] = layer
             Logger.log("d", "ChangeLiftHeadMovement() applied")
+
+    def _handleZHopAfterPrimeTower(self):
+        if (self._ZHopAfterPrimeTower[0] or self._ZHopAfterPrimeTower[1]) and self._IDEXPrint and self._primeTowerEnabled:
+            self._startGcodeInfo.append("; - Z Hop After Prime Tower")
+            countingForTool = 0
+            for index, layer in enumerate(self._gcode_list):
+                lines = layer.split("\n")
+                if layer.startswith(";LAYER:") and not layer.startswith(";LAYER:0"):
+                    temp_index = 0
+                    while temp_index < len(lines):
+                        line = lines[temp_index]
+                        if line.startswith("T0"):
+                            countingForTool = 0
+                        elif line.startswith("T1"):
+                            countingForTool = 1
+                        elif line.startswith(";TYPE:SUPPORT") and self._ZHopAfterPrimeTower[countingForTool]:
+                            temp_index_2 = temp_index
+                            addHop = False
+                            hopFixed = False
+                            while temp_index_2 < len(lines) and not hopFixed:
+                                line = lines[temp_index_2]
+                                if line.startswith(";TYPE:SUPPORT"):
+                                    addHop = True
+                                elif addHop and ((line.startswith(";TYPE:") and not line.startswith(";TYPE:SUPPORT")) or line.startswith(";TIME_ELAPSED:")):
+                                    temp_index_3 = temp_index_2 - 1
+                                    while temp_index_3 >= 0:
+                                        line = lines[temp_index_3]
+                                        if GCodeUtils.charsInLine(["E"], line):
+                                            lines[temp_index_3] += "\nG91" + \
+                                                                   "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(round(self._retractionHop[countingForTool], 5)) + " ;z hop after prime tower" + \
+                                                                   "\nG90"
+                                            lines[temp_index_2] = "G91" + \
+                                                                  "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(-round(self._retractionHop[countingForTool], 5)) + " ;z hop after prime tower" + \
+                                                                  "\nG90\n" + lines[temp_index_2]
+                                            hopFixed = True
+                                            break
+                                        temp_index_3 -= 1
+                                temp_index_2 += 1
+                        temp_index += 1
+                layer = "\n".join(lines)
+                self._gcode_list[index] = layer
+            Logger.log("d", "retraction_hop_after_prime_tower applied")
 
     # def _handleActiveExtruders(self):
     #     # Heat and purge only used extruders. Simultaneously if possible.
