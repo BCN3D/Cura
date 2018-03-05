@@ -1,3 +1,109 @@
+[2.0.0]
+*Based on Ultimaker's Cura 3.2.1
+*Brand new UI
+Use recommended settings for quick and easy print setup using intuitive sliders to prepare your print, or use custom settings to individually tweak over 200 unique slicing parameters.
+*Reduced print time and material consumption
+Recommended mode has new default settings that aim to save print time, material usage, and material costs.
+*USB functionalities still not working in this Alpha pre-release
+
+*UI improvements:
+
+*Faster start-up
+Start-up speed has been cut in half compared to the previous version. Printer definitions are now loaded when adding a printer, instead of loading all available printers on startup, reducing the startup time compared to previous versions.
+*Sliders
+Recommended mode now uses sliders to alter slicing parameters:
+*Rasterized build plate
+The build plate now shows graduations of 10 mm and 1 mm for more accurate model positioning.
+*Extruder buttons
+Extruder buttons have changed from tabs to buttons, and button colors have been changed to match the new color scheme.
+*Layer view position
+The layer view drop down box has moved from the bottom-left corner to the top-right corner.
+*Print time location
+The print time location has moved from the bottom-right corner of the 3D viewer to the left of the Print over Network/Save to File button.
+*Tab width
+The width of tab functionality will change according to the word space (supported across multiple languages).
+*Faster profile switching speed
+Duplicating and removing a profile could take BCN3D Cura quite some time, it now happens instantly.
+*Faster printer selection
+Removing a printer from the library is now instant. No more unresponsive screens.
+*Faster processing speed
+A 5 - 10 % speed increase when calculating normals, loading models, and slicing.
+*Quick camera controls
+New buttons have been added to the interface that can quickly reposition the camera view of the build plate. This includes an isometric, front, top, left, and right views.
+*Layer view
+The existing Layer view has been updated and now includes a virtual print head that simulates the printing strategy. This can be used to preview the printing sequence of infill and walls, and if line ordering affects overhangs. The layer path slider has been added to navigate through the printing strategy of the selected layer.
+*Hot keys
+Enable the user to navigate through the Layer view. Up and down arrows scroll through layers, left and right scroll through layer steps.
+Holding shift + arrow key increases all directions by 10.
+*Feedrate visualization
+Feedrate visualization has been added to the Layer view color scheme selector. Feedrates are represented by a corresponding color, from blue to red. Speeds of 20 mm/s (e.g. the first layer of a print) are represented in blue, ranging to speeds of 250 mm/s (e.g. print head travels), represented in red. Using this gives the user an idea of the speeds per model part, allowing for better control over prints.
+*Lock model on platform
+The move tool has a new option to lock a selected model to the platform. When locked, the model cannot be moved in X, Y or Z directions.
+*Large model loading
+Loading large/detailed models and slicing them on a high resolution could affect the performance of BCN3D Cura in previous releases. A new feature has been added which unloads the layer view when switching to solid mode, speeding BCN3D Cura back up without losing your G-code/layer view information.
+*HP 3D Scan compatibility
+HP 3D Scan Version 5.3.0 results can be directly exported to BCN3D Cura 2.0 and later.
+*Multi-build plate
+By enabling multi-build plate in the software preferences, a new panel is added to the workspace which lets you manage separate build plates with shared settings in a single session. This eliminates the need to clear the build plate multiple times, for better scaling of operations.
+*Meshes in per model settings
+Extra options have been added to the per model settings, providing simplified methods to assign models to print as meshes. When in Custom mode, this can be used to assign different slice settings to different sections of your print, e.g. a mesh as custom support when automatically generated support material is not placed where you might like.
+A drop-down list allows you to specify what the mesh does: Normal model, Print as support, Don't overlap support with other models, Modify settings for overlap with other models, Modify settings for infill of other models.
+*Backface culling
+Performance has been boosted in the layer view by only rendering visible surfaces of a model, instead of rendering the entire model. The result is a significantly improved frame rate, and reduced GPU strain.
+*Updated sidebar to QtQuick 2.0
+The application framework has been updated to increase speed, achieve a better width and style fit, and gives users drop-down menus that are styled to fit the enabled BCN3D Cura theme, instead of the operating system’s theme.
+*Hide the sidebar
+The sidebar can now be hidden or shown by selecting View > Expand/Collapse Sidebar, or with the hotkey CMD + E (Mac) or CTRL + E (PC and Linux). This is to give greater visibility for wider build plates, or a build plate displayed on a small screen.
+*Start/end gcode script per extruder
+Variables from both extruders in the start and end gcode snippets can now be accessed and edited, creating uniformity between profiles in different slicing environments.
+
+*New slicing features:
+*Purge At Tool Change
+Add an extra prime amount in the bucket to compensate oozed material while the Extruder has been idle.
+*Dynamic Purge Distance
+Allow the purged distance to increase from a minimum value to a maximum. Increase this distance at a desired speed to fit filament expansion in the bowden while idle. Customize the value to purge only the needed amount.
+*Print Mode
+Allow your Sigmax to print in Duplication/Mirror modes.
+*Z Hop At Layer Change
+Force a Z hop at layer change to avoid Z-axis backlash.
+*Clone Print Cooling
+Enable cooling fan for the idle extruder and get a better temperature control for dual extrusion prints.
+*Gradual support
+Printing times and material consumption are heavily reduced by printing a lower infill in the support and increasing it towards the top.
+*Z seam options
+Gives the user control over where to place the seam - hide it in convex corners or in easy to remove locations such as concave corners. This doesn’t let corner angles influence the seam position.
+*Cross infill
+A fractal pattern infill that requires fewer retractions compared to other infill types. This is useful for flexible materials as it causes less material elongation when extruding. The internal structure provided by this gives flexible models greater resistance, while retaining ‘soft’ properties in all directions.
+*Quarter cubic infill
+Similar to tetrahedral (octet) infill, but half of the lines are shifted half of the period up. This pattern sacrifices some rigidity of octet infill for greater toughness.
+*Skin removal width
+Remove thin strips of skin from a model to prevent print head zig-zagging, in turn preventing vibrations. The lack of vibrations will also improve print quality on slight overhangs.
+*Skin expand distance
+Cutting away skins on steep overhangs makes prints less sturdy. By expanding skins with the thickness of walls, features will be better supported. In addition, features such as towers on top of infill will be stronger.
+*Extra skin wall count
+This feature is now enabled by default. Printing extra skin directly on top of infill can lead to gaps, curling and pillowing. This is reduced by printing a wall around the skin first, and also improves the printing speed.
+*Minimum extrusion for skin
+Will prevent BCN3D Cura 2.0 filling small gaps that are probably filled already, resulting in less strings, better top details, and faster prints.
+*Floating models enabled
+In previous releases, models were dropped to the build plate when support was disabled. Models now float when the setting is enabled (even if it creates an impossible-to-print situation). Separate models can now be stacked on top of each other to print as one part.
+*Slicing tolerance
+A new setting in the quality settings category that affects the intersect point to influence the dimensional accuracy for diagonal surfaces. The user can select the behaviour: ‘Inclusive’ makes gaps narrower, ‘Exclusive’ makes gaps wider, and ‘Middle’ is the fastest to process. When using ‘Middle’, the first layer will be taller by half of it’s height to compensate for the added half layer. A potential use of this feature is to create better tolerances for printed screw holes.
+*Optimized zig zag patterns
+Zig zag patterns now print more consistently. Lines now have a 5 micron tolerance in which they are printed any way, resulting in longer connected lines.
+*Aligned z-seam inner wall moves
+Inner wall travel moves are aligned with the z-seam. This reduces the number of travel moves and reduces the chance of more unwanted seams.
+*Relative positioning of infill patterns
+Infill patterns are now positioned relative to the center of loaded models. Whenever you load the model, the infill is positioned the same. An offset can be applied to control the infill more precisely and adjust it to preference or strength.
+*Line resolution
+Specify the minimum allowed distance value between two points in G-code to create lower or higher resolution polygons.
+*Custom mode changes
+If profile settings have been modified in recommended mode under custom mode, a reset icon will appear to notify the user. Click the icon to show the changes that have been made, and revert back to the default profile settings.
+*Adaptive layers
+Until now, slicing has been limited to a fixed layer size. Adaptive layers offers an alternative, where layers are printed a variable thickness which adapts to the angle of the model’s surfaces. The slicing algorithm assigns a narrower layer height to sloped surfaces, and a wider layer height to vertical surfaces. The result is a high-quality surface finish, at the cost of a marginally increased print duration. This setting can be found under the experimental category.
+*Tree support
+Tree support is an experimental support method which uses ‘branches’ that ‘grow’ and multiply towards areas that need support, with fewer points of contact on the model, giving better surface finishes. This makes it ideal for organically-formed prints. It is possible to use tree support in tandem with other support methods.
+
+*Disclaimer: Some of the notes have been copied from Ultimaker's release notes*
 [1.1.0]
 *Upgrade to latest firmware version (internet connection required).
 *Upload custom firmware.

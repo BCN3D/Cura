@@ -28,6 +28,7 @@ class SetParentOperation(Operation.Operation):
     ##  Undoes the set-parent operation, restoring the old parent.
     def undo(self):
         if self._print_mode_enabled and self._is_duplicated_node:
+            self._fixAndSetParent(self._old_parent)
             if type(self._parent) == DuplicatedNode:
                 if self._parent in PrintModeManager.getInstance().getDuplicatedNodes():
                     PrintModeManager.getInstance().deleteDuplicatedNode(self._parent)
@@ -35,21 +36,19 @@ class SetParentOperation(Operation.Operation):
                 if self._old_parent not in PrintModeManager.getInstance().getDuplicatedNodes():
                     PrintModeManager.getInstance().addDuplicatedNode(self._old_parent)
 
-            self._fixAndSetParent(self._old_parent)
         else:
             self._set_parent(self._old_parent)
 
     ##  Re-applies the set-parent operation.
     def redo(self):
         if self._print_mode_enabled and self._is_duplicated_node:
+            self._fixAndSetParent(self._parent)
             if type(self._parent) == DuplicatedNode:
                 if self._parent not in PrintModeManager.getInstance().getDuplicatedNodes():
                     PrintModeManager.getInstance().addDuplicatedNode(self._parent)
             elif type(self._old_parent) == DuplicatedNode:
                 if self._old_parent in PrintModeManager.getInstance().getDuplicatedNodes():
-                    PrintModeManager.getInstance().deleteDuplicatedNode(self._old_parent)
-
-            self._fixAndSetParent(self._parent)
+                    PrintModeManager.getInstance().deleteDuplicatedNode(self._old_parent, False)
 
         else:
             self._set_parent(self._parent)
