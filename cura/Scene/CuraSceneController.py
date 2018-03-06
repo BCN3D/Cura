@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QApplication
 
 from cura.ObjectsModel import ObjectsModel
 from cura.BuildPlateModel import BuildPlateModel
+from cura.Scene.CuraSceneNode import CuraSceneNode
 
 from UM.Application import Application
 from UM.Scene.Iterator.DepthFirstIterator import DepthFirstIterator
@@ -111,3 +112,18 @@ class CuraSceneController(QObject):
         objects_model = Application.getInstance().getObjectsModel()
         build_plate_model = Application.getInstance().getBuildPlateModel()
         return CuraSceneController(objects_model = objects_model, build_plate_model = build_plate_model)
+
+    @staticmethod
+    def getSceneBoundingBox():
+        max_x = Application.getInstance().getGlobalContainerStack().getProperty("machine_width", "value")
+        max_y= Application.getInstance().getGlobalContainerStack().getProperty("machine_depth", "value")
+        min_x = 0
+        min_y = 0
+        nodes = Application.getInstance().getController().getScene().getRoot().getChildren()
+        nodes = list(filter(lambda node: isinstance(node, CuraSceneNode) and not node.isOutsideBuildArea(), nodes))
+        if len(nodes) > 0:
+            min_x = min(nodes, key=lambda node: node.getBoundingBox().minimum.x).getBoundingBox().minimum.x + max_x/2
+            min_y = min(nodes, key=lambda node: node.getBoundingBox().minimum.z).getBoundingBox().minimum.z + max_y/2
+            max_x = max(nodes, key=lambda node: node.getBoundingBox().maximum.x).getBoundingBox().maximum.x + max_x/2
+            max_y = max(nodes, key=lambda node: node.getBoundingBox().maximum.z).getBoundingBox().maximum.z + max_y/2
+        return [[max_x, max_y], [max_x, min_y], [min_x, max_y], [min_x, min_y]]

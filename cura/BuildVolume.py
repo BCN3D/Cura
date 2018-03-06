@@ -3,7 +3,7 @@
 
 from cura.PrintModeManager import PrintModeManager
 from cura.Settings.ExtruderManager import ExtruderManager
-from UM.Settings.ContainerRegistry import ContainerRegistry
+
 from UM.i18n import i18nCatalog
 from UM.Scene.Platform import Platform
 from UM.Scene.Iterator.BreadthFirstIterator import BreadthFirstIterator
@@ -25,6 +25,7 @@ catalog = i18nCatalog("cura")
 
 import numpy
 import math
+import copy
 
 from typing import List
 
@@ -247,6 +248,10 @@ class BuildVolume(SceneNode):
         for group_node in group_nodes:
             for child_node in group_node.getAllChildren():
                 child_node._outside_buildarea = group_node._outside_buildarea
+
+        if len(list(filter(lambda node: node.callDecoration("isSliceable"), nodes))) > 0 and len(ExtruderManager.getInstance().getUsedExtruderStacks()) > 1:
+            self._global_container_stack.propertyChanged.emit("prime_tower_position_x", "value")
+            self._global_container_stack.propertyChanged.emit("prime_tower_position_y", "value")
 
     ##  Recalculates the build volume & disallowed areas.
     def rebuild(self):
@@ -709,7 +714,7 @@ class BuildVolume(SceneNode):
                 [prime_tower_x - prime_tower_size, prime_tower_y - prime_tower_size],
                 [prime_tower_x, prime_tower_y - prime_tower_size],
                 [prime_tower_x, prime_tower_y],
-                [prime_tower_x - prime_tower_size, prime_tower_y],
+                [prime_tower_x - prime_tower_size, prime_tower_y]
             ])
             prime_tower_area = prime_tower_area.getMinkowskiHull(Polygon.approximatedCircle(0))
             for extruder in used_extruders:
