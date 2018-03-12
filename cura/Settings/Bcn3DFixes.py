@@ -216,7 +216,6 @@ class Bcn3DFixes(Job):
                                 countingForTool = 0
                             else:
                                 countingForTool = 1
-                            oldLines = ''
                             while not lines[temp_index + lineCount].startswith(";TYPE"):
                                 line = lines[temp_index + lineCount]
                                 if GCodeUtils.charsInLine(["G0", "X", "Y"], line):
@@ -224,11 +223,10 @@ class Bcn3DFixes(Job):
                                         zValue = GCodeUtils.getValue(line, "Z")
                                     xValue = GCodeUtils.getValue(line, "X")
                                     yValue = GCodeUtils.getValue(line, "Y")
-                                    oldLines += '\n;removed travel ' + lines[temp_index + lineCount]
                                     del lines[temp_index + lineCount]
                                     lineCount -= 1
                                 lineCount += 1
-                            lines[temp_index + lineCount] += oldLines + "\nG0 F" + self._travelSpeed[countingForTool] + " X" + str(xValue) + " Y" + str(yValue) + "\nG0 Z" + str(zValue) + " ;Fixed travel after tool change"
+                            lines[temp_index + lineCount] += "\nG0 F" + self._travelSpeed[countingForTool] + " X" + str(xValue) + " Y" + str(yValue) + "\nG0 Z" + str(zValue) + " ;Fixed travel after tool change"
                             break
                         temp_index += lineCount
                     except:
@@ -259,8 +257,9 @@ class Bcn3DFixes(Job):
                             while not lines[temp_index + lineCount].startswith(";TYPE"):
                                 lineWithTemperatureCommand = lines[temp_index + lineCount]
                                 if GCodeUtils.charsInLine(["M109 S"], lineWithTemperatureCommand):
-                                    lineWithTemperatureCommand = ';'+lineWithTemperatureCommand+'; Temperature command moved right after T'+str(countingForTool)
-                                    line += '\nM109 S'+str(GCodeUtils.getValue(lineWithTemperatureCommand, "S"))
+                                    lines[temp_index] += '\nM109 S'+str(GCodeUtils.getValue(lineWithTemperatureCommand, "S"))
+                                    del lines[temp_index + lineCount]
+                                    lineCount -= 1
                                     break
                                 lineCount += 1
                         temp_index += lineCount
@@ -311,9 +310,7 @@ class Bcn3DFixes(Job):
                                                     if (retractionsPerExtruder[countingForTool][-1] - retractionsPerExtruder[countingForTool][0]) < purgeLength + purgedOffset[countingForTool]:
                                                         if printArea != ';TYPE:WALL-OUTER':
                                                             # Delete extra travels
-                                                            oldLines = ''
                                                             while GCodeUtils.charsInLine(["G0", "X", "Y"], lines[temp_index + 1]):
-                                                                oldLines += '\n;removed travel ' + lines[temp_index + 1]
                                                                 xPosition = GCodeUtils.getValue(lines[temp_index + 1], "X")
                                                                 yPosition = GCodeUtils.getValue(lines[temp_index + 1], "Y")
                                                                 del lines[temp_index + 1]
@@ -321,7 +318,6 @@ class Bcn3DFixes(Job):
                                                             # todo remove T1/T0 when sigma firmware updated, leave only G71/G72
                                                             if Application.getInstance().getMachineManager().activeMachineId == "Sigma":
                                                                 lines[temp_index] += "\n;prevent filament grinding on T" + str(countingForTool) + \
-                                                                                    oldLines + \
                                                                                     "\nG1 F" + self._travelSpeed[countingForTool] + \
                                                                                     "\nT" + str(abs(countingForTool - 1)) + \
                                                                                     "\nT" + str(countingForTool) + \
@@ -340,7 +336,6 @@ class Bcn3DFixes(Job):
                                                                                     "\n;end of the filament grinding prevention protocol"
                                                             else:
                                                                 lines[temp_index] += "\n;prevent filament grinding on T" + str(countingForTool) + \
-                                                                                    oldLines + \
                                                                                     "\nG1 F" + self._travelSpeed[countingForTool] + \
                                                                                     "\nG71" + \
                                                                                     "\nG91" + \
@@ -432,10 +427,10 @@ class Bcn3DFixes(Job):
                                     fValue = GCodeUtils.getValue(lines[temp_index_2], "F")
                                     xValue = GCodeUtils.getValue(lines[temp_index_2 + 1], "X")
                                     yValue = GCodeUtils.getValue(lines[temp_index_2 + 1], "Y")
-                                    lines[temp_index_2] = ";" + lines[temp_index_2]
-                                    lines[temp_index_2 + 1] = ";" + lines[temp_index_2 + 1] + \
-                                                              "\nG0" + str(" F" + str(fValue) if fValue else "") + " X" + str(xValue) + " Y" + str(yValue) + \
+                                    lines[temp_index_2 + 1] = "G0" + str(" F" + str(fValue) if fValue else "") + " X" + str(xValue) + " Y" + str(yValue) + \
                                                               "\nG0 Z" + str(zValue) + ' ;fixed movement leaving the part'
+                                    del lines[temp_index_2]
+                                    temp_index_2 -= 1
                                     break
                                 temp_index_2 += 1
                         temp_index += 1
@@ -476,7 +471,8 @@ class Bcn3DFixes(Job):
                                                                    "\nG90"
                                             lines[temp_index_2] = "G91" + \
                                                                   "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(-round(self._retractionHop[countingForTool], 5)) + " ;z hop after prime tower" + \
-                                                                  "\nG90\n" + lines[temp_index_2]
+                                                                  "\nG90\n" + \
+                                                                  lines[temp_index_2]
                                             hopFixed = True
                                             break
                                         temp_index_3 -= 1
