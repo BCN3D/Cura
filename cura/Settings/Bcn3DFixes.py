@@ -73,6 +73,10 @@ class Bcn3DFixes(Job):
                                         str(int(extruder_right.getProperty("retraction_retract_speed", "value") * 60))]
         self._retractionPrimeSpeed = [str(int(extruder_left.getProperty("retraction_prime_speed", "value") * 60)),
                                       str(int(extruder_right.getProperty("retraction_prime_speed", "value") * 60))]
+        self._accelerationEnabled = [extruder_left.getProperty("acceleration_enabled", "value"),
+                                     extruder_right.getProperty("acceleration_enabled", "value")]
+        self._jerkEnabled = [extruder_left.getProperty("jerk_enabled", "value"),
+                             extruder_right.getProperty("jerk_enabled", "value")]
         # self._switchExtruderRetractionSpeed = [str(int(extruder_left.getProperty("switch_extruder_retraction_speed", "value") * 60)),
         #                                        str(int(extruder_right.getProperty("switch_extruder_retraction_speed", "value") * 60))]
         # self._switchExtruderPrimeSpeed = [str(int(extruder_left.getProperty("switch_extruder_prime_speed", "value") * 60)),
@@ -104,8 +108,10 @@ class Bcn3DFixes(Job):
         Job.yieldThread()
 
         self._handleFixStartGcode()
+        self._handleFixAccelerationJerkCommands()
         self._handleChangeLiftHeadMovement()
         self._handleFixToolChangeTravel()
+        self._handleTemperatureCommandsRightAfterToolChange()
         self._handleAvoidGrindingFilament()
         self._handleZHopAtLayerChange()
         self._handleZHopAfterPrimeTower()
@@ -121,7 +127,7 @@ class Bcn3DFixes(Job):
         # self._handleCoolDownToZeroAtEnd()      # Not needed after v3.2
         # self._handleFixFirstRetract()          # Not needed if there are no retract commands in the start gcode
         # self._handleFixTemperatureOscilation() # Changes to proper temperatures if auto temperature is on. Auto temperature is not on, so it's not needed
-        # self._handleSmartPurge()               # the command is added as parameters in the fdmprinter. Force values to 0 if manually changed but smartpurge is disabled
+        # self._handleSmartPurge()               # the command is added as parameters in the fdmprinter. Not needed
         # self._handleRetractReduction()         # Useless feature. To be removed
 
         written_info = False
@@ -215,7 +221,6 @@ class Bcn3DFixes(Job):
                                 countingForTool = 0
                             else:
                                 countingForTool = 1
-                            oldLines = ''
                             while not lines[temp_index + lineCount].startswith(";TYPE"):
                                 line = lines[temp_index + lineCount]
                                 if GCodeUtils.charsInLine(["G0", "X", "Y"], line):
@@ -223,11 +228,10 @@ class Bcn3DFixes(Job):
                                         zValue = GCodeUtils.getValue(line, "Z")
                                     xValue = GCodeUtils.getValue(line, "X")
                                     yValue = GCodeUtils.getValue(line, "Y")
-                                    oldLines += '\n;removed travel ' + lines[temp_index + lineCount]
                                     del lines[temp_index + lineCount]
                                     lineCount -= 1
                                 lineCount += 1
-                            lines[temp_index + lineCount] += oldLines + "\nG0 F" + self._travelSpeed[countingForTool] + " X" + str(xValue) + " Y" + str(yValue) + "\nG0 Z" + str(zValue) + " ;Fixed travel after tool change"
+                            lines[temp_index + lineCount] += "\nG0 F" + self._travelSpeed[countingForTool] + " X" + str(xValue) + " Y" + str(yValue) + "\nG0 Z" + str(zValue) + " ;Fixed travel after tool change"
                             break
                         temp_index += lineCount
                     except:
@@ -238,6 +242,40 @@ class Bcn3DFixes(Job):
                 layer = re.sub(regex, "", layer)
                 self._gcode_list[index] = layer
             Logger.log("d", "fix_tool_change_travel applied")
+
+    def _handleTemperatureCommandsRightAfterToolChange(self):
+        # Places M109 temperature commands right after toolchange, before Extruder gcode is executed, to improve all purge commands and machine reliability
+        if self._IDEXPrint:
+            self._startGcodeInfo.append("; - Temperature Commands Right After Tool Change")
+            for index, layer in enumerate(self._gcode_list):
+                lines = layer.split("\n")
+                temp_index = 0
+                while temp_index < len(lines):
+                    try:
+                        line = lines[temp_index]
+                        lineCount = 1
+                        if line.startswith("T0") or line.startswith("T1"):
+                            if "T0" in line:
+                                countingForTool = 0
+                            else:
+                                countingForTool = 1
+                            while not lines[temp_index + lineCount].startswith(";TYPE"):
+                                lineWithTemperatureCommand = lines[temp_index + lineCount]
+                                if GCodeUtils.charsInLine(["M109 S"], lineWithTemperatureCommand):
+                                    lines[temp_index] += '\nM109 S'+str(GCodeUtils.getValue(lineWithTemperatureCommand, "S"))
+                                    del lines[temp_index + lineCount]
+                                    lineCount -= 1
+                                    break
+                                lineCount += 1
+                        temp_index += lineCount
+                    except:
+                        break
+                layer = "\n".join(lines)
+                # Fix strange travel to X105 Y297
+                regex = r"\n.*X" + str(int(self._container.getProperty("layer_start_x", "value"))) + " Y" + str(int(self._container.getProperty("layer_start_y", "value"))) + ".*"
+                layer = re.sub(regex, "", layer)
+                self._gcode_list[index] = layer
+            Logger.log("d", "_handleTemperatureCommandsRightAfterToolChange() applied")            
 
     def _handleAvoidGrindingFilament(self):
         if self._avoidGrindingFilament[0] or self._avoidGrindingFilament[1]:
@@ -277,9 +315,7 @@ class Bcn3DFixes(Job):
                                                     if (retractionsPerExtruder[countingForTool][-1] - retractionsPerExtruder[countingForTool][0]) < purgeLength + purgedOffset[countingForTool]:
                                                         if printArea != ';TYPE:WALL-OUTER':
                                                             # Delete extra travels
-                                                            oldLines = ''
                                                             while GCodeUtils.charsInLine(["G0", "X", "Y"], lines[temp_index + 1]):
-                                                                oldLines += '\n;removed travel ' + lines[temp_index + 1]
                                                                 xPosition = GCodeUtils.getValue(lines[temp_index + 1], "X")
                                                                 yPosition = GCodeUtils.getValue(lines[temp_index + 1], "Y")
                                                                 del lines[temp_index + 1]
@@ -287,7 +323,6 @@ class Bcn3DFixes(Job):
                                                             # todo remove T1/T0 when sigma firmware updated, leave only G71/G72
                                                             if Application.getInstance().getMachineManager().activeMachineId == "Sigma":
                                                                 lines[temp_index] += "\n;prevent filament grinding on T" + str(countingForTool) + \
-                                                                                    oldLines + \
                                                                                     "\nG1 F" + self._travelSpeed[countingForTool] + \
                                                                                     "\nT" + str(abs(countingForTool - 1)) + \
                                                                                     "\nT" + str(countingForTool) + \
@@ -306,7 +341,6 @@ class Bcn3DFixes(Job):
                                                                                     "\n;end of the filament grinding prevention protocol"
                                                             else:
                                                                 lines[temp_index] += "\n;prevent filament grinding on T" + str(countingForTool) + \
-                                                                                    oldLines + \
                                                                                     "\nG1 F" + self._travelSpeed[countingForTool] + \
                                                                                     "\nG71" + \
                                                                                     "\nG91" + \
@@ -398,17 +432,17 @@ class Bcn3DFixes(Job):
                                     fValue = GCodeUtils.getValue(lines[temp_index_2], "F")
                                     xValue = GCodeUtils.getValue(lines[temp_index_2 + 1], "X")
                                     yValue = GCodeUtils.getValue(lines[temp_index_2 + 1], "Y")
-                                    lines[temp_index_2] = ";" + lines[temp_index_2]
-                                    lines[temp_index_2 + 1] = ";" + lines[temp_index_2 + 1] + \
-                                                              "\nG0" + str(" F" + str(fValue) if fValue else "") + " X" + str(xValue) + " Y" + str(yValue) + \
+                                    lines[temp_index_2 + 1] = "G0" + str(" F" + str(fValue) if fValue else "") + " X" + str(xValue) + " Y" + str(yValue) + \
                                                               "\nG0 Z" + str(zValue) + ' ;fixed movement leaving the part'
+                                    del lines[temp_index_2]
+                                    temp_index_2 -= 1
                                     break
                                 temp_index_2 += 1
                         temp_index += 1
                     fixMovementInNextLayer = True
                 layer = "\n".join(lines)
                 self._gcode_list[index] = layer
-            Logger.log("d", "ChangeLiftHeadMovement() applied")
+            Logger.log("d", "_handleChangeLiftHeadMovement() applied")
 
     def _handleZHopAfterPrimeTower(self):
         if (self._ZHopAfterPrimeTower[0] or self._ZHopAfterPrimeTower[1]) and self._IDEXPrint and self._primeTowerEnabled:
@@ -442,7 +476,8 @@ class Bcn3DFixes(Job):
                                                                    "\nG90"
                                             lines[temp_index_2] = "G91" + \
                                                                   "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(-round(self._retractionHop[countingForTool], 5)) + " ;z hop after prime tower" + \
-                                                                  "\nG90\n" + lines[temp_index_2]
+                                                                  "\nG90\n" + \
+                                                                  lines[temp_index_2]
                                             hopFixed = True
                                             break
                                         temp_index_3 -= 1
@@ -451,6 +486,71 @@ class Bcn3DFixes(Job):
                 layer = "\n".join(lines)
                 self._gcode_list[index] = layer
             Logger.log("d", "retraction_hop_after_prime_tower applied")
+
+    def _handleFixAccelerationJerkCommands(self):
+        if self._accelerationEnabled[0] or self._accelerationEnabled[1] or self._jerkEnabled[0] or self._jerkEnabled[1]:
+            self._startGcodeInfo.append("; - Fix Acceleration/Jerk commands")
+            # remove commands which have no X/Y movement after
+            for index, layer in enumerate(self._gcode_list):
+                lines = layer.split("\n")
+                if layer.startswith(";LAYER:"):
+                    temp_index = 0
+                    while temp_index < len(lines):
+                        line = lines[temp_index]
+                        # Fix acceleration
+                        if line.startswith("M204 S"):
+                            usefulCommand = False
+                            temp_index_2 = temp_index + 1
+                            while temp_index_2 < len(lines) and not lines[temp_index_2].startswith("M204 S"):
+                                if GCodeUtils.charsInLine(["G0", "X", "Y"], lines[temp_index_2]) or GCodeUtils.charsInLine(["G1", "X", "Y"], lines[temp_index_2]):
+                                    usefulCommand = True
+                                    break
+                                temp_index_2 += 1
+                            if not usefulCommand:
+                                del lines[temp_index]
+                                temp_index -= 1
+                        # Fix jerk
+                        elif line.startswith("M205 X") and GCodeUtils.charsInLine(["Y"], line):
+                            usefulCommand = False
+                            temp_index_2 = temp_index + 1
+                            while temp_index_2 < len(lines) and not lines[temp_index_2].startswith("M204 S"):
+                                if GCodeUtils.charsInLine(["G0", "X", "Y"], lines[temp_index_2]) or GCodeUtils.charsInLine(["G1", "X", "Y"], lines[temp_index_2]):
+                                    usefulCommand = True
+                                    break
+                                temp_index_2 += 1
+                            if not usefulCommand:
+                                del lines[temp_index]
+                                temp_index -= 1
+                        temp_index += 1
+                    layer = "\n".join(lines)
+                    self._gcode_list[index] = layer
+            # remove commands which imply no acceleration/jerk variations
+            acceleration = None
+            xJerk, yJerk = None, None
+            for index, layer in enumerate(self._gcode_list):
+                lines = layer.split("\n")
+                if layer.startswith(";LAYER:"):
+                    temp_index = 0
+                    while temp_index < len(lines):
+                        line = lines[temp_index]
+                        # Fix acceleration
+                        if line.startswith("M204 S"):
+                            if acceleration and GCodeUtils.getValue(line, "S") == acceleration:
+                                del lines[temp_index]
+                                temp_index -= 1
+                            else:
+                                acceleration = GCodeUtils.getValue(line, "S")
+                        elif line.startswith("M205 X") and GCodeUtils.charsInLine(["Y"], line):
+                            if xJerk and GCodeUtils.getValue(line, "X") == xJerk and yJerk and  GCodeUtils.getValue(line, "Y") == yJerk:
+                                del lines[temp_index]
+                                temp_index -= 1
+                            else:
+                                xJerk = GCodeUtils.getValue(line, "X")
+                                yJerk = GCodeUtils.getValue(line, "Y")
+                        temp_index += 1
+                    layer = "\n".join(lines)
+                    self._gcode_list[index] = layer
+            Logger.log("d", "_handleFixAccelerationJerkCommands() applied")
 
     # def _handleActiveExtruders(self):
     #     # Heat and purge only used extruders. Simultaneously if possible.
