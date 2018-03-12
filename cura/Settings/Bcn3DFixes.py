@@ -73,6 +73,10 @@ class Bcn3DFixes(Job):
                                         str(int(extruder_right.getProperty("retraction_retract_speed", "value") * 60))]
         self._retractionPrimeSpeed = [str(int(extruder_left.getProperty("retraction_prime_speed", "value") * 60)),
                                       str(int(extruder_right.getProperty("retraction_prime_speed", "value") * 60))]
+        self._accelerationEnabled = [extruder_left.getProperty("acceleration_enabled", "value"),
+                                     extruder_right.getProperty("acceleration_enabled", "value")]
+        self._jerkEnabled = [extruder_left.getProperty("jerk_enabled", "value"),
+                             extruder_right.getProperty("jerk_enabled", "value")]
         # self._switchExtruderRetractionSpeed = [str(int(extruder_left.getProperty("switch_extruder_retraction_speed", "value") * 60)),
         #                                        str(int(extruder_right.getProperty("switch_extruder_retraction_speed", "value") * 60))]
         # self._switchExtruderPrimeSpeed = [str(int(extruder_left.getProperty("switch_extruder_prime_speed", "value") * 60)),
@@ -104,6 +108,7 @@ class Bcn3DFixes(Job):
         Job.yieldThread()
 
         self._handleFixStartGcode()
+        self._handleFixAccelerationJerkCommands()
         self._handleChangeLiftHeadMovement()
         self._handleFixToolChangeTravel()
         self._handleTemperatureCommandsRightAfterToolChange()
@@ -481,6 +486,71 @@ class Bcn3DFixes(Job):
                 layer = "\n".join(lines)
                 self._gcode_list[index] = layer
             Logger.log("d", "retraction_hop_after_prime_tower applied")
+
+    def _handleFixAccelerationJerkCommands(self):
+        if self._accelerationEnabled[0] or self._accelerationEnabled[1] or self._jerkEnabled[0] or self._jerkEnabled[1]:
+            self._startGcodeInfo.append("; - Fix Acceleration/Jerk commands")
+            # remove commands which have no X/Y movement after
+            for index, layer in enumerate(self._gcode_list):
+                lines = layer.split("\n")
+                if layer.startswith(";LAYER:"):
+                    temp_index = 0
+                    while temp_index < len(lines):
+                        line = lines[temp_index]
+                        # Fix acceleration
+                        if line.startswith("M204 S"):
+                            usefulCommand = False
+                            temp_index_2 = temp_index + 1
+                            while temp_index_2 < len(lines) and not lines[temp_index_2].startswith("M204 S"):
+                                if GCodeUtils.charsInLine(["G0", "X", "Y"], lines[temp_index_2]) or GCodeUtils.charsInLine(["G1", "X", "Y"], lines[temp_index_2]):
+                                    usefulCommand = True
+                                    break
+                                temp_index_2 += 1
+                            if not usefulCommand:
+                                del lines[temp_index]
+                                temp_index -= 1
+                        # Fix jerk
+                        elif line.startswith("M205 X") and GCodeUtils.charsInLine(["Y"], line):
+                            usefulCommand = False
+                            temp_index_2 = temp_index + 1
+                            while temp_index_2 < len(lines) and not lines[temp_index_2].startswith("M204 S"):
+                                if GCodeUtils.charsInLine(["G0", "X", "Y"], lines[temp_index_2]) or GCodeUtils.charsInLine(["G1", "X", "Y"], lines[temp_index_2]):
+                                    usefulCommand = True
+                                    break
+                                temp_index_2 += 1
+                            if not usefulCommand:
+                                del lines[temp_index]
+                                temp_index -= 1
+                        temp_index += 1
+                    layer = "\n".join(lines)
+                    self._gcode_list[index] = layer
+            # remove commands which imply no acceleration/jerk variations
+            acceleration = None
+            xJerk, yJerk = None, None
+            for index, layer in enumerate(self._gcode_list):
+                lines = layer.split("\n")
+                if layer.startswith(";LAYER:"):
+                    temp_index = 0
+                    while temp_index < len(lines):
+                        line = lines[temp_index]
+                        # Fix acceleration
+                        if line.startswith("M204 S"):
+                            if acceleration and GCodeUtils.getValue(line, "S") == acceleration:
+                                del lines[temp_index]
+                                temp_index -= 1
+                            else:
+                                acceleration = GCodeUtils.getValue(line, "S")
+                        elif line.startswith("M205 X") and GCodeUtils.charsInLine(["Y"], line):
+                            if xJerk and GCodeUtils.getValue(line, "X") == xJerk and yJerk and  GCodeUtils.getValue(line, "Y") == yJerk:
+                                del lines[temp_index]
+                                temp_index -= 1
+                            else:
+                                xJerk = GCodeUtils.getValue(line, "X")
+                                yJerk = GCodeUtils.getValue(line, "Y")
+                        temp_index += 1
+                    layer = "\n".join(lines)
+                    self._gcode_list[index] = layer
+            Logger.log("d", "_handleFixAccelerationJerkCommands() applied")
 
     # def _handleActiveExtruders(self):
     #     # Heat and purge only used extruders. Simultaneously if possible.
