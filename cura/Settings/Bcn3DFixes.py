@@ -106,6 +106,7 @@ class Bcn3DFixes(Job):
         self._handleFixStartGcode()
         self._handleChangeLiftHeadMovement()
         self._handleFixToolChangeTravel()
+        self._handleTemperatureCommandsRightAfterToolChange()
         self._handleAvoidGrindingFilament()
         self._handleZHopAtLayerChange()
         self._handleZHopAfterPrimeTower()
@@ -121,7 +122,7 @@ class Bcn3DFixes(Job):
         # self._handleCoolDownToZeroAtEnd()      # Not needed after v3.2
         # self._handleFixFirstRetract()          # Not needed if there are no retract commands in the start gcode
         # self._handleFixTemperatureOscilation() # Changes to proper temperatures if auto temperature is on. Auto temperature is not on, so it's not needed
-        # self._handleSmartPurge()               # the command is added as parameters in the fdmprinter. Force values to 0 if manually changed but smartpurge is disabled
+        # self._handleSmartPurge()               # the command is added as parameters in the fdmprinter. Not needed
         # self._handleRetractReduction()         # Useless feature. To be removed
 
         written_info = False
@@ -238,6 +239,39 @@ class Bcn3DFixes(Job):
                 layer = re.sub(regex, "", layer)
                 self._gcode_list[index] = layer
             Logger.log("d", "fix_tool_change_travel applied")
+
+    def _handleTemperatureCommandsRightAfterToolChange(self):
+        # Places M109 temperature commands right after toolchange, before Extruder gcode is executed, to improve all purge commands and machine reliability
+        if self._IDEXPrint:
+            self._startGcodeInfo.append("; - Temperature Commands Right After Tool Change")
+            for index, layer in enumerate(self._gcode_list):
+                lines = layer.split("\n")
+                temp_index = 0
+                while temp_index < len(lines):
+                    try:
+                        line = lines[temp_index]
+                        lineCount = 1
+                        if line.startswith("T0") or line.startswith("T1"):
+                            if "T0" in line:
+                                countingForTool = 0
+                            else:
+                                countingForTool = 1
+                            while not lines[temp_index + lineCount].startswith(";TYPE"):
+                                lineWithTemperatureCommand = lines[temp_index + lineCount]
+                                if GCodeUtils.charsInLine(["M109 S"], lineWithTemperatureCommand):
+                                    lineWithTemperatureCommand = ';'+lineWithTemperatureCommand+'; Temperature command moved right after T'+str(countingForTool)
+                                    line += '\nM109 S'+str(GCodeUtils.getValue(lineWithTemperatureCommand, "S"))
+                                    break
+                                lineCount += 1
+                        temp_index += lineCount
+                    except:
+                        break
+                layer = "\n".join(lines)
+                # Fix strange travel to X105 Y297
+                regex = r"\n.*X" + str(int(self._container.getProperty("layer_start_x", "value"))) + " Y" + str(int(self._container.getProperty("layer_start_y", "value"))) + ".*"
+                layer = re.sub(regex, "", layer)
+                self._gcode_list[index] = layer
+            Logger.log("d", "_handleTemperatureCommandsRightAfterToolChange() applied")            
 
     def _handleAvoidGrindingFilament(self):
         if self._avoidGrindingFilament[0] or self._avoidGrindingFilament[1]:
@@ -408,7 +442,7 @@ class Bcn3DFixes(Job):
                     fixMovementInNextLayer = True
                 layer = "\n".join(lines)
                 self._gcode_list[index] = layer
-            Logger.log("d", "ChangeLiftHeadMovement() applied")
+            Logger.log("d", "_handleChangeLiftHeadMovement() applied")
 
     def _handleZHopAfterPrimeTower(self):
         if (self._ZHopAfterPrimeTower[0] or self._ZHopAfterPrimeTower[1]) and self._IDEXPrint and self._primeTowerEnabled:
