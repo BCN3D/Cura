@@ -29,7 +29,7 @@ class CuraSceneController(QObject):
         self._max_build_plate = 1  # default
 
         Application.getInstance().getController().getScene().sceneChanged.connect(self.updateMaxBuildPlate)  # it may be a bit inefficient when changing a lot simultaneously
-        Application.getInstance().getController().getScene().getRoot().transformationChanged.connect(self._onTransformChanged)
+        Application.getInstance().getController().toolOperationStopped.connect(self._onToolOperationStopped)
 
     def updateMaxBuildPlate(self, *args):
         if args:
@@ -130,9 +130,9 @@ class CuraSceneController(QObject):
             max_y = max(nodes, key=lambda node: node.getBoundingBox().maximum.z).getBoundingBox().maximum.z + max_y/2
         return [[max_x, max_y], [max_x, min_y], [min_x, max_y], [min_x, min_y]]
 
-    def _onTransformChanged(self, node = None):
+    def _onToolOperationStopped(self, tool = None):
         global_stack = Application.getInstance().getGlobalContainerStack()
         prime_tower = global_stack.getProperty("prime_tower_enable", "value")
-        if prime_tower and isinstance(node, CuraSceneNode) and len(ExtruderManager.getInstance().getUsedExtruderStacks()) > 1:
-            Application.getInstance().getGlobalContainerStack().propertyChanged.emit("prime_tower_position_x", "value")
-            Application.getInstance().getGlobalContainerStack().propertyChanged.emit("prime_tower_position_y", "value")
+        if prime_tower and len(ExtruderManager.getInstance().getUsedExtruderStacks()) > 1:
+            global_stack.propertyChanged.emit("prime_tower_position_x", "value")
+            global_stack.propertyChanged.emit("prime_tower_position_y", "value")
