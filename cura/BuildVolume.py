@@ -249,10 +249,6 @@ class BuildVolume(SceneNode):
             for child_node in group_node.getAllChildren():
                 child_node._outside_buildarea = group_node._outside_buildarea
 
-        if len(list(filter(lambda node: node.callDecoration("isSliceable"), nodes))) > 0 and len(ExtruderManager.getInstance().getUsedExtruderStacks()) > 1:
-            self._global_container_stack.propertyChanged.emit("prime_tower_position_x", "value")
-            self._global_container_stack.propertyChanged.emit("prime_tower_position_y", "value")
-
     ##  Recalculates the build volume & disallowed areas.
     def rebuild(self):
         if not self._width or not self._height or not self._depth:
