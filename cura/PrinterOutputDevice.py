@@ -509,7 +509,7 @@ class PrinterOutputDevice(QObject, OutputDevice):
     def close(self):
         raise NotImplementedError("close needs to be implemented")
 
-    @pyqtProperty(bool, notify = connectionStateChanged)
+    @pyqtProperty(int, notify = connectionStateChanged)
     def connectionState(self):
         return self._connection_state
 

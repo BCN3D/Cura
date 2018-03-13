@@ -225,16 +225,14 @@ class USBPrinterOutputDeviceManager(QObject, OutputDevicePlugin, Extension):
 
     ##  If one of the states of the connected devices change, we might need to add / remove them from the global list.
     def _onConnectionStateChanged(self, serial_port):
-        success = True
         try:
-            if self._usb_output_devices[serial_port].connectionState == ConnectionState.connected:
+            if self._usb_output_devices[serial_port].connectionState in [ConnectionState.connected, ConnectionState.connecting]:
                 self.getOutputDeviceManager().addOutputDevice(self._usb_output_devices[serial_port])
             else:
-                success = success and self.getOutputDeviceManager().removeOutputDevice(serial_port)
-            if success:
-                self.connectionStateChanged.emit()
+                self.getOutputDeviceManager().removeOutputDevice(serial_port)
+            self.connectionStateChanged.emit()
         except KeyError:
-            Logger.log("w", "Connection state of %s changed, but it was not found in the list")
+            Logger.log("w", "Connection state of %s changed, but it was not found in the list", serial_port)
 
     @pyqtProperty(QObject , notify = connectionStateChanged)
     def connectedPrinterList(self):

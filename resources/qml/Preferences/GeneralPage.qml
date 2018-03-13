@@ -643,7 +643,7 @@ UM.PreferencesPage
             Label
             {
                 font.bold: true
-                visible: checkUpdatesCheckbox.visible || sendDataCheckbox.visible
+                visible: checkUpdatesCheckbox.visible
                 text: catalog.i18nc("@label","Privacy")
             }
 

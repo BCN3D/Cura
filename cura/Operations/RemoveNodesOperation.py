@@ -22,7 +22,11 @@ class RemoveNodesOperation(Operation):
 
     def undo(self):
         self._node_dup.node.setParent(self._parent)
-        self._node_dup.setParent(self._parent)  # Hanging it back under its original parent puts it back in the scene.
+        print_mode = Application.getInstance().getGlobalContainerStack().getProperty("print_mode", "value")
+        if print_mode == "regular":
+            self._node_dup.setParent(None)
+        else:
+            self._node_dup.setParent(self._parent)
 
         self._print_mode_manager.addDuplicatedNode(self._node_dup)
 

@@ -225,7 +225,8 @@ Menu
                 }
                 materialsByBrand[brandName][materialName].push({
                     id: items[i].id,
-                    name: items[i].name
+                    name: items[i].name,
+                    colorName:items[i]["metadata"]["color_name"]
                 });
             }
         }
@@ -236,9 +237,14 @@ Menu
             var materials = materialsByBrand[brand];
             for (var material in materials)
             {
+                var colors = [];
+                for (var i in materials[material]) {
+                    var color = materials[material][i];
+                    if (color.colorName != "Generic") colors.push(color);
+                }
                 materialsByBrandModel.push({
                     name: material,
-                    colors: materials[material]
+                    colors: colors
                 })
             }
             brandModel.append({

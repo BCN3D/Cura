@@ -1,0 +1,8 @@
+{
+    "name": "BCN3D machine actions",
+    "author": "BCN3D Technologies",
+    "version": "1.0.0",
+    "description": "Provides machine actions for BCN3D machines",
+    "api": 4,
+    "i18n-catalog": "cura"
+}
