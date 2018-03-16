@@ -45,7 +45,11 @@ class Bcn3DFixes(Job):
                                      extruder_right.getProperty("retraction_hop_after_prime_tower", "value")]
         self._primeTowerEnabled = active_extruder.getProperty("prime_tower_enable", "value")
         self._CoolLiftHead = [extruder_left.getProperty("cool_lift_head", "value"),
-                                   extruder_right.getProperty("cool_lift_head", "value")]
+                              extruder_right.getProperty("cool_lift_head", "value")]
+        self._purgeBeforeStart = [extruder_left.getProperty("prurge_in_bucket_before_start", "value"),
+                                  extruder_right.getProperty("prurge_in_bucket_before_start", "value")]
+        self._startPurgeDistance = [extruder_left.getProperty("start_purge_distance", "value"),
+                                    extruder_right.getProperty("start_purge_distance", "value")]
         # self._retractReduction = active_extruder.getProperty("retract_reduction", "value")
         # self._switchExtruderRetractionAmount = [extruder_left.getProperty("switch_extruder_retraction_amount", "value"),
         #                                         extruder_right.getProperty("switch_extruder_retraction_amount", "value")]
@@ -97,7 +101,7 @@ class Bcn3DFixes(Job):
         self._startGcodeInfo = [";BCN3D Fixes applied"]
         
         self._IDEXPrint = len(ExtruderManager.getInstance().getUsedExtruderStacks()) > 1
-        # self._MEXPrint =  not self._IDEXPrint and self._container.getProperty("print_mode", "value") == 'regular'
+        self._MEXPrint =  not self._IDEXPrint and self._container.getProperty("print_mode", "value") == 'regular'
         self._MirrorOrDuplicationPrint = not self._IDEXPrint and self._container.getProperty("print_mode", "value") != 'regular'
 
         self._message = None
@@ -115,6 +119,7 @@ class Bcn3DFixes(Job):
         self._handleAvoidGrindingFilament()
         self._handleZHopAtLayerChange()
         self._handleZHopAfterPrimeTower()
+        self._handlePurgeAtStart()
 
         # self._handleActiveExtruders()
         '''
@@ -174,36 +179,129 @@ class Bcn3DFixes(Job):
                     break
             Logger.log("d", "fix_start_gcode applied")
 
-    # def _handleCoolDownToZeroAtEnd(self):
-    #     # Change last standby temperature of the file to zero
-    #     if self._IDEXPrint:
-    #         self._startGcodeInfo.append("; - Cool Down To Zero At End")
-    #         cooledDownToZero = False
-    #         self._gcode_list.reverse()
+    def _handlePurgeAtStart(self):
+        self._startGcodeInfo.append("; - Purge Before Start")
+        MachineAllowsClonedExtrusionSteps = self._container.getProperty("print_mode", "enabled")
+        if self._MEXPrint or self._MirrorOrDuplicationPrint:
+            # easy case. add purge before start
+            countingForTool = int(ExtruderManager.getInstance().getUsedExtruderStacks()[0].getMetaData()['position'])
+            if self._purgeBeforeStart[countingForTool]:
+                for index, layer in enumerate(self._gcode_list):
+                    if layer.startswith(";LAYER:"):
+                        layer = "G1 F"+str(self._purgeSpeed[countingForTool])+" E"+str(self._startPurgeDistance[countingForTool]) + " ;start purge\n" + \
+                                "G92 E0\n" + \
+                                layer
+                        self._gcode_list[index] = layer
+                        break
+        else:
+            countingForTool = 0
+            startTemperatures = self._materialPrintTemperatureLayer0[:]
+            for index, layer in enumerate(self._gcode_list):
+                lines = layer.split("\n")
+                if not layer.startswith(";LAYER:"):
+                    # fix first temperature. Change standby to start
+                    temp_index = 0
+                    while temp_index < len(lines):
+                        line = lines[temp_index]
+                        if line.startswith("T0") or line.startswith("T1"):
+                            if "T0" in line:
+                                countingForTool = 0
+                            else:
+                                countingForTool = 1
+                        if line.startswith("M104 S") or line.startswith("M109 S"):
+                            if self._purgeBeforeStart[countingForTool]:
+                                startTemperatures[countingForTool] = GCodeUtils.getValue(line, "S")
+                                lines[temp_index] = "M104 S"+str(self._materialPrintTemperatureLayer0[countingForTool]) if line.startswith("M104 S") else "M109 S"+str(self._materialPrintTemperatureLayer0[countingForTool])
+                        elif line.startswith("M104 T") or line.startswith("M109 T"):
+                            toolNumber = int(GCodeUtils.getValue(line, "T"))
+                            if self._purgeBeforeStart[toolNumber]:
+                                startTemperatures[toolNumber] = GCodeUtils.getValue(line, "S")
+                                lines[temp_index] = "M104 T" + str(toolNumber) + " S"+str(self._materialPrintTemperatureLayer0[toolNumber]) if line.startswith("M104 T") else "M109 T" + str(toolNumber) + " S" + str(self._materialPrintTemperatureLayer0[toolNumber])
+                        temp_index += 1
+                    layer = "\n".join(lines)
+                    self._gcode_list[index] = layer
+                else:
+                    # add purge commands and set back standby temperatures
+                    if self._purgeBeforeStart[1]:
+                        layer = "T1\n" + \
+                                "G1 F"+str(self._purgeSpeed[1])+" E"+str(self._startPurgeDistance[1]) + " ;start purge on T1\n" + \
+                                "G92 E0\n" + \
+                                "M104 T1 S"+str(startTemperatures[1]) + "\n" + \
+                                "T0\n" + \
+                                layer
+                    if self._purgeBeforeStart[0]:
+                        layer = "G1 F"+str(self._purgeSpeed[0])+" E"+str(self._startPurgeDistance[0]) + " ;start purge on T0\n" + \
+                                "G92 E0\n" + \
+                                "M104 S"+str(startTemperatures[0]) + "\n" + \
+                                layer
+                    self._gcode_list[index] = layer
+                    break
+        Logger.log("d", "prurge_in_bucket_before_start applied")
+
+    # def _handleActiveExtruders(self):
+    #     # Heat and purge only used extruders. Simultaneously if possible.
+    #     if self._activeExtruders:
+    #         self._startGcodeInfo.append("; - Heat only essentials")
+    #         MachineAllowsClonedExtrusionSteps = self._container.getProperty("print_mode", "enabled")
+    #         if self._MEXPrint:
+    #             idleExtruder = 'T' + str(abs(int(ExtruderManager.getInstance().getUsedExtruderStacks()[0].getMetaData()['position']) - 1))
+    #         startGcodeCorrected = False
     #         for index, layer in enumerate(self._gcode_list):
     #             lines = layer.split("\n")
-    #             lines.reverse()
     #             temp_index = 0
     #             while temp_index < len(lines):
-    #                 try:
-    #                     line = lines[temp_index]
-    #                     if GCodeUtils.charsInLine(["M104 T0 S"+str(self._materialStandByTemperature[0])], line) or GCodeUtils.charsInLine(["M104 T1 S"+str(self._materialStandByTemperature[1])], line):
+    #                 line = lines[temp_index]
+    #                 if not startGcodeCorrected:
+    #                     try:
+    #                         if line.startswith("M108 P1"):
+    #                             del lines[temp_index]
+    #                             temp_index -= 1
+    #                         line1 = lines[temp_index + 1]
+    #                         line2 = lines[temp_index + 2]
+    #                         line3 = lines[temp_index + 3]
+    #                         line4 = lines[temp_index + 4]
+    #                         line5 = lines[temp_index + 5]
+    #                         if line1.startswith("G92 E0") and line2.startswith("G1 E") and line3.startswith("G92 E0") and line4.startswith("G4 P2000") and line5.startswith("G1 F2400 E-8"):
+    #                             if self._MEXPrint and line.startswith(idleExtruder):
+    #                                 # Remove purge lines for unused hotends (MEX Prints)
+    #                                 del lines[temp_index]
+    #                                 del lines[temp_index]
+    #                                 del lines[temp_index]
+    #                                 del lines[temp_index]
+    #                                 del lines[temp_index]
+    #                                 del lines[temp_index]
+    #                                 startGcodeCorrected = True
+    #                                 break
+    #                             elif (self._MirrorOrDuplicationPrint or (self._IDEXPrint and MachineAllowsClonedExtrusionSteps)) and line.startswith("T1"):
+    #                                 # Use cloned purge commands if the machine allows it and is using both hotends (IDEX, Mirror or Duplication)
+    #                                 del lines[temp_index]
+    #                                 del lines[temp_index]
+    #                                 del lines[temp_index]
+    #                                 del lines[temp_index]
+    #                                 del lines[temp_index]
+    #                                 del lines[temp_index]
+    #                                 lines[temp_index] = lines[temp_index]+"\nM605 S4      ;clone extruders steps"
+    #                                 lines[temp_index + 5] = lines[temp_index + 5]+"\nM605 S3      ;back to independent extruder steps"
+    #                                 startGcodeCorrected = True
+    #                                 break
+    #                     except:
+    #                         pass
+    #                 if self._MEXPrint:
+    #                     # Remove heating lines for unused hotends (MEX Prints)
+    #                     if idleExtruder == "T1":
     #                         if "T1" in line:
-    #                             lines[temp_index] = "M104 T1 S0 ;Standby Temperature set to Zero\n"
-    #                         else:
-    #                             lines[temp_index] = "M104 T0 S0 ;Standby Temperature set to Zero\n"
-    #                         cooledDownToZero = True
-    #                         break
-    #                     temp_index += 1
-    #                 except:
-    #                     break
-    #             if cooledDownToZero:
-    #                 lines.reverse()
+    #                             del lines[temp_index]
+    #                             temp_index -= 1
+    #                     elif idleExtruder == "T0":
+    #                         if index < 2 and (line.startswith("M104 S") or line.startswith("M109 S")) and "T1" not in line:
+    #                             del lines[temp_index]
+    #                             temp_index -= 1
+    #                 temp_index += 1
+    #             if startGcodeCorrected:
     #                 layer = "\n".join(lines)
     #                 self._gcode_list[index] = layer
     #                 break
-    #         self._gcode_list.reverse()
-    #         Logger.log("d", "CoolDownToZeroAtEnd() applied")
+    #         Logger.log("d", "active_extruders applied")
 
     def _handleFixToolChangeTravel(self):
         # Allows the new tool to go straight to the position where it has to print, instead of going to the last position before tool change and then travel to the position where it has to print
@@ -552,71 +650,6 @@ class Bcn3DFixes(Job):
                     layer = "\n".join(lines)
                     self._gcode_list[index] = layer
             Logger.log("d", "_handleFixAccelerationJerkCommands() applied")
-
-    # def _handleActiveExtruders(self):
-    #     # Heat and purge only used extruders. Simultaneously if possible.
-    #     if self._activeExtruders:
-    #         self._startGcodeInfo.append("; - Heat only essentials")
-    #         MachineAllowsClonedExtrusionSteps = self._container.getProperty("print_mode", "enabled")
-    #         if self._MEXPrint:
-    #             idleExtruder = 'T' + str(abs(int(ExtruderManager.getInstance().getUsedExtruderStacks()[0].getMetaData()['position']) - 1))
-    #         startGcodeCorrected = False
-    #         for index, layer in enumerate(self._gcode_list):
-    #             lines = layer.split("\n")
-    #             temp_index = 0
-    #             while temp_index < len(lines):
-    #                 line = lines[temp_index]
-    #                 if not startGcodeCorrected:
-    #                     try:
-    #                         if line.startswith("M108 P1"):
-    #                             del lines[temp_index]
-    #                             temp_index -= 1
-    #                         line1 = lines[temp_index + 1]
-    #                         line2 = lines[temp_index + 2]
-    #                         line3 = lines[temp_index + 3]
-    #                         line4 = lines[temp_index + 4]
-    #                         line5 = lines[temp_index + 5]
-    #                         if line1.startswith("G92 E0") and line2.startswith("G1 E") and line3.startswith("G92 E0") and line4.startswith("G4 P2000") and line5.startswith("G1 F2400 E-8"):
-    #                             if self._MEXPrint and line.startswith(idleExtruder):
-    #                                 # Remove purge lines for unused hotends (MEX Prints)
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 startGcodeCorrected = True
-    #                                 break
-    #                             elif (self._MirrorOrDuplicationPrint or (self._IDEXPrint and MachineAllowsClonedExtrusionSteps)) and line.startswith("T1"):
-    #                                 # Use cloned purge commands if the machine allows it and is using both hotends (IDEX, Mirror or Duplication)
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 lines[temp_index] = lines[temp_index]+"\nM605 S4      ;clone extruders steps"
-    #                                 lines[temp_index + 5] = lines[temp_index + 5]+"\nM605 S3      ;back to independent extruder steps"
-    #                                 startGcodeCorrected = True
-    #                                 break
-    #                     except:
-    #                         pass
-    #                 if self._MEXPrint:
-    #                     # Remove heating lines for unused hotends (MEX Prints)
-    #                     if idleExtruder == "T1":
-    #                         if "T1" in line:
-    #                             del lines[temp_index]
-    #                             temp_index -= 1
-    #                     elif idleExtruder == "T0":
-    #                         if index < 2 and (line.startswith("M104 S") or line.startswith("M109 S")) and "T1" not in line:
-    #                             del lines[temp_index]
-    #                             temp_index -= 1
-    #                 temp_index += 1
-    #             if startGcodeCorrected:
-    #                 layer = "\n".join(lines)
-    #                 self._gcode_list[index] = layer
-    #                 break
-    #         Logger.log("d", "active_extruders applied")
     
     # def _handleFixTemperatureOscilation(self):
     #     if self._fixTemperatureOscilation and self._IDEXPrint:
