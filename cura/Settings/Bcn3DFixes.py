@@ -248,33 +248,34 @@ class Bcn3DFixes(Job):
         if self._IDEXPrint:
             self._startGcodeInfo.append("; - Temperature Commands Right After Tool Change")
             for index, layer in enumerate(self._gcode_list):
-                lines = layer.split("\n")
-                temp_index = 0
-                while temp_index < len(lines):
-                    try:
-                        line = lines[temp_index]
-                        lineCount = 1
-                        if line.startswith("T0") or line.startswith("T1"):
-                            if "T0" in line:
-                                countingForTool = 0
-                            else:
-                                countingForTool = 1
-                            while not lines[temp_index + lineCount].startswith(";TYPE"):
-                                lineWithTemperatureCommand = lines[temp_index + lineCount]
-                                if GCodeUtils.charsInLine(["M109 S"], lineWithTemperatureCommand):
-                                    lines[temp_index] += '\nM109 S'+str(GCodeUtils.getValue(lineWithTemperatureCommand, "S"))
-                                    del lines[temp_index + lineCount]
-                                    lineCount -= 1
-                                    break
-                                lineCount += 1
-                        temp_index += lineCount
-                    except:
-                        break
-                layer = "\n".join(lines)
-                # Fix strange travel to X105 Y297
-                regex = r"\n.*X" + str(int(self._container.getProperty("layer_start_x", "value"))) + " Y" + str(int(self._container.getProperty("layer_start_y", "value"))) + ".*"
-                layer = re.sub(regex, "", layer)
-                self._gcode_list[index] = layer
+                if layer.startswith(";LAYER:"):
+                    lines = layer.split("\n")
+                    temp_index = 0
+                    while temp_index < len(lines):
+                        try:
+                            line = lines[temp_index]
+                            lineCount = 1
+                            if line.startswith("T0") or line.startswith("T1"):
+                                if "T0" in line:
+                                    countingForTool = 0
+                                else:
+                                    countingForTool = 1
+                                while not lines[temp_index + lineCount].startswith(";TYPE"):
+                                    lineWithTemperatureCommand = lines[temp_index + lineCount]
+                                    if GCodeUtils.charsInLine(["M109 S"], lineWithTemperatureCommand):
+                                        lines[temp_index] += '\nM109 S'+str(GCodeUtils.getValue(lineWithTemperatureCommand, "S"))
+                                        del lines[temp_index + lineCount]
+                                        lineCount -= 1
+                                        break
+                                    lineCount += 1
+                            temp_index += lineCount
+                        except:
+                            break
+                    layer = "\n".join(lines)
+                    # Fix strange travel to X105 Y297
+                    regex = r"\n.*X" + str(int(self._container.getProperty("layer_start_x", "value"))) + " Y" + str(int(self._container.getProperty("layer_start_y", "value"))) + ".*"
+                    layer = re.sub(regex, "", layer)
+                    self._gcode_list[index] = layer
             Logger.log("d", "_handleTemperatureCommandsRightAfterToolChange() applied")            
 
     def _handleAvoidGrindingFilament(self):
