@@ -293,11 +293,11 @@ class Bcn3DFixes(Job):
                         line = lines[temp_index]
                         if line.startswith("T0"):
                             countingForTool = 0
-                            if not layer.startswith(";LAYER:0") and self._smartPurge[countingForTool]:
+                            if not (layer.startswith(";LAYER:0") or layer.startswith(";LAYER:-")) and self._smartPurge[countingForTool]:
                                 purgedOffset[countingForTool] += self._smartPurgePParameter[countingForTool]
                         elif line.startswith("T1"):
                             countingForTool = 1
-                            if not layer.startswith(";LAYER:0") and self._smartPurge[countingForTool]:
+                            if not (layer.startswith(";LAYER:0") or layer.startswith(";LAYER:-")) and self._smartPurge[countingForTool]:
                                 purgedOffset[countingForTool] += self._smartPurgePParameter[countingForTool]
                         elif line.startswith(';TYPE:'):
                             printArea = line
@@ -384,7 +384,7 @@ class Bcn3DFixes(Job):
                 while temp_index < len(lines):
                     line = lines[temp_index]
                     temp_index_2 = 1
-                    if self._ZHopAtLayerChange[countingForTool] and line.startswith(";LAYER:") and not line.startswith(";LAYER:0"):
+                    if self._ZHopAtLayerChange[countingForTool] and line.startswith(";LAYER:") and not (line.startswith(";LAYER:0") or line.startswith(";LAYER:-")):
                         lines[temp_index] += "\nG91" + \
                                              "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E-" + str(round(self._retractionAmount[countingForTool], 5)) + \
                                              "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(round(self._layerHeight + self._ZHopHeightAtLayerChange[countingForTool], 5)) + " ;z hop at layer change" + \
@@ -451,7 +451,7 @@ class Bcn3DFixes(Job):
             countingForTool = 0
             for index, layer in enumerate(self._gcode_list):
                 lines = layer.split("\n")
-                if layer.startswith(";LAYER:") and not layer.startswith(";LAYER:0"):
+                if layer.startswith(";LAYER:") and not (layer.startswith(";LAYER:0") or layer.startswith(";LAYER:-")):
                     temp_index = 0
                     while temp_index < len(lines):
                         line = lines[temp_index]
