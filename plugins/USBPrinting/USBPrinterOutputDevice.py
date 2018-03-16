@@ -488,11 +488,11 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         if m115_response:
             result = re.search("(?<=FIRMWARE_VERSION:).+?(?=;)", line.decode("utf-8"))
             if result is None:
-                self._firmware_version = "UNKNOWN"
+                return
             else:
                 self._firmware_version = FirmwareVersion(result.group(0))
             Logger.log("i", "Current firmware version: %s", self._firmware_version)
-            if str(self._firmware_version) != "UNKNOWN" and self._firmware_version.isPrerelease():
+            if self._firmware_version.isPrerelease():
                 Logger.log("i", "Your current firmware version is a prerelease")
             self.firmwareChange.emit()
 
@@ -639,21 +639,18 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         container_stack = Application.getInstance().getGlobalContainerStack()
         temperature_request_timeout = time.time()
         ok_timeout = time.time()
-        m115_sent = False
         while self._connection_state == ConnectionState.connected:
             line = self._readline()
             try:
                 line.decode("utf-8")
             except:
                 self._sendCommand("M115")
-                m115_sent = True
                 continue
             if self._firmware_version is None and FirmwareVersion.isVersion(line.decode("utf-8")):
                 self._firmware_version = FirmwareVersion(line.decode("utf-8").split("\n")[0])
                 self.firmwareChange.emit()
-            elif m115_sent:
+            elif self._firmware_version is None:
                 self._getFirmwareVersion(line)
-                m115_sent = False
 
             if line is None:
                 break  # None is only returned when something went wrong. Stop listening
