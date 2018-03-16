@@ -46,8 +46,8 @@ class Bcn3DFixes(Job):
         self._primeTowerEnabled = active_extruder.getProperty("prime_tower_enable", "value")
         self._CoolLiftHead = [extruder_left.getProperty("cool_lift_head", "value"),
                               extruder_right.getProperty("cool_lift_head", "value")]
-        self._purgeBeforeStart = [extruder_left.getProperty("prurge_in_bucket_before_start", "value"),
-                                  extruder_right.getProperty("prurge_in_bucket_before_start", "value")]
+        self._purgeBeforeStart = [extruder_left.getProperty("purge_in_bucket_before_start", "value"),
+                                  extruder_right.getProperty("purge_in_bucket_before_start", "value")]
         self._startPurgeDistance = [extruder_left.getProperty("start_purge_distance", "value"),
                                     extruder_right.getProperty("start_purge_distance", "value")]
         # self._retractReduction = active_extruder.getProperty("retract_reduction", "value")
@@ -236,7 +236,7 @@ class Bcn3DFixes(Job):
                                 layer
                     self._gcode_list[index] = layer
                     break
-        Logger.log("d", "prurge_in_bucket_before_start applied")
+        Logger.log("d", "purge_in_bucket_before_start applied")
 
     # def _handleActiveExtruders(self):
     #     # Heat and purge only used extruders. Simultaneously if possible.
