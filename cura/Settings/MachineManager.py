@@ -772,7 +772,7 @@ class MachineManager(QObject):
     ## Copy the value of all settings of the current extruder to all other extruders as well as the global container.
     @pyqtSlot()
     def copyAllValuesToExtruders(self):
-        for key in self._active_container_stack.getAllKeys():
+        for key in self._active_container_stack.userChanges.getAllKeys():
             new_value = self._active_container_stack.getProperty(key, "value")
             extruder_stacks = [stack for stack in ExtruderManager.getInstance().getMachineExtruders(self._global_container_stack.getId())]
 
