@@ -778,9 +778,8 @@ class MachineManager(QObject):
                 for key in self._active_container_stack.userChanges.getAllKeys():
                     new_value = self._active_container_stack.getProperty(key, "value")
 
-                    # check if the value has to be replaced
-                    if extruder_stack.getProperty(key, "value") != new_value:
-                        extruder_stack.userChanges.setProperty(key, "value", new_value)
+                    # replace the value
+                    extruder_stack.userChanges.setProperty(key, "value", new_value)
 
     ## Set the active material by switching out a container
     #  Depending on from/to material+current variant, a quality profile is chosen and set.
