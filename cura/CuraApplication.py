@@ -25,6 +25,7 @@ from UM.Message import Message
 from UM.i18n import i18nCatalog
 from UM.Workspace.WorkspaceReader import WorkspaceReader
 from UM.Decorators import deprecated
+from UM.Signal import Signal
 
 from UM.Operations.AddSceneNodeOperation import AddSceneNodeOperation
 from UM.Operations.RemoveSceneNodeOperation import RemoveSceneNodeOperation
@@ -272,6 +273,9 @@ class CuraApplication(QtApplication):
         self._cura_actions = None
         self.started = False
 
+        self._firmware_version = None
+        self._firmware_latest_version = None
+
         self._message_box_callback = None
         self._message_box_callback_arguments = []
         self._preferred_mimetype = ""
@@ -468,6 +472,18 @@ class CuraApplication(QtApplication):
     @pyqtSlot()
     def showPreferences(self):
         self.showPreferencesWindow.emit()
+
+    def getFirmwareVersion(self):
+        return self._firmware_version
+
+    def setFirmwareVersion(self, firmware_version):
+        self._firmware_version = firmware_version
+
+    def getLatestFirmwareVersion(self):
+        return self._firmware_latest_version
+
+    def setLatestFirmwareVersion(self, firmware_latest_version):
+        self._firmware_latest_version = firmware_latest_version
 
     ## A reusable dialogbox
     #
@@ -921,6 +937,8 @@ class CuraApplication(QtApplication):
     activityChanged = pyqtSignal()
     sceneBoundingBoxChanged = pyqtSignal()
     preferredOutputMimetypeChanged = pyqtSignal()
+
+    firmwareChanged = Signal()
 
     @pyqtProperty(bool, notify = activityChanged)
     def platformActivity(self):

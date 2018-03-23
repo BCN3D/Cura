@@ -117,6 +117,8 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
             }
         }
 
+        self.firmwareChange.connect(self._onFirmwareChange)
+
         self._onGlobalStackChanged()
 
     onError = pyqtSignal()
@@ -128,6 +130,9 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
     firmwareLatestChange = pyqtSignal()
 
     endstopStateChanged = pyqtSignal(str ,bool, arguments = ["key","state"])
+
+    def _onFirmwareChange(self):
+        Application.getInstance().firmwareChanged.emit()
 
     def _onGlobalStackChanged(self):
         self._global_stack = Application.getInstance().getGlobalContainerStack()
@@ -491,6 +496,7 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
                 return
             else:
                 self._firmware_version = FirmwareVersion(result.group(0))
+                Application.getInstance().setFirmwareVersion(self._firmware_version)
             Logger.log("i", "Current firmware version: %s", self._firmware_version)
             if self._firmware_version.isPrerelease():
                 Logger.log("i", "Your current firmware version is a prerelease")
@@ -516,6 +522,7 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         reader = codecs.getreader("utf-8")
         data = json.load(reader(latest_release))
         self._firmware_latest_version = FirmwareVersion(data["tag_name"])
+        Application.getInstance().setLatestFirmwareVersion(self._firmware_latest_version)
         self.firmwareLatestChange.emit()
 
     ##  Set the baud rate of the serial. This can cause exceptions, but we simply want to ignore those.
@@ -648,6 +655,7 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
                 continue
             if self._firmware_version is None and FirmwareVersion.isVersion(line.decode("utf-8")):
                 self._firmware_version = FirmwareVersion(line.decode("utf-8").split("\n")[0])
+                Application.getInstance().setFirmwareVersion(self._firmware_version)
                 self.firmwareChange.emit()
             elif self._firmware_version is None:
                 self._getFirmwareVersion(line)
