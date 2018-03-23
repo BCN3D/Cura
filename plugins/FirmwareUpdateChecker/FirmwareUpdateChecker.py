@@ -12,9 +12,6 @@ from .FirmwareUpdateCheckerJob import FirmwareUpdateCheckerJob
 i18n_catalog = i18nCatalog("cura")
 
 
-## This Extension checks for new versions of the firmware based on the latest checked version number.
-#  The plugin is currently only usable for applications maintained by Ultimaker. But it should be relatively easy
-#  to change it to work for other applications.
 class FirmwareUpdateChecker(Extension):
 
     def __init__(self):
