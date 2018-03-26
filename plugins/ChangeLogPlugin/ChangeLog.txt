@@ -4,7 +4,12 @@
 Use recommended settings for quick and easy print setup using intuitive sliders to prepare your print, or use custom settings to individually tweak over 200 unique slicing parameters.
 *Reduced print time and material consumption
 Recommended mode has new default settings that aim to save print time, material usage, and material costs.
-*USB functionalities still not working in this Alpha pre-release
+*Automatic position for the Prime Tower
+Select which area you prefer the tower and Cura will find the best position for the tower following your preferences.
+*Hop after prime tower
+Purge Before Printing. New option to purge in bucket before start, avoiding start gcode edition.
+*Copy all values to all extruders
+New option right clicking any parameter in the sidebar.
 
 *UI improvements:
 
