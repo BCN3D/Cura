@@ -4,12 +4,6 @@
 Use recommended settings for quick and easy print setup using intuitive sliders to prepare your print, or use custom settings to individually tweak over 200 unique slicing parameters.
 *Reduced print time and material consumption
 Recommended mode has new default settings that aim to save print time, material usage, and material costs.
-*Automatic position for the Prime Tower
-Select which area you prefer the tower and Cura will find the best position for the tower following your preferences.
-*Hop after prime tower
-Purge Before Printing. New option to purge in bucket before start, avoiding start gcode edition.
-*Copy all values to all extruders
-New option right clicking any parameter in the sidebar.
 
 *UI improvements:
 
@@ -61,11 +55,17 @@ The application framework has been updated to increase speed, achieve a better w
 The sidebar can now be hidden or shown by selecting View > Expand/Collapse Sidebar, or with the hotkey CMD + E (Mac) or CTRL + E (PC and Linux). This is to give greater visibility for wider build plates, or a build plate displayed on a small screen.
 *Start/end gcode script per extruder
 Variables from both extruders in the start and end gcode snippets can now be accessed and edited, creating uniformity between profiles in different slicing environments.
+*Copy all changed values to all extruders
+New option right clicking any parameter in the sidebar.
 
 *New slicing features:
+*Automatic position for the Prime Tower
+Select which area you prefer the tower and Cura will find the best position for the tower following your preferences.
+*Hop after prime tower
+Purge Before Printing. New option to purge in bucket before start, avoiding start gcode edition.
 *Purge At Tool Change
 Add an extra prime amount in the bucket to compensate oozed material while the Extruder has been idle.
-*Dynamic Purge Distance
+*Use Adaptive Purge Distance
 Allow the purged distance to increase from a minimum value to a maximum. Increase this distance at a desired speed to fit filament expansion in the bowden while idle. Customize the value to purge only the needed amount.
 *Print Mode
 Allow your Sigmax to print in Duplication/Mirror modes.
