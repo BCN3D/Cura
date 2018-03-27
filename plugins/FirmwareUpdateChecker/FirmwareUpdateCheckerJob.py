@@ -30,7 +30,7 @@ class FirmwareUpdateCheckerJob(Job):
             message = Message(
                 i18n_catalog.i18nc("@info Don't translate {machine_name}, since it gets replaced by a printer name!",
                                    "New features are available for your {machine_name}! It is recommended to update the firmware on your printer.\n"
-                                   "Go to Preferences->Printers to update the firmware.").format(machine_name=machine_name),
+                                   "Go to {machine_name} -> Manage Printers...").format(machine_name=machine_name),
                 title=i18n_catalog.i18nc("@info:title The %s gets replaced with the printer name.",
                                          "New %s firmware available") % machine_name)
             message.show()
