@@ -46,10 +46,12 @@ UM.ManagementPage
 
     delegate: Rectangle
     {
+        property bool isGeneric: model.metadata.color_name == "Generic"
         width: objectList.width;
-        height: childrenRect.height;
-        color: isCurrentItem ? palette.highlight : index % 2 ? palette.base : palette.alternateBase
+        height: isGeneric ? 0 : childrenRect.height;
+        color: isCurrentItem ? palette.highlight : palette.base
         property bool isCurrentItem: ListView.isCurrentItem
+        visible: !isGeneric;
 
         Row
         {
