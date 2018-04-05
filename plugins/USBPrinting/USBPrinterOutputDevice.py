@@ -652,7 +652,6 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         ok_timeout = time.time()
         while self._connection_state == ConnectionState.connected:
             line = self._readline()
-            print(line)
             try:
                 line.decode("utf-8")
             except:
