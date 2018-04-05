@@ -48,7 +48,7 @@ class PrinterOutputDevice(QObject, OutputDevice):
         self._job_name = ""
         self._error_text = ""
         self._accepts_commands = True
-        self._preheat_bed_timeout = 900  # Default time-out for pre-heating the bed, in seconds.
+        self._preheat_bed_timeout = 600  # Default time-out for pre-heating the bed, in seconds.
         self._preheat_bed_timer = QTimer()  # Timer that tracks how long to preheat still.
         self._preheat_bed_timer.setSingleShot(True)
         self._preheat_bed_timer.timeout.connect(self.cancelPreheatBed)
@@ -201,6 +201,8 @@ class PrinterOutputDevice(QObject, OutputDevice):
         if self._job_state != job_state:
             self._job_state = job_state
             self.jobStateChanged.emit()
+        if job_state == "printing":
+            self._preheat_bed_timer.stop()
 
     @pyqtSlot(str)
     def setJobState(self, job_state):
@@ -362,6 +364,9 @@ class PrinterOutputDevice(QObject, OutputDevice):
     def _setTargetBedTemperature(self, temperature):
         Logger.log("w", "_setTargetBedTemperature is not implemented by this output device")
 
+    def _purge(self, distance, speed):
+        Logger.log("w", "purge is not implemented by this output deivce")
+
     ##  Pre-heats the heated bed of the printer.
     #
     #   \param temperature The temperature to heat the bed to, in degrees
@@ -371,12 +376,28 @@ class PrinterOutputDevice(QObject, OutputDevice):
     def preheatBed(self, temperature, duration):
         Logger.log("w", "preheatBed is not implemented by this output device.")
 
+    ##  Pre-heats the heated extruder of the printer.
+    #
+    #   \param the extruder to be heated.
+    #   \param temperature The temperature to heat the extruder to, in degrees
+    #   Celsius.
+    @pyqtSlot(int, float)
+    def preheatHotend(self, index, temperature):
+        Logger.log("w", "preheatHotend is not implemented by this output device.")
+
     ##  Cancels pre-heating the heated bed of the printer.
     #
     #   If the bed is not pre-heated, nothing happens.
     @pyqtSlot()
     def cancelPreheatBed(self):
         Logger.log("w", "cancelPreheatBed is not implemented by this output device.")
+
+    ##  Cancels pre-heating the hotend bed of the printer.
+    #
+    #   If the hotend is not pre-heated, nothing happens.
+    @pyqtSlot(int)
+    def cancelPreheatHotend(self, index):
+        Logger.log("w", "cancelPreheatHotend is not implemented by this output device.")
 
     ##  Protected setter for the current bed temperature.
     #   This simply sets the bed temperature, but ensures that a signal is emitted.
@@ -427,6 +448,15 @@ class PrinterOutputDevice(QObject, OutputDevice):
         if self._hotend_temperatures[index] != temperature:
             self._hotend_temperatures[index] = temperature
             self.hotendTemperaturesChanged.emit()
+
+    @pyqtSlot(int)
+    @pyqtSlot(int, float)
+    def purge(self, distance, speed = 150):
+        Logger.log("w", "purge is not implemented by this output device.")
+
+    @pyqtSlot(int)
+    def setExtruder(self, index):
+        Logger.log("w", "setExtruder is not implemented by this output device.")
 
     @pyqtProperty("QVariantList", notify = materialIdChanged)
     def materialIds(self):

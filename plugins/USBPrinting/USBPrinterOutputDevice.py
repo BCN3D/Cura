@@ -168,6 +168,10 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
     def _homeBed(self):
         self._sendCommand("G28")
 
+    def _purge(self, distance, speed):
+        self._sendCommand("G1 E%s F%s" % (distance, speed))
+        self._sendCommand("G92 E0")
+
     ##  Updates the target bed temperature from the printer, and emit a signal if it was changed.
     #
     #   /param temperature The new target temperature of the bed.
@@ -648,6 +652,7 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         ok_timeout = time.time()
         while self._connection_state == ConnectionState.connected:
             line = self._readline()
+            print(line)
             try:
                 line.decode("utf-8")
             except:
@@ -886,8 +891,14 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
     @pyqtSlot(float, float)
     def preheatBed(self, temperature, duration):
         Logger.log("i", "Pre-heating the bed to %i degrees.", temperature)
+        self._preheat_bed_timer.start(self._preheat_bed_timeout * 1000)
         self._setTargetBedTemperature(temperature)
         self.preheatBedRemainingTimeChanged.emit()
+
+    @pyqtSlot(int, float)
+    def preheatHotend(self, index, temperature):
+        Logger.log("i", "Pre-heating the extruder %i to %i degrees.", index, temperature)
+        self._setTargetHotendTemperature(index, temperature)
 
     ##  Cancels pre-heating the heated bed of the printer.
     #
@@ -895,5 +906,24 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
     @pyqtSlot()
     def cancelPreheatBed(self):
         Logger.log("i", "Cancelling pre-heating of the bed.")
+        self._preheat_bed_timer.stop()
         self._setTargetBedTemperature(0)
         self.preheatBedRemainingTimeChanged.emit()
+
+    ##  Cancels pre-heating the heated hotend of the printer.
+    #
+    #   If the hotend is not pre-heated, nothing happens.
+    @pyqtSlot(int)
+    def cancelPreheatHotend(self, index):
+        Logger.log("i", "Cancelling pre-heating of the bed.")
+        self._setTargetHotendTemperature(index, 0)
+
+    @pyqtSlot(int)
+    @pyqtSlot(int, float)
+    def purge(self, distance, speed = 150):
+        Logger.log("i", "Purging %f mm.", distance)
+        self._purge(distance, speed)
+
+    @pyqtSlot(int)
+    def setExtruder(self, index):
+        self._sendCommand("T" + str(index))
