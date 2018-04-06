@@ -188,7 +188,9 @@ class Bcn3DFixes(Job):
             if self._purgeBeforeStart[countingForTool]:
                 for index, layer in enumerate(self._gcode_list):
                     if layer.startswith(";LAYER:"):
-                        layer = "G1 F"+str(self._purgeSpeed[countingForTool])+" E"+str(self._startPurgeDistance[countingForTool]) + " ;start purge\n" + \
+                        layer = "T"+str(countingForTool) + "\n" + \
+                                "G92 E0\n" + \
+                                "G1 F"+str(self._purgeSpeed[countingForTool])+" E"+str(self._startPurgeDistance[countingForTool]) + " ;start purge\n" + \
                                 "G92 E0\n" + \
                                 layer
                         self._gcode_list[index] = layer
