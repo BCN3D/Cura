@@ -81,9 +81,10 @@ Column
                 delegate: Rectangle
                 {
                     id: extruderRectangle
+                    property var isPreheating: false
                     color: UM.Theme.getColor("sidebar")
                     width: index == machineExtruderCount.properties.value - 1 && index % 2 == 0 ? extrudersGrid.width : Math.floor(extrudersGrid.width / 2 - UM.Theme.getSize("sidebar_lining_thin").width / 2)
-                    height: UM.Theme.getSize("sidebar_extruder_box").height
+                    height: UM.Theme.getSize("sidebar_extruder_box").height + 20
 
                     Label //Extruder name.
                     {
@@ -156,6 +157,273 @@ Column
                                 {
                                     base.hideTooltip();
                                 }
+                            }
+                        }
+                    }
+
+                    UM.SettingPropertyProvider
+                    {
+                        id: extruderTemperatureProvider
+                        containerStackId: Cura.ExtruderManager.extruderIds[index]
+                        key: "material_print_temperature"
+                        watchedProperties: ["value", "minimum_value", "maximum_value", "resolve"]
+                        storeIndex: 0
+
+                        property var resolve: Cura.MachineManager.activeStackId != Cura.MachineManager.activeMachineId ? properties.resolve : "None"
+                    }
+
+                    Rectangle //Input field for pre-heat temperature.
+                    {
+                        id: preheatExtruderTemperatureControl
+                        color: !enabled ? UM.Theme.getColor("setting_control_disabled") : showError ? UM.Theme.getColor("setting_validation_error_background") : UM.Theme.getColor("setting_validation_ok")
+                        property var showError:
+                        {
+                            if(extruderTemperatureProvider.properties.maximum_value != "None" && extruderTemperatureProvider.properties.maximum_value <  Math.floor(preheatExtruderTemperatureInput.text))
+                            {
+                                return true;
+                            } else
+                            {
+                                return false;
+                            }
+                        }
+                        enabled:
+                        {
+                            if (connectedPrinter == null)
+                            {
+                                return false; //Can't preheat if not connected.
+                            }
+                            if (!connectedPrinter.acceptsCommands)
+                            {
+                                return false; //Not allowed to do anything.
+                            }
+                            if (connectedPrinter.jobState == "printing" || connectedPrinter.jobState == "pre_print" || connectedPrinter.jobState == "resuming" || connectedPrinter.jobState == "pausing" || connectedPrinter.jobState == "paused" || connectedPrinter.jobState == "error" || connectedPrinter.jobState == "offline")
+                            {
+                                return false; //Printer is in a state where it can't react to pre-heating.
+                            }
+                            return true;
+                        }
+                        border.width: UM.Theme.getSize("default_lining").width
+                        border.color: !enabled ? UM.Theme.getColor("setting_control_disabled_border") : preheatExtruderTemperatureInputMouseArea.containsMouse ? UM.Theme.getColor("setting_control_border_highlight") : UM.Theme.getColor("setting_control_border")
+                        anchors.left: parent.left
+                        anchors.leftMargin: UM.Theme.getSize("default_margin").width
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: UM.Theme.getSize("default_margin").height
+                        width: UM.Theme.getSize("setting_control").width-20
+                        height: UM.Theme.getSize("setting_control").height
+                        Rectangle //Highlight of input field.
+                        {
+                            anchors.fill: parent
+                            anchors.margins: UM.Theme.getSize("default_lining").width
+                            color: UM.Theme.getColor("setting_control_highlight")
+                            opacity: preheatExtruderTemperatureControl.hovered ? 1.0 : 0
+                        }
+                        Label //Maximum temperature indication.
+                        {
+                            text: (extruderTemperatureProvider.properties.maximum_value != "None" ? extruderTemperatureProvider.properties.maximum_value : "") + "°C"
+                            color: UM.Theme.getColor("setting_unit")
+                            font: UM.Theme.getFont("default")
+                            anchors.right: parent.right
+                            anchors.rightMargin: UM.Theme.getSize("setting_unit_margin").width
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                        MouseArea //Change cursor on hovering.
+                        {
+                            id: preheatExtruderTemperatureInputMouseArea
+                            hoverEnabled: true
+                            anchors.fill: parent
+                            cursorShape: Qt.IBeamCursor
+
+                            onHoveredChanged:
+                            {
+                                if (containsMouse)
+                                {
+                                    base.showTooltip(
+                                        base,
+                                        {x: 0, y: preheatExtruderTemperatureInputMouseArea.mapToItem(base, 0, 0).y},
+                                        catalog.i18nc("@tooltip of temperature input", "The temperature to pre-heat the extruder to.")
+                                    );
+                                }
+                                else
+                                {
+                                    base.hideTooltip();
+                                }
+                            }
+                        }
+                        TextInput
+                        {
+                            id: preheatExtruderTemperatureInput
+                            font: UM.Theme.getFont("default")
+                            color: !enabled ? UM.Theme.getColor("setting_control_disabled_text") : UM.Theme.getColor("setting_control_text")
+                            selectByMouse: true
+                            maximumLength: 10
+                            enabled: parent.enabled
+                            validator: RegExpValidator { regExp: /^-?[0-9]{0,9}[.,]?[0-9]{0,10}$/ } //Floating point regex.
+                            anchors.left: parent.left
+                            anchors.leftMargin: UM.Theme.getSize("setting_unit_margin").width
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            renderType: Text.NativeRendering
+
+                            Component.onCompleted:
+                            {
+                                if (!extruderTemperatureProvider.properties.value)
+                                {
+                                    text = "";
+                                }
+                                if ((extruderTemperatureProvider.resolve != "None" && extruderTemperatureProvider.resolve) && (extruderTemperatureProvider.stackLevels[0] != 0) && (extruderTemperatureProvider.stackLevels[0] != 1))
+                                {
+                                    // We have a resolve function. Indicates that the setting is not settable per extruder and that
+                                    // we have to choose between the resolved value (default) and the global value
+                                    // (if user has explicitly set this).
+                                    text = extruderTemperatureProvider.resolve;
+                                }
+                                else
+                                {
+                                    text = extruderTemperatureProvider.properties.value;
+                                }
+                            }
+                        }
+                    }
+
+                    Button //The pre-heat button.
+                    {
+                        id: preheatExtruderButton
+                        height: UM.Theme.getSize("setting_control").height
+                        visible: connectedPrinter != null
+                        enabled:
+                        {
+                            if (!preheatExtruderTemperatureControl.enabled)
+                            {
+                                return false; //Not connected, not authenticated or printer is busy.
+                            }
+                            if (extruderRectangle.isPreheating)
+                            {
+                                return true; //Can always cancel if the timer is running.
+                            }
+                            if (extruderTemperatureProvider.properties.minimum_value != "None" && Math.floor(preheatExtruderTemperatureInput.text) < Math.floor(extruderTemperatureProvider.properties.minimum_value))
+                            {
+                                return false; //Target temperature too low.
+                            }
+                            if (extruderTemperatureProvider.properties.maximum_value != "None" && Math.floor(preheatExtruderTemperatureInput.text) > Math.floor(extruderTemperatureProvider.properties.maximum_value))
+                            {
+                                return false; //Target temperature too high.
+                            }
+                            if (Math.floor(preheatExtruderTemperatureInput.text) == 0)
+                            {
+                                return false; //Setting the temperature to 0 is not allowed (since that cancels the pre-heating).
+                            }
+                            return true; //Preconditions are met.
+                        }
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        anchors.margins: UM.Theme.getSize("default_margin").width
+                        style: ButtonStyle {
+                            background: Rectangle
+                            {
+                                border.width: UM.Theme.getSize("default_lining").width
+                                implicitWidth: actualLabel.contentWidth + (UM.Theme.getSize("default_margin").width * 2)
+                                border.color:
+                                {
+                                    if(!control.enabled)
+                                    {
+                                        return UM.Theme.getColor("action_button_disabled_border");
+                                    }
+                                    else if(control.pressed)
+                                    {
+                                        return UM.Theme.getColor("action_button_active_border");
+                                    }
+                                    else if(control.hovered)
+                                    {
+                                        return UM.Theme.getColor("action_button_hovered_border");
+                                    }
+                                    else
+                                    {
+                                        return UM.Theme.getColor("action_button_border");
+                                    }
+                                }
+                                color:
+                                {
+                                    if(!control.enabled)
+                                    {
+                                        return UM.Theme.getColor("action_button_disabled");
+                                    }
+                                    else if(control.pressed)
+                                    {
+                                        return UM.Theme.getColor("action_button_active");
+                                    }
+                                    else if(control.hovered)
+                                    {
+                                        return UM.Theme.getColor("action_button_hovered");
+                                    }
+                                    else
+                                    {
+                                        return UM.Theme.getColor("action_button");
+                                    }
+                                }
+                                Behavior on color
+                                {
+                                    ColorAnimation
+                                    {
+                                        duration: 50
+                                    }
+                                }
+
+                                Label
+                                {
+                                    id: actualLabel
+                                    anchors.centerIn: parent
+                                    color:
+                                    {
+                                        if(!control.enabled)
+                                        {
+                                            return UM.Theme.getColor("action_button_disabled_text");
+                                        }
+                                        else if(control.pressed)
+                                        {
+                                            return UM.Theme.getColor("action_button_active_text");
+                                        }
+                                        else if(control.hovered)
+                                        {
+                                            return UM.Theme.getColor("action_button_hovered_text");
+                                        }
+                                        else
+                                        {
+                                            return UM.Theme.getColor("action_button_text");
+                                        }
+                                    }
+                                    font: UM.Theme.getFont("action_button")
+                                    text: extruderRectangle.isPreheating ? catalog.i18nc("@button Cancel pre-heating", "Cancel") : catalog.i18nc("@button", "Pre-heat")
+                                }
+                            }
+                        }
+
+                        onClicked:
+                        {
+                            if (!extruderRectangle.isPreheating)
+                            {
+                                connectedPrinter.preheatHotend(index, preheatExtruderTemperatureInput.text);
+                                extruderRectangle.isPreheating = true;
+                            }
+                            else
+                            {
+                                connectedPrinter.cancelPreheatHotend(index);
+                                extruderRectangle.isPreheating = false;
+                            }
+                        }
+
+                        onHoveredChanged:
+                        {
+                            if (hovered)
+                            {
+                                base.showTooltip(
+                                    base,
+                                    {x: 0, y: preheatExtruderButton.mapToItem(base, 0, 0).y},
+                                    catalog.i18nc("@tooltip of pre-heat", "Heat the extruder in advance before printing. You can continue adjusting your print while it is heating, and you won't have to wait for the extruder to heat up when you're ready to print.")
+                                );
+                            }
+                            else
+                            {
+                                base.hideTooltip();
                             }
                         }
                     }
@@ -732,7 +1000,7 @@ Column
 
                 Label
                 {
-                    text: catalog.i18nc("@label", "X/Y")
+                    text: catalog.i18nc("@label", "Left")
                     color: UM.Theme.getColor("setting_control_text")
                     font: UM.Theme.getFont("default")
                     width: height
@@ -741,7 +1009,58 @@ Column
                     horizontalAlignment: Text.AlignHCenter
 
                     Layout.row: 1
+                    Layout.column: 1
+                    Layout.preferredWidth: width
+                    Layout.preferredHeight: height
+                }
+
+                Switch
+                {
+                    id: extruderSwitch
+                    checked: false
+                    Layout.row: 1
                     Layout.column: 2
+                    Layout.preferredWidth: width
+                    Layout.preferredHeight: height
+                    height: UM.Theme.getSize("setting_control").height
+                    style: SwitchStyle {
+                        groove: Rectangle {
+                            implicitWidth: 30
+                            implicitHeight: 10
+                            radius: 9
+                            border.width: 1
+                        }
+                        handle: Rectangle {
+                            implicitWidth: 15
+                            implicitHeight: 15
+                            radius: 10
+                            color: UM.Theme.getColor("primary")
+                        }
+                    }
+                    onClicked: {
+                        if (checked) {
+                            connectedPrinter.setExtruder(1)
+                        }
+                        else {
+                            connectedPrinter.setExtruder(0)
+                        }
+                    }
+                }
+
+                Label
+                {
+                    text: catalog.i18nc("@label", "Right")
+                    color: UM.Theme.getColor("setting_control_text")
+                    font: UM.Theme.getFont("default")
+                    width: height
+                    height: UM.Theme.getSize("setting_control").height
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.left: extruderSwitch.right
+                    anchors.leftMargin: 5
+
+                    Layout.row: 1
+                    Layout.column: 3
                     Layout.preferredWidth: width
                     Layout.preferredHeight: height
                 }
@@ -857,7 +1176,7 @@ Column
 
                     onClicked:
                     {
-                        connectedPrinter.moveHead(0, 0, distancesRow.currentDistance)
+                        connectedPrinter.moveHead(0, 0, -distancesRow.currentDistance)
                     }
                 }
 
@@ -883,7 +1202,70 @@ Column
 
                     onClicked:
                     {
-                        connectedPrinter.moveHead(0, 0, -distancesRow.currentDistance)
+                        connectedPrinter.moveHead(0, 0, distancesRow.currentDistance)
+                    }
+                }
+            }
+            Column
+            {
+                spacing: UM.Theme.getSize("default_lining").height
+
+                Label
+                {
+                    text: catalog.i18nc("@label", "Purge")
+                    color: UM.Theme.getColor("setting_control_text")
+                    font: UM.Theme.getFont("default")
+                    width: UM.Theme.getSize("section").height
+                    height: UM.Theme.getSize("setting_control").height
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                }
+
+                Button
+                {
+                    id: purgeArrowTop
+                    iconSource: UM.Theme.getIcon("arrow_top");
+                    style: monitorButtonStyle
+                    width: height
+                    height: UM.Theme.getSize("setting_control").height
+                    enabled: {
+                        var i = extruderSwitch.checked ? 1 : 0;
+                        return connectedPrinter.hotendTemperatures[i] >= 150;
+                    }
+
+                    onClicked:
+                    {
+                        connectedPrinter.purge(-distancesRow.currentDistance, 1000)
+                    }
+                }
+
+//                Button
+//                {
+//                    iconSource: UM.Theme.getIcon("tab_status_paused");
+//                    style: monitorButtonStyle
+//                    width: height
+//                    height: UM.Theme.getSize("setting_control").height
+//
+//                    onClicked:
+//                    {
+//                        connectedPrinter.homeBed()
+//                    }
+//                }
+
+                Button
+                {
+                    iconSource: UM.Theme.getIcon("arrow_bottom");
+                    style: monitorButtonStyle
+                    width: height
+                    height: UM.Theme.getSize("setting_control").height
+                    enabled: {
+                        var i = extruderSwitch.checked ? 1 : 0;
+                        return connectedPrinter.hotendTemperatures[i] >= 150;
+                    }
+
+                    onClicked:
+                    {
+                        connectedPrinter.purge(distancesRow.currentDistance)
                     }
                 }
             }
