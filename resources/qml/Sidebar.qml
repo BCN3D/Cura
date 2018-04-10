@@ -249,7 +249,6 @@ Rectangle
 
     PrintModeComboBox {
         id: printMode
-        visible: !monitoringPrint && !hideSettings
     }
 
     StackView
