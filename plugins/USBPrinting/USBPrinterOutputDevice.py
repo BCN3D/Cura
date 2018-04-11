@@ -512,17 +512,17 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         else:
             self._firmware_latest_version = "UNKNOWN"
             return
-        request = urllib.request.Request(latest_release_url_api, headers=headers)
         try:
+            request = urllib.request.Request(latest_release_url_api, headers=headers)
             latest_release = urllib.request.urlopen(request)
+            reader = codecs.getreader("utf-8")
+            data = json.load(reader(latest_release))
+            self._firmware_latest_version = FirmwareVersion(data["tag_name"])
+            Application.getInstance().setLatestFirmwareVersion(self._firmware_latest_version)
         except Exception as e:
             Logger.log("e", "Exception trying to get firmware latest version from github: %s", repr(e))
             self._firmware_latest_version = "UNKNOWN"
             return
-        reader = codecs.getreader("utf-8")
-        data = json.load(reader(latest_release))
-        self._firmware_latest_version = FirmwareVersion(data["tag_name"])
-        Application.getInstance().setLatestFirmwareVersion(self._firmware_latest_version)
         self.firmwareLatestChange.emit()
 
     ##  Set the baud rate of the serial. This can cause exceptions, but we simply want to ignore those.
