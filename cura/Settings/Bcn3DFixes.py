@@ -188,6 +188,12 @@ class Bcn3DFixes(Job):
             if self._purgeBeforeStart[countingForTool]:
                 for index, layer in enumerate(self._gcode_list):
                     if layer.startswith(";LAYER:"):
+                        # remove unnecessary retract
+                        if countingForTool == 1:
+                            lines = layer.split("\n")
+                            if lines[1].startswith("G1") and "E" in lines[1] and GCodeUtils.getValue(lines[1], "E") < 0:
+                                lines[1] = ";"+lines[1]+" ;removed unnecessary retract"
+                            layer = "\n".join(lines)
                         layer = "T"+str(countingForTool) + "\n" + \
                                 "G92 E0\n" + \
                                 "G1 F"+str(self._purgeSpeed[countingForTool])+" E"+str(self._startPurgeDistance[countingForTool]) + " ;start purge\n" + \
@@ -223,6 +229,12 @@ class Bcn3DFixes(Job):
                     layer = "\n".join(lines)
                     self._gcode_list[index] = layer
                 else:
+                    # remove unnecessary retract
+                    if self._purgeBeforeStart[0] or self._purgeBeforeStart[1]:
+                        lines = layer.split("\n")
+                        if lines[1].startswith("G1") and "E" in lines[1] and GCodeUtils.getValue(lines[1], "E") < 0:
+                            lines[1] = ";"+lines[1]+" ;removed unnecessary retract"
+                        layer = "\n".join(lines)
                     # add purge commands and set back standby temperatures
                     if self._purgeBeforeStart[1]:
                         layer = "T1\n" + \
