@@ -15,8 +15,12 @@ class Bcn3DFixes(Job):
         self._container = container
         self._gcode_list = gcode_list
         
-        extruder_left = ExtruderManager.getInstance().getExtruderStack(0)
-        extruder_right = ExtruderManager.getInstance().getExtruderStack(1)
+        if len(ExtruderManager.getInstance().getExtruderStacks()) == 2:
+            extruder_left = ExtruderManager.getInstance().getExtruderStack(0)
+            extruder_right = ExtruderManager.getInstance().getExtruderStack(1)
+        else:
+            extruder_left = ExtruderManager.getInstance().getExtruderStack(0)
+            extruder_right = extruder_left
         active_extruder = ExtruderManager.getInstance().getActiveExtruderStack()
 
         # self._activeExtruders = active_extruder.getProperty("active_extruders", "value")
@@ -98,7 +102,7 @@ class Bcn3DFixes(Job):
         # self._smartPurgeEParameter = [extruder_left.getProperty("smart_purge_maximum_purge_distance", "value"),
         #                               extruder_right.getProperty("smart_purge_maximum_purge_distance", "value")]
         
-        self._startGcodeInfo = [";BCN3D Fixes applied"]
+        self._startGcodeInfo = [";BCN3D Fixes applied"] if len(ExtruderManager.getInstance().getExtruderStacks()) <= 2 else [";Warning! - BCN3D Fixes applied only with T0 values"]
         
         self._IDEXPrint = len(ExtruderManager.getInstance().getUsedExtruderStacks()) > 1
         self._MEXPrint =  not self._IDEXPrint and self._container.getProperty("print_mode", "value") == 'regular'
