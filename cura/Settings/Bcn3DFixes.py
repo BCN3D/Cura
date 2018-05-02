@@ -15,13 +15,18 @@ class Bcn3DFixes(Job):
         self._container = container
         self._gcode_list = gcode_list
         
-        extruder_left = ExtruderManager.getInstance().getExtruderStack(0)
-        extruder_right = ExtruderManager.getInstance().getExtruderStack(1)
+        if len(ExtruderManager.getInstance().getExtruderStacks()) == 2:
+            extruder_left = ExtruderManager.getInstance().getExtruderStack(0)
+            extruder_right = ExtruderManager.getInstance().getExtruderStack(1)
+        else:
+            extruder_left = ExtruderManager.getInstance().getExtruderStack(0)
+            extruder_right = extruder_left
         active_extruder = ExtruderManager.getInstance().getActiveExtruderStack()
 
         # self._activeExtruders = active_extruder.getProperty("active_extruders", "value")
         # self._fixFirstRetract = active_extruder.getProperty("fix_first_retract", "value")
         # self._fixTemperatureOscilation = active_extruder.getProperty("fix_temperature_oscilation", "value")
+        self._nozzleSize = [extruder_left.getProperty("machine_nozzle_size", "value"), extruder_right.getProperty("machine_nozzle_size", "value")]
 
         self._fixToolChangeTravel = active_extruder.getProperty("fix_tool_change_travel", "value")
         self._layerHeight = active_extruder.getProperty("layer_height", "value")
@@ -98,7 +103,7 @@ class Bcn3DFixes(Job):
         # self._smartPurgeEParameter = [extruder_left.getProperty("smart_purge_maximum_purge_distance", "value"),
         #                               extruder_right.getProperty("smart_purge_maximum_purge_distance", "value")]
         
-        self._startGcodeInfo = [";BCN3D Fixes applied"]
+        self._startGcodeInfo = [";BCN3D Fixes applied"] if len(ExtruderManager.getInstance().getExtruderStacks()) <= 2 else [";Warning! - BCN3D Fixes applied only with T0 values"]
         
         self._IDEXPrint = len(ExtruderManager.getInstance().getUsedExtruderStacks()) > 1
         self._MEXPrint =  not self._IDEXPrint and self._container.getProperty("print_mode", "value") == 'regular'
@@ -148,7 +153,20 @@ class Bcn3DFixes(Job):
             if written_info:
                 break
 
-        self._gcode_list[0] += ";BCN3D_FIXES\n"
+        # Get info of used extruders
+        if self._MirrorOrDuplicationPrint:
+            extrudersUsed = ";Extruders used: T0 "+str(self._nozzleSize[0])+" T1 "+str(self._nozzleSize[0])
+        else:
+            if self._MEXPrint:
+                countingForTool = int(ExtruderManager.getInstance().getUsedExtruderStacks()[0].getMetaData()['position'])
+                if countingForTool == 0:
+                    extrudersUsed = ";Extruders used: T0 "+str(self._nozzleSize[0])
+                else:
+                    extrudersUsed = ";Extruders used: T1 "+str(self._nozzleSize[1])
+            else:
+                extrudersUsed = ";Extruders used: T0 "+str(self._nozzleSize[0])+" T1 "+str(self._nozzleSize[1])
+
+        self._gcode_list[0] += extrudersUsed+"\n;BCN3D_FIXES\n"
         scene = Application.getInstance().getController().getScene()
         setattr(scene, "gcode_list", self._gcode_list)
         self.setResult(self._gcode_list)
@@ -188,7 +206,15 @@ class Bcn3DFixes(Job):
             if self._purgeBeforeStart[countingForTool]:
                 for index, layer in enumerate(self._gcode_list):
                     if layer.startswith(";LAYER:"):
-                        layer = "G1 F"+str(self._purgeSpeed[countingForTool])+" E"+str(self._startPurgeDistance[countingForTool]) + " ;start purge\n" + \
+                        # remove unnecessary retract
+                        if countingForTool == 1:
+                            lines = layer.split("\n")
+                            if lines[1].startswith("G1") and "E" in lines[1] and GCodeUtils.getValue(lines[1], "E") < 0:
+                                lines[1] = ";"+lines[1]+" ;removed unnecessary retract"
+                            layer = "\n".join(lines)
+                        layer = "T"+str(countingForTool) + "\n" + \
+                                "G92 E0\n" + \
+                                "G1 F"+str(self._purgeSpeed[countingForTool])+" E"+str(self._startPurgeDistance[countingForTool]) + " ;start purge\n" + \
                                 "G92 E0\n" + \
                                 layer
                         self._gcode_list[index] = layer
@@ -221,6 +247,12 @@ class Bcn3DFixes(Job):
                     layer = "\n".join(lines)
                     self._gcode_list[index] = layer
                 else:
+                    # remove unnecessary retract
+                    if self._purgeBeforeStart[0] or self._purgeBeforeStart[1]:
+                        lines = layer.split("\n")
+                        if lines[1].startswith("G1") and "E" in lines[1] and GCodeUtils.getValue(lines[1], "E") < 0:
+                            lines[1] = ";"+lines[1]+" ;removed unnecessary retract"
+                        layer = "\n".join(lines)
                     # add purge commands and set back standby temperatures
                     if self._purgeBeforeStart[1]:
                         layer = "T1\n" + \
