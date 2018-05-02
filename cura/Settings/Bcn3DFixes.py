@@ -26,6 +26,7 @@ class Bcn3DFixes(Job):
         # self._activeExtruders = active_extruder.getProperty("active_extruders", "value")
         # self._fixFirstRetract = active_extruder.getProperty("fix_first_retract", "value")
         # self._fixTemperatureOscilation = active_extruder.getProperty("fix_temperature_oscilation", "value")
+        self._nozzleSize = [extruder_left.getProperty("machine_nozzle_size", "value"), extruder_right.getProperty("machine_nozzle_size", "value")]
 
         self._fixToolChangeTravel = active_extruder.getProperty("fix_tool_change_travel", "value")
         self._layerHeight = active_extruder.getProperty("layer_height", "value")
@@ -152,7 +153,20 @@ class Bcn3DFixes(Job):
             if written_info:
                 break
 
-        self._gcode_list[0] += ";BCN3D_FIXES\n"
+        # Get info of used extruders
+        if self._MirrorOrDuplicationPrint:
+            extrudersUsed = ";Extruders used: T0 "+str(self._nozzleSize[0])+" T1 "+str(self._nozzleSize[0])
+        else:
+            if self._MEXPrint:
+                countingForTool = int(ExtruderManager.getInstance().getUsedExtruderStacks()[0].getMetaData()['position'])
+                if countingForTool == 0:
+                    extrudersUsed = ";Extruders used: T0 "+str(self._nozzleSize[0])
+                else:
+                    extrudersUsed = ";Extruders used: T1 "+str(self._nozzleSize[1])
+            else:
+                extrudersUsed = ";Extruders used: T0 "+str(self._nozzleSize[0])+" T1 "+str(self._nozzleSize[1])
+
+        self._gcode_list[0] += extrudersUsed+"\n;BCN3D_FIXES\n"
         scene = Application.getInstance().getController().getScene()
         setattr(scene, "gcode_list", self._gcode_list)
         self.setResult(self._gcode_list)
