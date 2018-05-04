@@ -133,6 +133,6 @@ class CuraSceneController(QObject):
     def _onToolOperationStopped(self, tool = None):
         global_stack = Application.getInstance().getGlobalContainerStack()
         prime_tower = global_stack.getProperty("prime_tower_enable", "value")
-        if prime_tower and len(ExtruderManager.getInstance().getUsedExtruderStacks()) > 1:
+        if prime_tower and len(ExtruderManager.getInstance().getUsedExtruderStacks()) > 1 and Selection.hasSelection():
             global_stack.propertyChanged.emit("prime_tower_position_x", "value")
             global_stack.propertyChanged.emit("prime_tower_position_y", "value")
