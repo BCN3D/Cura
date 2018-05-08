@@ -1,3 +1,22 @@
+[2.0.1]
+*Improvements:
+
+- Better support settings
+- Increased PVA flow on the prime tower to get better adhesion
+- Removed cool lift head by default and improved cooling parameters
+
+*Bug fixes:
+
+- Critical CuraEngine crash when disabling the prime tower
+- Random CuraEngine crash when moving models around the platform
+- Tower line thickness now it will be autocalculated to print only two perimeters or, if it's thicker, fill it normally with the infill zig-zag
+- Bad platform offset when the models were reloaded
+- Added nGen density and price so it calculates print cost and weight
+- Second extruder skirt parameters can be changed to more than 1 line
+- Import profiles from older versions
+- Sigmax custom profiles
+- Unexpected purge before start on T0 when it was a T1 only print
+
 [2.0.0]
 *Based on Ultimaker's Cura 3.2.1
 *Brand new UI
