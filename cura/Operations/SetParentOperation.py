@@ -31,7 +31,7 @@ class SetParentOperation(Operation.Operation):
             self._fixAndSetParent(self._old_parent)
             if type(self._parent) == DuplicatedNode:
                 if self._parent in PrintModeManager.getInstance().getDuplicatedNodes():
-                    PrintModeManager.getInstance().deleteDuplicatedNode(self._parent)
+                    PrintModeManager.getInstance().deleteDuplicatedNode(self._parent, False)
             elif type(self._old_parent) == DuplicatedNode:
                 if self._old_parent not in PrintModeManager.getInstance().getDuplicatedNodes():
                     PrintModeManager.getInstance().addDuplicatedNode(self._old_parent)
