@@ -53,8 +53,8 @@ class Bcn3DFixes(Job):
                               extruder_right.getProperty("cool_lift_head", "value")]
         self._purgeBeforeStart = [extruder_left.getProperty("purge_in_bucket_before_start", "value"),
                                   extruder_right.getProperty("purge_in_bucket_before_start", "value")]
-        self._startPurgeDistance = [extruder_left.getProperty("start_purge_distance", "value"),
-                                    extruder_right.getProperty("start_purge_distance", "value")]
+        # self._startPurgeDistance = [extruder_left.getProperty("start_purge_distance", "value"),
+        #                             extruder_right.getProperty("start_purge_distance", "value")]
         # self._retractReduction = active_extruder.getProperty("retract_reduction", "value")
         # self._switchExtruderRetractionAmount = [extruder_left.getProperty("switch_extruder_retraction_amount", "value"),
         #                                         extruder_right.getProperty("switch_extruder_retraction_amount", "value")]
@@ -124,8 +124,8 @@ class Bcn3DFixes(Job):
         self._handleAvoidGrindingFilament()
         self._handleZHopAtLayerChange()
         self._handleZHopAfterPrimeTower()
-        self._handlePurgeAtStart()
 
+        # self._handlePurgeAtStart()
         # self._handleActiveExtruders()
         '''
             Not needed anymore:
@@ -172,6 +172,36 @@ class Bcn3DFixes(Job):
         self.setResult(self._gcode_list)
 
     def _handleFixStartGcode(self):
+        # fix first temperature. Change standby to start if Purge Before Start enabled
+        if self._IDEXPrint:
+            countingForTool = 0
+            startTemperatures = self._materialPrintTemperatureLayer0[:]
+            for index, layer in enumerate(self._gcode_list):
+                lines = layer.split("\n")
+                if not layer.startswith(";LAYER:"):
+                    temp_index = 0
+                    while temp_index < len(lines):
+                        line = lines[temp_index]
+                        if line.startswith("T0") or line.startswith("T1"):
+                            if "T0" in line:
+                                countingForTool = 0
+                            else:
+                                countingForTool = 1
+                        if line.startswith("M104 S") or line.startswith("M109 S"):
+                            if self._purgeBeforeStart[countingForTool]:
+                                startTemperatures[countingForTool] = GCodeUtils.getValue(line, "S")
+                                lines[temp_index] = "M104 S"+str(self._materialPrintTemperatureLayer0[countingForTool]) if line.startswith("M104 S") else "M109 S"+str(self._materialPrintTemperatureLayer0[countingForTool])
+                        elif line.startswith("M104 T") or line.startswith("M109 T"):
+                            toolNumber = int(GCodeUtils.getValue(line, "T"))
+                            if self._purgeBeforeStart[toolNumber]:
+                                startTemperatures[toolNumber] = GCodeUtils.getValue(line, "S")
+                                lines[temp_index] = "M104 T" + str(toolNumber) + " S"+str(self._materialPrintTemperatureLayer0[toolNumber]) if line.startswith("M104 T") else "M109 T" + str(toolNumber) + " S" + str(self._materialPrintTemperatureLayer0[toolNumber])
+                        temp_index += 1
+                    layer = "\n".join(lines)
+                    self._gcode_list[index] = layer
+                else:
+                    break
+            Logger.log("d", "fix_start_gcode applied")
         # Fix temperatures for Mirror/Duplication print modes
         if self._MirrorOrDuplicationPrint:
             self._startGcodeInfo.append("; - Fix start GCode")
@@ -196,79 +226,84 @@ class Bcn3DFixes(Job):
                 if startGcodeCorrected:
                     break
             Logger.log("d", "fix_start_gcode applied")
-
-    def _handlePurgeAtStart(self):
-        self._startGcodeInfo.append("; - Purge Before Start")
-        MachineAllowsClonedExtrusionSteps = self._container.getProperty("print_mode", "enabled")
-        if self._MEXPrint or self._MirrorOrDuplicationPrint:
-            # easy case. add purge before start
-            countingForTool = int(ExtruderManager.getInstance().getUsedExtruderStacks()[0].getMetaData()['position'])
-            if self._purgeBeforeStart[countingForTool]:
-                for index, layer in enumerate(self._gcode_list):
-                    if layer.startswith(";LAYER:"):
-                        # remove unnecessary retract
-                        if countingForTool == 1:
-                            lines = layer.split("\n")
-                            if lines[1].startswith("G1") and "E" in lines[1] and GCodeUtils.getValue(lines[1], "E") < 0:
-                                lines[1] = ";"+lines[1]+" ;removed unnecessary retract"
-                            layer = "\n".join(lines)
-                        layer = "T"+str(countingForTool) + "\n" + \
-                                "G92 E0\n" + \
-                                "G1 F"+str(self._purgeSpeed[countingForTool])+" E"+str(self._startPurgeDistance[countingForTool]) + " ;start purge\n" + \
-                                "G92 E0\n" + \
-                                layer
-                        self._gcode_list[index] = layer
-                        break
-        else:
-            countingForTool = 0
-            startTemperatures = self._materialPrintTemperatureLayer0[:]
+        # Fix temperatures for DUAL extruder prints
+        elif self._IDEXPrint:
+            self._startGcodeInfo.append("; - Fix start GCode")
+            startGcodeCorrected = False
             for index, layer in enumerate(self._gcode_list):
                 lines = layer.split("\n")
-                if not layer.startswith(";LAYER:"):
-                    # fix first temperature. Change standby to start
-                    temp_index = 0
-                    while temp_index < len(lines):
+                temp_index = 0
+                while temp_index < len(lines):
+                    try:
                         line = lines[temp_index]
-                        if line.startswith("T0") or line.startswith("T1"):
-                            if "T0" in line:
-                                countingForTool = 0
-                            else:
-                                countingForTool = 1
-                        if line.startswith("M104 S") or line.startswith("M109 S"):
-                            if self._purgeBeforeStart[countingForTool]:
-                                startTemperatures[countingForTool] = GCodeUtils.getValue(line, "S")
-                                lines[temp_index] = "M104 S"+str(self._materialPrintTemperatureLayer0[countingForTool]) if line.startswith("M104 S") else "M109 S"+str(self._materialPrintTemperatureLayer0[countingForTool])
-                        elif line.startswith("M104 T") or line.startswith("M109 T"):
-                            toolNumber = int(GCodeUtils.getValue(line, "T"))
-                            if self._purgeBeforeStart[toolNumber]:
-                                startTemperatures[toolNumber] = GCodeUtils.getValue(line, "S")
-                                lines[temp_index] = "M104 T" + str(toolNumber) + " S"+str(self._materialPrintTemperatureLayer0[toolNumber]) if line.startswith("M104 T") else "M109 T" + str(toolNumber) + " S" + str(self._materialPrintTemperatureLayer0[toolNumber])
+                        if line.startswith("M104 S"+str(self._materialPrintTemperatureLayer0[0])):
+                            lines[temp_index] = "M104 T0 S"+str(self._materialPrintTemperatureLayer0[0])+" ;Fixed T0 temperature"
+                        if line.startswith("M109 S"+str(self._materialPrintTemperatureLayer0[0])):
+                            lines[temp_index] = "M109 T0 S"+str(self._materialPrintTemperatureLayer0[0])+" ;Fixed T0 temperature"
+                            startGcodeCorrected = True
+                            break
                         temp_index += 1
-                    layer = "\n".join(lines)
-                    self._gcode_list[index] = layer
-                else:
-                    # remove unnecessary retract
-                    if self._purgeBeforeStart[0] or self._purgeBeforeStart[1]:
-                        lines = layer.split("\n")
-                        if lines[1].startswith("G1") and "E" in lines[1] and GCodeUtils.getValue(lines[1], "E") < 0:
-                            lines[1] = ";"+lines[1]+" ;removed unnecessary retract"
-                        layer = "\n".join(lines)
-                    # add purge commands and set back standby temperatures
-                    if self._purgeBeforeStart[1]:
-                        layer = "T1\n" + \
-                                "G1 F"+str(self._purgeSpeed[1])+" E"+str(self._startPurgeDistance[1]) + " ;start purge on T1\n" + \
-                                "G92 E0\n" + \
-                                "M104 T1 S"+str(startTemperatures[1]) + "\n" + \
-                                "T0\n" + \
-                                layer
-                    if self._purgeBeforeStart[0]:
-                        layer = "G1 F"+str(self._purgeSpeed[0])+" E"+str(self._startPurgeDistance[0]) + " ;start purge on T0\n" + \
-                                "G92 E0\n" + \
-                                "M104 S"+str(startTemperatures[0]) + "\n" + \
-                                layer
-                    self._gcode_list[index] = layer
+                    except:
+                        break
+                layer = "\n".join(lines)
+                self._gcode_list[index] = layer
+                if startGcodeCorrected:
                     break
-        Logger.log("d", "purge_in_bucket_before_start applied")
+            Logger.log("d", "fix_start_gcode applied")
+
+    # def _handlePurgeAtStart(self):
+    #     self._startGcodeInfo.append("; - Purge Before Start")
+    #     if self._MEXPrint or self._MirrorOrDuplicationPrint:
+    #         # easy case. add purge before start
+    #         countingForTool = int(ExtruderManager.getInstance().getUsedExtruderStacks()[0].getMetaData()['position'])
+    #         if self._purgeBeforeStart[countingForTool]:
+    #             for index, layer in enumerate(self._gcode_list):
+    #                 if layer.startswith(";LAYER:"):
+    #                     # remove unnecessary retract
+    #                     if countingForTool == 1:
+    #                         lines = layer.split("\n")
+    #                         if lines[1].startswith("G1") and "E" in lines[1] and GCodeUtils.getValue(lines[1], "E") < 0:
+    #                             lines[1] = ";"+lines[1]+" ;removed unnecessary retract"
+    #                         layer = "\n".join(lines)
+    #                     self._gcode_list[index] = layer
+    #                     break
+    #     else:
+    #         countingForTool = 0
+    #         startTemperatures = self._materialPrintTemperatureLayer0[:]
+    #         for index, layer in enumerate(self._gcode_list):
+    #             lines = layer.split("\n")
+    #             if not layer.startswith(";LAYER:"):
+    #                 # fix first temperature. Change standby to start
+    #                 temp_index = 0
+    #                 while temp_index < len(lines):
+    #                     line = lines[temp_index]
+    #                     if line.startswith("T0") or line.startswith("T1"):
+    #                         if "T0" in line:
+    #                             countingForTool = 0
+    #                         else:
+    #                             countingForTool = 1
+    #                     if line.startswith("M104 S") or line.startswith("M109 S"):
+    #                         if self._purgeBeforeStart[countingForTool]:
+    #                             startTemperatures[countingForTool] = GCodeUtils.getValue(line, "S")
+    #                             lines[temp_index] = "M104 S"+str(self._materialPrintTemperatureLayer0[countingForTool]) if line.startswith("M104 S") else "M109 S"+str(self._materialPrintTemperatureLayer0[countingForTool])
+    #                     elif line.startswith("M104 T") or line.startswith("M109 T"):
+    #                         toolNumber = int(GCodeUtils.getValue(line, "T"))
+    #                         if self._purgeBeforeStart[toolNumber]:
+    #                             startTemperatures[toolNumber] = GCodeUtils.getValue(line, "S")
+    #                             lines[temp_index] = "M104 T" + str(toolNumber) + " S"+str(self._materialPrintTemperatureLayer0[toolNumber]) if line.startswith("M104 T") else "M109 T" + str(toolNumber) + " S" + str(self._materialPrintTemperatureLayer0[toolNumber])
+    #                     temp_index += 1
+    #                 layer = "\n".join(lines)
+    #                 self._gcode_list[index] = layer
+    #             else:
+    #                 # remove unnecessary retract
+    #                 if self._purgeBeforeStart[0] or self._purgeBeforeStart[1]:
+    #                     lines = layer.split("\n")
+    #                     if lines[1].startswith("G1") and "E" in lines[1] and GCodeUtils.getValue(lines[1], "E") < 0:
+    #                         lines[1] = ";"+lines[1]+" ;removed unnecessary retract"
+    #                     layer = "\n".join(lines)
+    #                 self._gcode_list[index] = layer
+    #                 break
+    #     Logger.log("d", "purge_in_bucket_before_start applied")
 
     # def _handleActiveExtruders(self):
     #     # Heat and purge only used extruders. Simultaneously if possible.
