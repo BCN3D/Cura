@@ -35,8 +35,11 @@ class ExtruderManager(QObject):
         self._selected_object_extruders = []
         self._global_container_stack_definition_id = None
         self._addCurrentMachineExtruders()
+        self._used_extruder_stacks = []
+        self._global_stack = None
 
         Application.getInstance().globalContainerStackChanged.connect(self.__globalContainerStackChanged)
+        Application.getInstance().getController().getScene().sceneChanged.connect(self._onSceneChanged)
         Selection.selectionChanged.connect(self.resetSelectedObjectExtruders)
 
     ##  Signal to notify other components when the list of extruders for a machine definition changes.
@@ -51,6 +54,32 @@ class ExtruderManager(QObject):
 
     ## The signal notifies subscribers if extruders are added
     extrudersAdded = pyqtSignal()
+
+    def _onSceneChanged(self, node):
+        if self._global_stack:
+            used_extruder_stacks = self.getUsedExtruderStacks()
+            if self._used_extruder_stacks != used_extruder_stacks:
+                self._used_extruder_stacks = used_extruder_stacks
+                for definition in Application.getInstance().getGlobalContainerStack().definition.findDefinitions(reset_on_used_extruders_change=True):
+                    dual_enabled = self._global_stack.getProperty(definition.key, "dual_enabled")
+                    if len(used_extruder_stacks) > 1:
+                        value = self._global_stack.getProperty(definition.key, "dual_value")
+                        if dual_enabled is not None:
+                            if dual_enabled:
+                                self._global_stack.setProperty(definition.key, "enabled", True)
+                            elif not dual_enabled:
+                                self._global_stack.setProperty(definition.key, "enabled", False)
+                    else:
+                        value = self._global_stack.getProperty(definition.key, "default_value")
+                        if dual_enabled is not None:
+                            if dual_enabled:
+                                self._global_stack.setProperty(definition.key, "enabled", False)
+                            elif not dual_enabled:
+                                self._global_stack.setProperty(definition.key, "enabled", True)
+
+                    if value != self._global_stack.getProperty(definition.key, "value"):
+                        self._global_stack.setProperty(definition.key, "value", value)
+
 
     ##  Gets the unique identifier of the currently active extruder stack.
     #
@@ -315,7 +344,9 @@ class ExtruderManager(QObject):
 
         # The platform adhesion extruder. Not used if using none.
         if global_stack.getProperty("adhesion_type", "value") != "none":
-            used_extruder_stack_ids.add(self.extruderIds[str(global_stack.getProperty("adhesion_extruder_nr", "value"))])
+            adhesion_extruder_nr = int(global_stack.getProperty("adhesion_extruder_nr", "value"))
+            if adhesion_extruder_nr != -1:
+                used_extruder_stack_ids.add(self.extruderIds[str(global_stack.getProperty("adhesion_extruder_nr", "value"))])
 
         try:
             return [container_registry.findContainerStacks(id = stack_id)[0] for stack_id in used_extruder_stack_ids]
@@ -373,6 +404,9 @@ class ExtruderManager(QObject):
 
     def __globalContainerStackChanged(self) -> None:
         global_container_stack = Application.getInstance().getGlobalContainerStack()
+        if global_container_stack:
+            self._global_stack = global_container_stack
+            self._used_extruder_stacks = self.getUsedExtruderStacks()
         if global_container_stack and global_container_stack.getBottom() and global_container_stack.getBottom().getId() != self._global_container_stack_definition_id:
             self._global_container_stack_definition_id = global_container_stack.getBottom().getId()
             self.globalContainerStackDefinitionChanged.emit()
@@ -678,3 +712,13 @@ class ExtruderManager(QObject):
         resolved_value = global_stack.getProperty(key, "value", context = context)
 
         return resolved_value
+
+    @staticmethod
+    def getUsedExtruders():
+        extruder_manager = ExtruderManager.getInstance()
+        used_extruders = extruder_manager.getUsedExtruderStacks()
+        result = []
+        for i in range(extruder_manager.extruderCount):
+            if extruder_manager.getExtruderStack(i) in used_extruders:
+                result.append(i)
+        return result
