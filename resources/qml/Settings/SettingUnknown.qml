@@ -12,6 +12,7 @@ SettingItem
     {
         anchors.fill: parent
         text: value + " " + unit;
+        renderType: Text.NativeRendering
         color: UM.Theme.getColor("setting_control_text")
 
         verticalAlignment: Qt.AlignVCenter
