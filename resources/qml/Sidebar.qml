@@ -249,7 +249,8 @@ Rectangle
     }
 
     PrintModeComboBox {
-        id: printMode
+        id: printModeCombobox
+        visible: printMode.properties.enabled && !monitoringPrint
     }
 
     StackView
@@ -257,7 +258,7 @@ Rectangle
         id: sidebarContents
 
         anchors.bottom: footerSeparator.top
-        anchors.top: printMode.visible ? printMode.bottom : settingsModeSelection.bottom
+        anchors.top: printModeCombobox.visible ? printModeCombobox.bottom : settingsModeSelection.bottom
         anchors.topMargin: UM.Theme.getSize("sidebar_margin").height
         anchors.left: base.left
         anchors.right: base.right
@@ -641,6 +642,16 @@ Rectangle
         containerStackId: Cura.MachineManager.activeMachineId
         key: "machine_heated_bed"
         watchedProperties: [ "value" ]
+        storeIndex: 0
+    }
+
+    UM.SettingPropertyProvider
+    {
+        id: printMode
+
+        containerStackId: Cura.MachineManager.activeMachineId
+        key: "print_mode"
+        watchedProperties: [ "enabled" ]
         storeIndex: 0
     }
 }
