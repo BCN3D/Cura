@@ -104,7 +104,7 @@ class Bcn3DFixes(Job):
         #                               extruder_right.getProperty("smart_purge_maximum_purge_distance", "value")]
         
         self._startGcodeInfo = [";BCN3D Fixes applied"] if len(ExtruderManager.getInstance().getExtruderStacks()) <= 2 else [";Warning! - BCN3D Fixes applied only with T0 values"]
-        
+
         self._IDEXPrint = len(ExtruderManager.getInstance().getUsedExtruderStacks()) > 1
         self._MEXPrint =  not self._IDEXPrint and self._container.getProperty("print_mode", "value") == 'regular'
         self._MirrorOrDuplicationPrint = not self._IDEXPrint and self._container.getProperty("print_mode", "value") != 'regular'
@@ -140,8 +140,8 @@ class Bcn3DFixes(Job):
         # self._handleSmartPurge()               # the command is added as parameters in the fdmprinter. Not needed
         # self._handleRetractReduction()         # Useless feature. To be removed
 
-        written_info = False
         # Write Sigma Vitamins info
+        written_info = False
         for index, layer in enumerate(self._gcode_list):
             lines = layer.split("\n")
             for temp_index in range(len(lines)):
@@ -486,44 +486,24 @@ class Bcn3DFixes(Job):
                                                                 yPosition = GCodeUtils.getValue(lines[temp_index + 1], "Y")
                                                                 del lines[temp_index + 1]
                                                             # Add purge commands
-                                                            # todo remove T1/T0 when sigma firmware updated, leave only G71/G72
-                                                            if Application.getInstance().getMachineManager().activeMachineId == "Sigma":
-                                                                lines[temp_index] += "\n;prevent filament grinding on T" + str(countingForTool) + \
-                                                                                    "\nG1 F" + self._travelSpeed[countingForTool] + \
-                                                                                    "\nT" + str(abs(countingForTool - 1)) + \
-                                                                                    "\nT" + str(countingForTool) + \
-                                                                                    "\nG91" + \
-                                                                                    "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(self._retractionHopHeightAfterExtruderSwitch[countingForTool]) + \
-                                                                                    "\nG90" + \
-                                                                                    "\nG1 F" + self._retractionPrimeSpeed[countingForTool] + " E" + str(round(eValue + self._retractionAmount[countingForTool], 5)) + \
-                                                                                    "\nG1 F" + self._purgeSpeed[countingForTool] + " E" + str(round(eValue + self._retractionAmount[countingForTool] + purgeLength, 5)) + \
-                                                                                    "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E" + str(round(eValue + purgeLength, 5)) + \
-                                                                                    "\nG4 P2000" + \
-                                                                                    "\nG92 E" +  str(eValue) + \
-                                                                                    "\nG1 F" + self._travelSpeed[countingForTool] + " X" + str(xPosition)+" Y" + str(yPosition) + \
-                                                                                    "\nG91" + \
-                                                                                    "\nG1 F" + self._travelSpeed[countingForTool] + " Z-" + str(self._retractionHopHeightAfterExtruderSwitch[countingForTool]) + \
-                                                                                    "\nG90" + \
-                                                                                    "\n;end of the filament grinding prevention protocol"
-                                                            else:
-                                                                lines[temp_index] += "\n;prevent filament grinding on T" + str(countingForTool) + \
-                                                                                    "\nG1 F" + self._travelSpeed[countingForTool] + \
-                                                                                    "\nG71" + \
-                                                                                    "\nG91" + \
-                                                                                    "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(self._retractionHopHeightAfterExtruderSwitch[countingForTool]) + \
-                                                                                    "\nG90" + \
-                                                                                    "\nG1 F" + self._retractionPrimeSpeed[countingForTool] + " E" + str(round(eValue + self._retractionAmount[countingForTool], 5)) + \
-                                                                                    "\nG1 F" + self._purgeSpeed[countingForTool] + " E" + str(round(eValue + self._retractionAmount[countingForTool] + purgeLength,5)) + \
-                                                                                    "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E" + str(round(eValue + purgeLength, 5)) + \
-                                                                                    "\nG4 P2000" + \
-                                                                                    "\nG92 E" + str(eValue) + \
-                                                                                    "\nG1 F" + self._travelSpeed[countingForTool] + \
-                                                                                    "\nG72" + \
-                                                                                    "\nG1 F" + self._travelSpeed[countingForTool] + " X" + str(xPosition)+" Y" + str(yPosition) + \
-                                                                                    "\nG91" + \
-                                                                                    "\nG1 F" + self._travelSpeed[countingForTool] + " Z-" + str(self._retractionHopHeightAfterExtruderSwitch[countingForTool]) + \
-                                                                                    "\nG90" + \
-                                                                                    "\n;end of the filament grinding prevention protocol"
+                                                            lines[temp_index] += "\n;prevent filament grinding on T" + str(countingForTool) + \
+                                                                                "\nG1 F" + self._travelSpeed[countingForTool] + \
+                                                                                "\nG71" + \
+                                                                                "\nG91" + \
+                                                                                "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(self._retractionHopHeightAfterExtruderSwitch[countingForTool]) + \
+                                                                                "\nG90" + \
+                                                                                "\nG1 F" + self._retractionPrimeSpeed[countingForTool] + " E" + str(round(eValue + self._retractionAmount[countingForTool], 5)) + \
+                                                                                "\nG1 F" + self._purgeSpeed[countingForTool] + " E" + str(round(eValue + self._retractionAmount[countingForTool] + purgeLength,5)) + \
+                                                                                "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E" + str(round(eValue + purgeLength, 5)) + \
+                                                                                "\nG4 P2000" + \
+                                                                                "\nG92 E" + str(eValue) + \
+                                                                                "\nG1 F" + self._travelSpeed[countingForTool] + \
+                                                                                "\nG72" + \
+                                                                                "\nG1 F" + self._travelSpeed[countingForTool] + " X" + str(xPosition)+" Y" + str(yPosition) + \
+                                                                                "\nG91" + \
+                                                                                "\nG1 F" + self._travelSpeed[countingForTool] + " Z-" + str(self._retractionHopHeightAfterExtruderSwitch[countingForTool]) + \
+                                                                                "\nG90" + \
+                                                                                "\n;end of the filament grinding prevention protocol"
                                                             retractionsPerExtruder[countingForTool] = []
                                                             purgedOffset[countingForTool] = 0
                                                     else:
