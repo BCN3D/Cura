@@ -127,7 +127,7 @@ SettingItem
             background: Rectangle
             {
                 id: swatch
-                height: height: Math.round(UM.Theme.getSize("setting_control").height / 2)
+                height: Math.round(UM.Theme.getSize("setting_control").height / 2)
                 width: height
 
                 anchors.right: parent.right
