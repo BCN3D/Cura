@@ -10,6 +10,7 @@ import re
 import functools
 import os
 import urllib.request, json, codecs
+import copy
 
 from UM.Application import Application
 from UM.Logger import Logger
@@ -90,7 +91,11 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         # This index is the extruder we requested data from the last time.
         self._temperature_requested_extruder_index = 0
 
+        self._current_x = 0
+        self._current_y = 0
         self._current_z = 0
+        self._current_e = 0
+        self._current_f = 2400
 
         self._updating_firmware = False
 
@@ -116,6 +121,10 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
                 "machine_prefix": 2
             }
         }
+
+        self._buffer_size = 240
+        self._bytes_sent = 0
+        self._buffer = queue.Queue()
 
         self.firmwareChange.connect(self._onFirmwareChange)
 
@@ -169,8 +178,10 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         self._sendCommand("G28")
 
     def _purge(self, distance, speed):
+        self._sendCommand("G91")
         self._sendCommand("G1 E%s F%s" % (distance, speed))
         self._sendCommand("G92 E0")
+        self._sendCommand("G90")
 
     ##  Updates the target bed temperature from the printer, and emit a signal if it was changed.
     #
@@ -565,9 +576,18 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
 
     ##  Directly send the command, withouth checking connection state (eg; printing).
     #   \param cmd string with g-code
-    def _sendCommand(self, cmd):
+    def _sendCommand(self, cmd, is_queue = False):
         if self._serial is None:
             return
+
+        cmd_size = len(cmd.encode("utf-8"))
+        if (self._bytes_sent + cmd_size) >= self._buffer_size:
+            if not is_queue:
+                self._command_queue.put(cmd)
+            return
+
+        if is_queue:
+            self._command_queue.get()
 
         if "M109" in cmd or "M190" in cmd:
             self._heatup_wait_start_time = time.time()
@@ -576,6 +596,9 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
             command = (cmd + "\n").encode()
             self._serial.write(b"\n")
             self._serial.write(command)
+            print(command)
+            self._bytes_sent += cmd_size
+            self._buffer.put(cmd)
         except serial.SerialTimeoutException:
             Logger.log("w","Serial timeout while writing to serial port, trying again.")
             try:
@@ -652,6 +675,7 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         ok_timeout = time.time()
         while self._connection_state == ConnectionState.connected:
             line = self._readline()
+            print("Received:", line)
             try:
                 line.decode("utf-8")
             except:
@@ -666,6 +690,10 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
 
             if line is None:
                 break  # None is only returned when something went wrong. Stop listening
+
+            if b"ok" in line:
+                if not self._buffer.empty():
+                    self._bytes_sent -= len(self._buffer.get().encode("utf-8"))
 
             if time.time() > temperature_request_timeout:
                 if self._num_extruders > 1:
@@ -682,6 +710,9 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
                 # So we can have an extra newline in the most common case. Awesome work people.
                 if re.match(b"Error:[0-9]\n", line):
                     line = line.rstrip() + self._readline()
+
+                else:
+                    continue
 
                 # Skip the communication errors, as those get corrected.
                 if b"Extruder switched off" in line or b"Temperature heated bed switched off" in line or b"Something is wrong, please turn off the printer." in line:
@@ -733,22 +764,34 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
 
                 if b"ok" in line:
                     ok_timeout = time.time() + 5
-                    if not self._command_queue.empty():
-                        self._sendCommand(self._command_queue.get())
-                    elif self._is_paused:
+                    # if not self._command_queue.empty():
+                    #     aux_queue = copy.copy(self._command_queue.queue)
+                    #     self._sendCommand(aux_queue.popleft(), True)
+                    if self._is_paused:
                         line = b""  # Force getting temperature as keep alive
-                    else:
-                        self._sendNextGcodeLine()
+
                 elif b"resend" in line.lower() or b"rs" in line:  # Because a resend can be asked with "resend" and "rs"
                     try:
                         Logger.log("d", "Got a resend response")
                         self._gcode_position = int(line.replace(b"N:",b" ").replace(b"N",b" ").replace(b":",b" ").split()[-1])
+                        self._empty_queues()
                     except:
                         if b"rs" in line:
                             self._gcode_position = int(line.split()[1])
 
+                if not self._command_queue.empty():
+                    aux_queue = copy.copy(self._command_queue.queue)
+                    self._sendCommand(aux_queue.popleft(), True)
+                else:
+                    self._sendNextGcodeLine()
+
+            elif self._is_paused:
+                if not self._command_queue.empty():
+                    aux_queue = copy.copy(self._command_queue.queue)
+                    self._sendCommand(aux_queue.popleft(), True)
+
             # Request the temperature on comm timeout (every 2 seconds) when we are not printing.)
-            if line == b"":
+            elif line == b"":
                 if self._num_extruders > 1:
                     self._temperature_requested_extruder_index = (self._temperature_requested_extruder_index + 1) % self._num_extruders
                     self.sendCommand("M105 T%d" % self._temperature_requested_extruder_index)
@@ -764,7 +807,10 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         line = self._gcode[self._gcode_position]
 
         if ";" in line:
-            line = line[:line.find(";")]
+            if not line.lower().startswith(";layer:"):
+                line = line[:line.find(";")]
+            else:
+                line = "G715"
         line = line.strip()
 
         # Don't send empty lines. But we do have to send something, so send
@@ -774,18 +820,37 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         if line == "" or line == "M0" or line == "M1":
             line = "M105"
         try:
-            if ("G0" in line or "G1" in line) and "Z" in line:
-                z = float(re.search("Z([0-9\.]*)", line).group(1))
-                if self._current_z != z:
-                    self._current_z = z
+            if "G0" in line or "G1" in line:
+                if "Z" in line:
+                    z = float(re.search("Z(-?[0-9\.]*)", line).group(1))
+                    if self._current_z != z:
+                        self._current_z = z
+                if "X" in line:
+                    x = float(re.search("X(-?[0-9\.]*)", line).group(1))
+                    if self._current_x != x:
+                        self._current_x = x
+                if "Y" in line:
+                    y = float(re.search("Y(-?[0-9\.]*)", line).group(1))
+                    if self._current_y != y:
+                        self._current_y = y
+
+                if "E" in line:
+                    e = float(re.search("E(-?[0-9\.]*)", line).group(1))
+                    if self._current_e != e:
+                        self._current_e = e
+
+            if "F" in line:
+                f = float(re.search("F(-?[0-9\.]*)", line).group(1))
+                if self._current_f != f:
+                    self._current_f = f
         except Exception as e:
             Logger.log("e", "Unexpected error with printer connection, could not parse current Z: %s: %s" % (e, line))
             self._setErrorState("Unexpected error: %s" %e)
-        checksum = functools.reduce(lambda x,y: x^y, map(ord, "N%d%s" % (self._gcode_position, line)))
+        checksum = functools.reduce(lambda x,y: x^y, map(ord, "N%d %s" % (self._gcode_position, line)))
 
-        self._sendCommand("N%d%s*%d" % (self._gcode_position, line, checksum))
+        self._sendCommand("N%d %s*%d" % (self._gcode_position, line, checksum))
 
-        progress = (self._gcode_position / len(self._gcode))
+        progress = (self._gcode_position / (len(self._gcode) - 1))
 
         elapsed_time = int(time.time() - self._print_start_time)
         self.setTimeElapsed(elapsed_time)
@@ -804,9 +869,13 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         if job_state == "pause":
             self._is_paused = True
             self._updateJobState("paused")
+            self.pausePrint()
         elif job_state == "print":
+            if self._is_paused:
+                self.resumePrint()
             self._is_paused = False
             self._updateJobState("printing")
+            self._is_printing = True
         elif job_state == "abort":
             self.cancelPrint()
 
@@ -822,6 +891,8 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
     def setProgress(self, progress, max_progress = 100):
         self._progress = (progress / max_progress) * 100  # Convert to scale of 0-100
         if self._progress == 100:
+            self._sendCommand("M605 S3")
+            self._empty_queues()
             # Printing is done, reset progress
             self._gcode_position = 0
             self.setProgress(0)
@@ -835,7 +906,10 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         self._gcode_position = 0
         self.setProgress(0)
         self._gcode = []
-
+        self._is_printing = False
+        self._is_paused = False
+        self._empty_queues()
+        time.sleep(0.3)
         # Turn off temperatures, fan and steppers
         self._sendCommand("M104 S0 T0")
         self._sendCommand("M104 S0 T1")
@@ -843,14 +917,50 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         self._sendCommand("M107")
         self._sendCommand("G91")
         self._sendCommand("G1 Z+0.5 E-5 X+10 F12000")
-        self._sendCommand("G1 Z+10 F720")
+        self._sendCommand("G1 Z+10")
         self.homeHead()
         self._sendCommand("M84")
         self._sendCommand("G90")
-        self._is_printing = False
-        self._is_paused = False
+        self._sendCommand("M605 S3")
         self._updateJobState("ready")
         Application.getInstance().getController().setActiveStage("PrepareStage")
+
+    def pausePrint(self):
+        self._is_printing = False
+        self._empty_queues()
+        time.sleep(0.3)
+        self._sendCommand("G1 F2100 E%f" % (self._current_e - 12))
+        self._sendCommand("G92 E%f" % self._current_e)
+        self._sendCommand("G1 F12000")
+        self._sendCommand("G1 X%f Y%f" % (self._current_x + 5, self._current_y + 5))
+        self._sendCommand("G1 Z%f" % (self._current_z + 5))
+        self._sendCommand("G4")
+        self._sendCommand("G71")
+        self._sendCommand("G4 P1")
+        self._sendCommand("G4 P2")
+        self._sendCommand("G4 P3")
+
+    def resumePrint(self):
+        self._empty_queues()
+        time.sleep(0.3)
+        self._sendCommand("G92 E%f" % (self._current_e - 12))
+        self._sendCommand("G1 F50 E%f" % (self._current_e + 10))
+        self._sendCommand("G92 E%f" % self._current_e)
+        self._sendCommand("G1 F2100 E%f" % (self._current_e - 12))
+        self._sendCommand("G1 F12000")
+        self._sendCommand("G4")
+        self._sendCommand("G72")
+        self._sendCommand("G1 X%f Y%f" % (self._current_x, self._current_y))
+        self._sendCommand("G1 Z%f" % self._current_z)
+        self._sendCommand("G1 F1000 E%f" % self._current_e)
+        self._sendCommand("G1 F%f" % self._current_f)
+
+    def _empty_queues(self):
+        while not self._buffer.empty():
+            self._buffer.get()
+        self._bytes_sent = 0
+        while not self._command_queue.empty():
+            self._command_queue.get()
 
     ##  Check if the process did not encounter an error yet.
     def hasError(self):
