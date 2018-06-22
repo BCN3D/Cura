@@ -125,22 +125,9 @@ class Bcn3DFixes(Job):
         self._handleZHopAtLayerChange()
         self._handleZHopAfterPrimeTower()
 
-        # self._handlePurgeAtStart()
-        # self._handleActiveExtruders()
-        '''
-            Not needed anymore:
-            - extruders heat as expected
-            - for mirror/dupli gcodes are added to the start gcode
-            - the same for M108 P1
-            - it would be interesting to add purge commands, but used extruders need to be retrieved and also force the value calculation according to used extruders (enable _handleFixFirstRetract in that case)
-        '''
-        # self._handleCoolDownToZeroAtEnd()      # Not needed after v3.2
-        # self._handleFixFirstRetract()          # Not needed if there are no retract commands in the start gcode
-        # self._handleFixTemperatureOscilation() # Changes to proper temperatures if auto temperature is on. Auto temperature is not on, so it's not needed
-        # self._handleSmartPurge()               # the command is added as parameters in the fdmprinter. Not needed
-        # self._handleRetractReduction()         # Useless feature. To be removed
+        # self._handleFixTemperatureOscilation() # Changes to proper temperatures if auto temperature is on. Auto temperature is not on and it's an experimental feature, this will be probably solved from the engine perspective. Therefore it's temporary commented
 
-        # Write Sigma Vitamins info
+        # Write BCN3DFixes info
         written_info = False
         for index, layer in enumerate(self._gcode_list):
             lines = layer.split("\n")
@@ -172,7 +159,20 @@ class Bcn3DFixes(Job):
         self.setResult(self._gcode_list)
 
     def _handleFixStartGcode(self):
-        # fix first temperature. Change standby to start if Purge Before Start enabled
+        '''
+            Default behavior:
+                Hotends are heated up at print start.
+                If one hotend takes more than cooldown window to start printing (usual scenario in DUAL prints) then it will be heated up to Standby temperature.
+                -> [Fix 1] if Purge at Start is enabled the Hotend must be heated up to layer 0 temperature 
+
+                Mirror/Duplication prints are internally taken as single extruder prints.
+                Cura only heats up left hotend
+                -> [Fix 2] Must be added the t1 heat up command 
+
+                In Dual prints there may be some cases where hotends are heated up to printing temperature
+                -> [Fix 3] Must be heated up to layer 0 temperature instead 
+        '''
+        # Fix 1: first temperature. Change standby to start if Purge Before Start enabled
         if self._IDEXPrint:
             countingForTool = 0
             startTemperatures = self._materialPrintTemperatureLayer0[:]
@@ -202,7 +202,7 @@ class Bcn3DFixes(Job):
                 else:
                     break
             Logger.log("d", "fix_start_gcode applied")
-        # Fix temperatures for Mirror/Duplication print modes
+        # Fix 2: temperatures for Mirror/Duplication print modes
         if self._MirrorOrDuplicationPrint:
             self._startGcodeInfo.append("; - Fix start GCode")
             startGcodeCorrected = False
@@ -226,7 +226,7 @@ class Bcn3DFixes(Job):
                 if startGcodeCorrected:
                     break
             Logger.log("d", "fix_start_gcode applied")
-        # Fix temperatures for DUAL extruder prints
+        # Fix 3: temperatures for DUAL extruder prints
         elif self._IDEXPrint:
             self._startGcodeInfo.append("; - Fix start GCode")
             startGcodeCorrected = False
@@ -251,127 +251,17 @@ class Bcn3DFixes(Job):
                     break
             Logger.log("d", "fix_start_gcode applied")
 
-    # def _handlePurgeAtStart(self):
-    #     self._startGcodeInfo.append("; - Purge Before Start")
-    #     if self._MEXPrint or self._MirrorOrDuplicationPrint:
-    #         # easy case. add purge before start
-    #         countingForTool = int(ExtruderManager.getInstance().getUsedExtruderStacks()[0].getMetaData()['position'])
-    #         if self._purgeBeforeStart[countingForTool]:
-    #             for index, layer in enumerate(self._gcode_list):
-    #                 if layer.startswith(";LAYER:"):
-    #                     # remove unnecessary retract
-    #                     if countingForTool == 1:
-    #                         lines = layer.split("\n")
-    #                         if lines[1].startswith("G1") and "E" in lines[1] and GCodeUtils.getValue(lines[1], "E") < 0:
-    #                             lines[1] = ";"+lines[1]+" ;removed unnecessary retract"
-    #                         layer = "\n".join(lines)
-    #                     self._gcode_list[index] = layer
-    #                     break
-    #     else:
-    #         countingForTool = 0
-    #         startTemperatures = self._materialPrintTemperatureLayer0[:]
-    #         for index, layer in enumerate(self._gcode_list):
-    #             lines = layer.split("\n")
-    #             if not layer.startswith(";LAYER:"):
-    #                 # fix first temperature. Change standby to start
-    #                 temp_index = 0
-    #                 while temp_index < len(lines):
-    #                     line = lines[temp_index]
-    #                     if line.startswith("T0") or line.startswith("T1"):
-    #                         if "T0" in line:
-    #                             countingForTool = 0
-    #                         else:
-    #                             countingForTool = 1
-    #                     if line.startswith("M104 S") or line.startswith("M109 S"):
-    #                         if self._purgeBeforeStart[countingForTool]:
-    #                             startTemperatures[countingForTool] = GCodeUtils.getValue(line, "S")
-    #                             lines[temp_index] = "M104 S"+str(self._materialPrintTemperatureLayer0[countingForTool]) if line.startswith("M104 S") else "M109 S"+str(self._materialPrintTemperatureLayer0[countingForTool])
-    #                     elif line.startswith("M104 T") or line.startswith("M109 T"):
-    #                         toolNumber = int(GCodeUtils.getValue(line, "T"))
-    #                         if self._purgeBeforeStart[toolNumber]:
-    #                             startTemperatures[toolNumber] = GCodeUtils.getValue(line, "S")
-    #                             lines[temp_index] = "M104 T" + str(toolNumber) + " S"+str(self._materialPrintTemperatureLayer0[toolNumber]) if line.startswith("M104 T") else "M109 T" + str(toolNumber) + " S" + str(self._materialPrintTemperatureLayer0[toolNumber])
-    #                     temp_index += 1
-    #                 layer = "\n".join(lines)
-    #                 self._gcode_list[index] = layer
-    #             else:
-    #                 # remove unnecessary retract
-    #                 if self._purgeBeforeStart[0] or self._purgeBeforeStart[1]:
-    #                     lines = layer.split("\n")
-    #                     if lines[1].startswith("G1") and "E" in lines[1] and GCodeUtils.getValue(lines[1], "E") < 0:
-    #                         lines[1] = ";"+lines[1]+" ;removed unnecessary retract"
-    #                     layer = "\n".join(lines)
-    #                 self._gcode_list[index] = layer
-    #                 break
-    #     Logger.log("d", "purge_in_bucket_before_start applied")
-
-    # def _handleActiveExtruders(self):
-    #     # Heat and purge only used extruders. Simultaneously if possible.
-    #     if self._activeExtruders:
-    #         self._startGcodeInfo.append("; - Heat only essentials")
-    #         MachineAllowsClonedExtrusionSteps = self._container.getProperty("print_mode", "enabled")
-    #         if self._MEXPrint:
-    #             idleExtruder = 'T' + str(abs(int(ExtruderManager.getInstance().getUsedExtruderStacks()[0].getMetaData()['position']) - 1))
-    #         startGcodeCorrected = False
-    #         for index, layer in enumerate(self._gcode_list):
-    #             lines = layer.split("\n")
-    #             temp_index = 0
-    #             while temp_index < len(lines):
-    #                 line = lines[temp_index]
-    #                 if not startGcodeCorrected:
-    #                     try:
-    #                         if line.startswith("M108 P1"):
-    #                             del lines[temp_index]
-    #                             temp_index -= 1
-    #                         line1 = lines[temp_index + 1]
-    #                         line2 = lines[temp_index + 2]
-    #                         line3 = lines[temp_index + 3]
-    #                         line4 = lines[temp_index + 4]
-    #                         line5 = lines[temp_index + 5]
-    #                         if line1.startswith("G92 E0") and line2.startswith("G1 E") and line3.startswith("G92 E0") and line4.startswith("G4 P2000") and line5.startswith("G1 F2400 E-8"):
-    #                             if self._MEXPrint and line.startswith(idleExtruder):
-    #                                 # Remove purge lines for unused hotends (MEX Prints)
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 startGcodeCorrected = True
-    #                                 break
-    #                             elif (self._MirrorOrDuplicationPrint or (self._IDEXPrint and MachineAllowsClonedExtrusionSteps)) and line.startswith("T1"):
-    #                                 # Use cloned purge commands if the machine allows it and is using both hotends (IDEX, Mirror or Duplication)
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 del lines[temp_index]
-    #                                 lines[temp_index] = lines[temp_index]+"\nM605 S4      ;clone extruders steps"
-    #                                 lines[temp_index + 5] = lines[temp_index + 5]+"\nM605 S3      ;back to independent extruder steps"
-    #                                 startGcodeCorrected = True
-    #                                 break
-    #                     except:
-    #                         pass
-    #                 if self._MEXPrint:
-    #                     # Remove heating lines for unused hotends (MEX Prints)
-    #                     if idleExtruder == "T1":
-    #                         if "T1" in line:
-    #                             del lines[temp_index]
-    #                             temp_index -= 1
-    #                     elif idleExtruder == "T0":
-    #                         if index < 2 and (line.startswith("M104 S") or line.startswith("M109 S")) and "T1" not in line:
-    #                             del lines[temp_index]
-    #                             temp_index -= 1
-    #                 temp_index += 1
-    #             if startGcodeCorrected:
-    #                 layer = "\n".join(lines)
-    #                 self._gcode_list[index] = layer
-    #                 break
-    #         Logger.log("d", "active_extruders applied")
-
     def _handleFixToolChangeTravel(self):
-        # Allows the new tool to go straight to the position where it has to print, instead of going to the last position before tool change and then travel to the position where it has to print
+        '''
+            Default behavior:
+                When changing tools, the new tool will go straight to the last position of the first tool.
+                Then move to the position it actually has to print.
+                -> [Fix 1] Proper movement is make the new tool to go straight to the place it has to print and avoid unnecessary travels 
+                
+                In random places there's a travel to (layer_start_x, layer_start_y)
+                -> [Fix 2] Remove this travel
+        '''
+        # Fix 1: Allows the new tool to go straight to the position where it has to print, instead of going to the last position before tool change and then travel to the position where it has to print
         if self._fixToolChangeTravel and self._IDEXPrint:
             self._startGcodeInfo.append("; - Fix Tool Change Travel")
             for index, layer in enumerate(self._gcode_list):
@@ -402,14 +292,21 @@ class Bcn3DFixes(Job):
                     except:
                         break
                 layer = "\n".join(lines)
-                # Fix strange travel to X105 Y297
+                # Fix 2: Fix strange travel to X105 Y297
                 regex = r"\n.*X" + str(int(self._container.getProperty("layer_start_x", "value"))) + " Y" + str(int(self._container.getProperty("layer_start_y", "value"))) + ".*"
                 layer = re.sub(regex, "", layer)
                 self._gcode_list[index] = layer
             Logger.log("d", "fix_tool_change_travel applied")
 
     def _handleTemperatureCommandsRightAfterToolChange(self):
-        # Places M109 temperature commands right after toolchange, before Extruder gcode is executed, to improve all purge commands and machine reliability
+        '''
+            Default behavior:
+                M104 Sends temperature command
+                M109 Sends temperature command + forces the machine to wait until the temperature has been reached
+                When changing tools, the machine comes from an M104, then inserts Extruder GCode (may include purge commands), then sends the M109, and then bak to the part.
+                -> [Fix 1] Send the M109 before the Extruder GCode
+        '''        
+        # Fix 1: Places M109 temperature commands right after toolchange, before Extruder gcode is executed, to improve all purge commands and machine reliability
         if self._IDEXPrint:
             self._startGcodeInfo.append("; - Temperature Commands Right After Tool Change")
             for index, layer in enumerate(self._gcode_list):
@@ -437,13 +334,13 @@ class Bcn3DFixes(Job):
                         except:
                             break
                     layer = "\n".join(lines)
-                    # Fix strange travel to X105 Y297
-                    regex = r"\n.*X" + str(int(self._container.getProperty("layer_start_x", "value"))) + " Y" + str(int(self._container.getProperty("layer_start_y", "value"))) + ".*"
-                    layer = re.sub(regex, "", layer)
                     self._gcode_list[index] = layer
             Logger.log("d", "_handleTemperatureCommandsRightAfterToolChange() applied")            
 
     def _handleAvoidGrindingFilament(self):
+        '''
+            Custom feature to bring the hotend to the purge bucket and purge the desired amount if there has been X retractions in Y distance of filament. Then continue printing with renewed filament.
+        '''
         if self._avoidGrindingFilament[0] or self._avoidGrindingFilament[1]:
             self._startGcodeInfo.append("; - Prevent Filament Grinding")
             retractionsPerExtruder = [[], []]
@@ -520,6 +417,9 @@ class Bcn3DFixes(Job):
             Logger.log("d", "avoid_grinding_filament applied")
 
     def _handleZHopAtLayerChange(self):
+        '''
+            Custom feature to add a Z Hop (+retraction) at layer change
+        '''
         if self._ZHopAtLayerChange[0] or self._ZHopAtLayerChange[1]:
             self._startGcodeInfo.append("; - Z Hop At Layer Change")
             countingForTool = 0
@@ -549,6 +449,11 @@ class Bcn3DFixes(Job):
             Logger.log("d", "hop_at_layer_change applied")
 
     def _handleChangeLiftHeadMovement(self):
+        '''
+            Default behavior:
+                when the lift head setting is enabled it moves in X+Z, then waits, then X+Z
+                -> [Fix] move X, then Z, then waits,  then X, then Z
+        '''
         if self._CoolLiftHead[0] or self._CoolLiftHead[1]:
             self._startGcodeInfo.append("; - Change Lift Head Movement")
             fixMovementInNextLayer = False
@@ -591,6 +496,10 @@ class Bcn3DFixes(Job):
             Logger.log("d", "_handleChangeLiftHeadMovement() applied")
 
     def _handleZHopAfterPrimeTower(self):
+        '''
+            Custom feature to add a Z Hop (+retraction) after prime tower
+            Note: if it does support after prime tower it will not hop until moving to part!
+        '''
         if (self._ZHopAfterPrimeTower[0] or self._ZHopAfterPrimeTower[1]) and self._IDEXPrint and self._primeTowerEnabled:
             self._startGcodeInfo.append("; - Z Hop After Prime Tower")
             countingForTool = 0
@@ -634,6 +543,9 @@ class Bcn3DFixes(Job):
             Logger.log("d", "retraction_hop_after_prime_tower applied")
 
     def _handleFixAccelerationJerkCommands(self):
+        '''
+            Removes acceleration/jerk (M204/M205) commands if the acceleration/jerk is already set to that value
+        '''
         if self._accelerationEnabled[0] or self._accelerationEnabled[1] or self._jerkEnabled[0] or self._jerkEnabled[1]:
             self._startGcodeInfo.append("; - Fix Acceleration/Jerk commands")
             # remove commands which have no X/Y movement after
@@ -834,130 +746,6 @@ class Bcn3DFixes(Job):
     #                     break
     #             self._gcode_list[index] = layer
     #         Logger.log("d", "fix_temperature_oscilation applied")
-
-    # def _handleFixFirstRetract(self):
-    #     if self._fixFirstRetract:
-    #         self._startGcodeInfo.append("; - Fix First Extrusion")
-    #         lookingForTool = None
-    #         countingForTool = None
-    #         eValueT1 = None
-    #         for index, layer in enumerate(self._gcode_list):
-    #             lines = layer.split("\n")
-    #             if not layer.startswith(";LAYER:"):
-    #                 # Get retract value before starting the first layer
-    #                 for line in lines:
-    #                     if line.startswith("T1"):
-    #                         countingForTool = 1
-    #                     if countingForTool and GCodeUtils.charsInLine(["G", "F", "E-"], line):
-    #                         eValueT1 = GCodeUtils.getValue(line, "E")
-    #                         break
-    #             else:
-    #                 # Fix the thing
-    #                 if eValueT1:
-    #                     if 'T1\nG92 E0' in layer and layer.startswith(";LAYER:0"):
-    #                         # IDEX Starts with T0, then T1. Only T1 needs to be fixed
-    #                         # IDEX Starts with T1, then T0. Only T1 needs to be fixed                                
-    #                         # MEX  Starts with T1 and only T1 needs to be fixed
-    #                         layer = layer.replace('T1\nG92 E0', 'T1\nG92 E'+str(eValueT1)+' ;T1fix', 1)
-    #                         break
-    #                     elif lookingForTool == 'T1' and 'T1\nG92 E0' in layer:
-    #                         # Starts with T0, first T1 found and fixed
-    #                         layer = layer.replace('T1\nG92 E0', 'T1\nG92 E'+str(eValueT1)+' ;T1fix', 1)
-    #                         break
-    #                     elif not lookingForTool:
-    #                         # Starts with T0, T1 will need to be fixed
-    #                         lookingForTool = 'T1'
-    #                 else:
-    #                     # There is no eValue to fix and it's already printing
-    #                     break
-    #         self._gcode_list[index] = layer
-    #         Logger.log("d", "fix_retract applied")
-
-    # def _handleSmartPurge(self):
-    #     if (self._smartPurge[0] or self._smartPurge[1]) and self._IDEXPrint:
-    #         self._startGcodeInfo.append("; - Smart Purge")
-    #         for index, layer in enumerate(self._gcode_list):
-    #             lines = layer.split("\n")
-    #             applyFix = False
-    #             if not layer.startswith(";LAYER:0") and layer.startswith(";LAYER:"):
-    #                 temp_index = 0
-    #                 while temp_index < len(lines):
-    #                     if lines[temp_index].startswith("T0") or lines[temp_index].startswith("T1"):
-    #                         # toolchange found
-    #                         applyFix = True
-    #                         toolChangeIndex = temp_index
-    #                         if lines[temp_index].startswith("T0"):
-    #                             countingForTool = 0
-    #                         elif lines[temp_index].startswith("T1"):
-    #                             countingForTool = 1
-    #                     elif applyFix and self._smartPurge[countingForTool] and GCodeUtils.charsInLine(["G1", "F", "X", "Y", "E"], lines[temp_index]):
-    #                         # first extrusion with the new tool found
-    #                         extrudeAgainIndex = temp_index
-    #                         temp_index = toolChangeIndex
-    #                         foundM109 = False
-    #                         foundFirstTravel = False
-    #                         while temp_index <= extrudeAgainIndex:
-    #                             if not foundFirstTravel and GCodeUtils.charsInLine(["G", "F", "X", "Y"], lines[temp_index]):
-    #                                 foundFirstTravel = True
-    #                                 smartPurgeLineIndex = temp_index - 1
-    #                             if lines[temp_index].startswith("M109 S"):
-    #                                 foundM109 = True
-    #                             elif foundM109 and lines[temp_index].startswith("M104 S"):
-    #                                 # remove M104 extra line
-    #                                 del lines[temp_index]
-    #                                 break
-    #                             temp_index += 1
-    #                         lines[smartPurgeLineIndex] = lines[smartPurgeLineIndex] + \
-    #                                             "\nG1 F" + self._switchExtruderPrimeSpeed[countingForTool] + \
-    #                                             " E" + str(self._switchExtruderRetractionAmount[countingForTool]) + \
-    #                                             "\nM800 F" + self._purgeSpeed[countingForTool] + \
-    #                                             " S" + str(self._smartPurgeSParameter[countingForTool]) + \
-    #                                             " E" + str(self._smartPurgeEParameter[countingForTool]) + \
-    #                                             " P" + str(self._smartPurgePParameter[countingForTool]) + " ;smartpurge" + \
-    #                                             "\nG4 P2000\nG92 E0\nG1 F" + self._retractionRetractSpeed[countingForTool] + \
-    #                                             " E-" + str(self._switchExtruderRetractionAmount[countingForTool]) + "\nG92 E0"
-    #                         break
-    #                     temp_index += 1
-
-    #             layer = "\n".join(lines)
-    #             self._gcode_list[index] = layer
-    #         Logger.log("d", "smart_purge applied")
-                
-    # def _handleRetractReduction(self):
-    #     if self._retractReduction:
-    #         self._startGcodeInfo.append("; - Reduce Retraction")
-    #         removeRetracts = False
-    #         for index, layer in enumerate(self._gcode_list):
-    #             lines = layer.split("\n")
-    #             temp_index = 0
-    #             if layer.startswith(";LAYER:") and not layer.startswith(";LAYER:0"):
-    #                 while temp_index < len(lines):
-    #                     line = lines[temp_index]
-    #                     if line.startswith(";TYPE:WALL-OUTER") or line.startswith(";TYPE:SKIN") or line.startswith("T"):
-    #                         removeRetracts = False
-    #                     elif line.startswith(";TYPE:"):
-    #                         removeRetracts = True
-    #                     if removeRetracts:
-    #                         if " E" in line and "G92" not in line:
-    #                             eValue = GCodeUtils.getValue(line, "E")
-    #                             lineCount = temp_index - 1
-    #                             try:
-    #                                 if not lines[temp_index + 1].startswith("G92"):
-    #                                     while lineCount >= 0:
-    #                                         line = lines[lineCount]
-    #                                         if " E" in line and "G92" not in line:
-    #                                             if eValue < GCodeUtils.getValue(line, "E"):
-    #                                                 if removeRetracts:
-    #                                                     del lines[temp_index]
-    #                                                     temp_index -= 1
-    #                                             break
-    #                                         lineCount -= 1
-    #                             except:
-    #                                 break
-    #                     temp_index += 1
-    #             layer = "\n".join(lines)
-    #             self._gcode_list[index] = layer
-    #         Logger.log("d", "retract_reduction applied")
 
     def setMessage(self, message):
         self._message = message
