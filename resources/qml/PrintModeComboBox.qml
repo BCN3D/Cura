@@ -14,7 +14,7 @@ Item
     anchors.left: parent.left
     anchors.right: parent.right
     height: childrenRect.height
-    enabled: printModes.visible
+    visible: printModes.visible
 
     UM.I18nCatalog{id: catalog; name:"cura"}
 

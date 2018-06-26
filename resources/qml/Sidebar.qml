@@ -23,6 +23,7 @@ Rectangle
     property var connectedPrinter: Cura.MachineManager.printerOutputDevices.length >= 1 ? Cura.MachineManager.printerOutputDevices[0] : null
 
     property bool monitoringPrint: UM.Controller.activeStage.stageId == "MonitorStage"
+    property bool printModeEnabled: printMode.properties.enabled == "True"
 
     property variant printDuration: PrintInformation.currentPrintTime
     property variant printMaterialLengths: PrintInformation.materialLengths
@@ -250,7 +251,7 @@ Rectangle
 
     PrintModeComboBox {
         id: printModeCombobox
-        visible: printMode.properties.enabled && !monitoringPrint
+        visible: printModeEnabled && !monitoringPrint
     }
 
     StackView
