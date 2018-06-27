@@ -108,7 +108,7 @@ Item {
             id: label;
 
             anchors.left: parent.left;
-            anchors.leftMargin: doDepthIndentation ? (UM.Theme.getSize("section_icon_column").width + 5) + ((definition.depth - 1) * UM.Theme.getSize("setting_control_depth_margin").width) : 0
+            anchors.leftMargin: doDepthIndentation ? Math.round((UM.Theme.getSize("section_icon_column").width + 5) + ((definition.depth - 1) * UM.Theme.getSize("setting_control_depth_margin").width)) : 0
             anchors.right: settingControls.left;
             anchors.verticalCenter: parent.verticalCenter
 
@@ -117,6 +117,7 @@ Item {
 
             text: definition.label
             elide: Text.ElideMiddle;
+            renderType: Text.NativeRendering
 
             color: UM.Theme.getColor("setting_control_text");
             opacity: (definition.visible) ? 1 : 0.5
@@ -128,8 +129,8 @@ Item {
         {
             id: settingControls
 
-            height: parent.height / 2
-            spacing: UM.Theme.getSize("sidebar_margin").height / 2
+            height: Math.round(parent.height / 2)
+            spacing: Math.round(UM.Theme.getSize("sidebar_margin").height / 2)
 
             anchors {
                 right: controlContainer.left

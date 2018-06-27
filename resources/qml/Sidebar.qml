@@ -23,6 +23,7 @@ Rectangle
     property var connectedPrinter: Cura.MachineManager.printerOutputDevices.length >= 1 ? Cura.MachineManager.printerOutputDevices[0] : null
 
     property bool monitoringPrint: UM.Controller.activeStage.stageId == "MonitorStage"
+    property bool printModeEnabled: printMode.properties.enabled == "True"
 
     property variant printDuration: PrintInformation.currentPrintTime
     property variant printMaterialLengths: PrintInformation.materialLengths
@@ -207,12 +208,13 @@ Rectangle
                     color: (control.checked || control.pressed) ? UM.Theme.getColor("action_button_active") : control.hovered ? UM.Theme.getColor("action_button_hovered") : UM.Theme.getColor("action_button")
                 }
 
-                contentItem: Text
+                contentItem: Label
                 {
                     text: model.text
                     font: UM.Theme.getFont("default")
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
+                    renderType: Text.NativeRendering
                     elide: Text.ElideRight
                     color:
                     {
@@ -248,7 +250,8 @@ Rectangle
     }
 
     PrintModeComboBox {
-        id: printMode
+        id: printModeCombobox
+        visible: printModeEnabled && !monitoringPrint
     }
 
     StackView
@@ -256,7 +259,7 @@ Rectangle
         id: sidebarContents
 
         anchors.bottom: footerSeparator.top
-        anchors.top: printMode.visible ? printMode.bottom : settingsModeSelection.bottom
+        anchors.top: printModeCombobox.visible ? printModeCombobox.bottom : settingsModeSelection.bottom
         anchors.topMargin: UM.Theme.getSize("sidebar_margin").height
         anchors.left: base.left
         anchors.right: base.right
@@ -333,7 +336,7 @@ Rectangle
         height: UM.Theme.getSize("sidebar_lining").height
         color: UM.Theme.getColor("sidebar_lining")
         anchors.bottom: printSpecs.top
-        anchors.bottomMargin: Math.floor(UM.Theme.getSize("sidebar_margin").height * 2 + UM.Theme.getSize("progressbar").height + UM.Theme.getFont("default_bold").pixelSize)
+        anchors.bottomMargin: Math.round(UM.Theme.getSize("sidebar_margin").height * 2 + UM.Theme.getSize("progressbar").height + UM.Theme.getFont("default_bold").pixelSize)
     }
 
     Item
@@ -356,6 +359,7 @@ Rectangle
             font: UM.Theme.getFont("large")
             color: UM.Theme.getColor("text_subtext")
             text: (!base.printDuration || !base.printDuration.valid) ? catalog.i18nc("@label Hours and minutes", "00h 00min") : base.printDuration.getDisplayString(UM.DurationFormat.Short)
+            renderType: Text.NativeRendering
 
             MouseArea
             {
@@ -433,7 +437,7 @@ Rectangle
                         {
                             names.push(base.printMaterialNames[index]);
                             lengths.push(base.printMaterialLengths[index].toFixed(2));
-                            weights.push(String(Math.floor(base.printMaterialWeights[index])));
+                            weights.push(String(Math.round(base.printMaterialWeights[index])));
                             var cost = base.printMaterialCosts[index] == undefined ? 0 : base.printMaterialCosts[index].toFixed(2);
                             costs.push(cost);
                             if(cost > 0)
@@ -483,6 +487,7 @@ Rectangle
             anchors.left: parent.left
             anchors.bottom: parent.bottom
             font: UM.Theme.getFont("very_small")
+            renderType: Text.NativeRendering
             color: UM.Theme.getColor("text_subtext")
             elide: Text.ElideMiddle
             width: parent.width
@@ -499,7 +504,7 @@ Rectangle
                         if(base.printMaterialLengths[index] > 0)
                         {
                             lengths.push(base.printMaterialLengths[index].toFixed(2));
-                            weights.push(String(Math.floor(base.printMaterialWeights[index])));
+                            weights.push(String(Math.round(base.printMaterialWeights[index])));
                             var cost = base.printMaterialCosts[index] == undefined ? 0 : base.printMaterialCosts[index].toFixed(2);
                             costs.push(cost);
                             if(cost > 0)
@@ -614,7 +619,7 @@ Rectangle
         })
         sidebarContents.replace(modesListModel.get(base.currentModeIndex).item, { "immediate": true })
 
-        var index = Math.floor(UM.Preferences.getValue("cura/active_mode"))
+        var index = Math.round(UM.Preferences.getValue("cura/active_mode"))
         if(index)
         {
             currentModeIndex = index;
@@ -638,6 +643,16 @@ Rectangle
         containerStackId: Cura.MachineManager.activeMachineId
         key: "machine_heated_bed"
         watchedProperties: [ "value" ]
+        storeIndex: 0
+    }
+
+    UM.SettingPropertyProvider
+    {
+        id: printMode
+
+        containerStackId: Cura.MachineManager.activeMachineId
+        key: "print_mode"
+        watchedProperties: [ "enabled" ]
         storeIndex: 0
     }
 }

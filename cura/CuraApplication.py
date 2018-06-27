@@ -170,6 +170,10 @@ class CuraApplication(QtApplication):
         # For setting which value needs to be restored when in duplication/mirror modes
         SettingDefinition.addSupportedProperty("reset_on_print_mode_change", DefinitionPropertyType.Any, default = False, read_only = True)
 
+        SettingDefinition.addSupportedProperty("reset_on_used_extruders_change", DefinitionPropertyType.Any, default = False, read_only = True)
+        SettingDefinition.addSupportedProperty("dual_value", DefinitionPropertyType.Function, read_only = True)
+        SettingDefinition.addSupportedProperty("dual_enabled", DefinitionPropertyType.Any, read_only = True)
+
         SettingDefinition.addSettingType("extruder", None, str, Validator)
         SettingDefinition.addSettingType("optional_extruder", None, str, None)
         SettingDefinition.addSettingType("[int]", None, str, None)
@@ -178,6 +182,7 @@ class CuraApplication(QtApplication):
         SettingFunction.registerOperator("extruderValue", ExtruderManager.getExtruderValue)
         SettingFunction.registerOperator("resolveOrValue", ExtruderManager.getResolveOrValue)
         SettingFunction.registerOperator("getSceneBoundingBox", CuraSceneController.getSceneBoundingBox)
+        SettingFunction.registerOperator("getUsedExtruders", ExtruderManager.getUsedExtruders)
 
         ## Add the 4 types of profiles to storage.
         Resources.addStorageType(self.ResourceTypes.QualityInstanceContainer, "quality")

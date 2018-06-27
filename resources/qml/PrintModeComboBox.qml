@@ -15,7 +15,6 @@ Item
     anchors.right: parent.right
     height: childrenRect.height
     visible: printModes.visible
-    enabled: printModes.visible
 
     UM.I18nCatalog{id: catalog; name:"cura"}
 
@@ -33,7 +32,7 @@ Item
     {
         id: printModeComboBox
         model: printModeModel
-        width: base.width * 0.55
+        width: Math.round(base.width * 0.55)
         anchors.right: parent.right
         anchors.rightMargin: UM.Theme.getSize("sidebar_margin").width
         currentIndex: printModes.visible ? printModes.activeIndex : -1
