@@ -209,15 +209,14 @@ class StartSliceJob(Job):
             self._buildGlobalInheritsStackMessage(stack)
 
             # Build messages for extruder stacks
-            for extruder_stack in ExtruderManager.getInstance().getMachineExtruders(stack.getId()):
-                print_mode = Application.getInstance().getGlobalContainerStack().getProperty("print_mode", "value")
-                if print_mode == "regular":
-                    for extruder_stack in ExtruderManager.getInstance().getMachineExtruders(stack.getId()):
-                        self._buildExtruderMessage(extruder_stack)
-                else:
-                    main_extruder_stack = ExtruderManager.getInstance().getActiveExtruderStack()
-                    for extruder_stack in ExtruderManager.getInstance().getMachineExtruders(stack.getId()):
-                        self._buildExtruderMessage(main_extruder_stack, int(extruder_stack.getMetaDataEntry("position")))
+            print_mode = Application.getInstance().getGlobalContainerStack().getProperty("print_mode", "value")
+            if print_mode == "regular":
+                for extruder_stack in ExtruderManager.getInstance().getMachineExtruders(stack.getId()):
+                    self._buildExtruderMessage(extruder_stack)
+            else:
+                main_extruder_stack = ExtruderManager.getInstance().getActiveExtruderStack()
+                for extruder_stack in ExtruderManager.getInstance().getMachineExtruders(stack.getId()):
+                    self._buildExtruderMessage(main_extruder_stack, int(extruder_stack.getMetaDataEntry("position")))
 
             for group in object_groups:
                 group_message = self._slice_message.addRepeatedMessage("object_lists")
@@ -272,6 +271,11 @@ class StartSliceJob(Job):
         result = {}
         for key in stack.getAllKeys():
             result[key] = stack.getProperty(key, "value")
+            if key == "adhesion_extruder_nr" and int(stack.getProperty(key, "value")) == -1:
+                if "Left" in ExtruderManager.getInstance().getUsedExtruderStacks()[0].getName():
+                    result[key] = "0"
+                else:
+                    result[key] = "1"
             Job.yieldThread()
 
         result["print_bed_temperature"] = result["material_bed_temperature"] # Renamed settings.
@@ -381,6 +385,11 @@ class StartSliceJob(Job):
     def _buildGlobalInheritsStackMessage(self, stack):
         for key in stack.getAllKeys():
             extruder = int(round(float(stack.getProperty(key, "limit_to_extruder"))))
+            if key == "adhesion_extruder_nr" and int(stack.getProperty(key, "value")) == -1:
+                if "Left" in ExtruderManager.getInstance().getUsedExtruderStacks()[0].getName():
+                    extruder = 0
+                else:
+                    extruder = 1
             if extruder >= 0: #Set to a specific extruder.
                 setting_extruder = self._slice_message.addRepeatedMessage("limit_to_extruder")
                 setting_extruder.name = key
