@@ -171,7 +171,7 @@ class CuraApplication(QtApplication):
         SettingDefinition.addSupportedProperty("reset_on_print_mode_change", DefinitionPropertyType.Any, default = False, read_only = True)
 
         SettingDefinition.addSupportedProperty("reset_on_used_extruders_change", DefinitionPropertyType.Any, default = False, read_only = True)
-        SettingDefinition.addSupportedProperty("dual_value", DefinitionPropertyType.Any, read_only = True)
+        SettingDefinition.addSupportedProperty("dual_value", DefinitionPropertyType.Function, read_only = True)
         SettingDefinition.addSupportedProperty("dual_enabled", DefinitionPropertyType.Any, read_only = True)
 
         SettingDefinition.addSettingType("extruder", None, str, Validator)
