@@ -1,3 +1,13 @@
+[2.0.2]
+*Improvements:
+
+- Minor improvements in printing profiles
+- Added pause at height in Post processing plugin scripts
+
+*Bug fixes:
+
+- Mac fonts visibility
+
 [2.0.1]
 *Improvements:
 
