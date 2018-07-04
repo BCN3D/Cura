@@ -740,7 +740,7 @@ class BuildVolume(SceneNode):
             prime_y = -extruder.getProperty("extruder_prime_pos_y", "value")
 
             #Ignore extruder prime position if it is not set or if blob is disabled
-            if (prime_x == 0 and prime_y == 0) or not prime_blob_enabled:
+            if (prime_x == 0 and prime_y == 0) or (prime_x == machine_width and prime_y == 0) or not prime_blob_enabled:
                 result[extruder.getId()] = []
                 continue
 
