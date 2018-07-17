@@ -142,7 +142,7 @@ UM.Dialog
 
                 exclusiveGroup: printerGroup;
 
-                text: model.name
+                text: model.additional_info != "" ? model.name + " <i><font color='#535353'>(" + model.additional_info + ")</font></i>" : model.name
 
                 onClicked:
                 {
