@@ -252,6 +252,9 @@ Rectangle
     PrintModeComboBox {
         id: printModeCombobox
         visible: printModeEnabled && !monitoringPrint
+
+        onShowTooltip: base.showTooltip(item, location, text)
+        onHideTooltip: base.hideTooltip()
     }
 
     StackView
