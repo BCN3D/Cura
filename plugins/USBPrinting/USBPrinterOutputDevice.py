@@ -58,6 +58,9 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         self._update_firmware_thread.daemon = True
         self.firmwareUpdateComplete.connect(self._onFirmwareUpdateComplete)
 
+        self._purge_thread = None
+        self._purging = False
+
         self._heatup_wait_start_time = time.time()
 
         self.jobStateChanged.connect(self._onJobStateChanged)
@@ -179,9 +182,15 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
 
     def _purge(self, distance, speed):
         self._sendCommand("G91")
-        self._sendCommand("G1 E%s F%s" % (distance, speed))
+        self._sendCommand("G1 F%s" % speed)
+        for i in range(0, distance*10):
+            if not self._purging:
+                break
+            self._sendCommand("G1 E0.1")
+            time.sleep(0.1)
         self._sendCommand("G92 E0")
         self._sendCommand("G90")
+        return
 
     ##  Updates the target bed temperature from the printer, and emit a signal if it was changed.
     #
@@ -596,7 +605,6 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
             command = (cmd + "\n").encode()
             self._serial.write(b"\n")
             self._serial.write(command)
-            print(command)
             self._bytes_sent += cmd_size
             self._buffer.put(cmd)
         except serial.SerialTimeoutException:
@@ -675,7 +683,6 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         ok_timeout = time.time()
         while self._connection_state == ConnectionState.connected:
             line = self._readline()
-            print("Received:", line)
             try:
                 line.decode("utf-8")
             except:
@@ -1032,7 +1039,15 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
     @pyqtSlot(int, float)
     def purge(self, distance, speed = 150):
         Logger.log("i", "Purging %f mm.", distance)
-        self._purge(distance, speed)
+        self._purging = True
+        self._purge_thread = threading.Thread(target=self._purge, args=(distance, speed))
+        self._purge_thread.daemon = True
+        self._purge_thread.start()
+
+    @pyqtSlot()
+    def stopPurge(self):
+        if self._purge_thread and self._purge_thread.is_alive():
+            self._purging = False
 
     @pyqtSlot(int)
     def setExtruder(self, index):
