@@ -454,6 +454,10 @@ class PrinterOutputDevice(QObject, OutputDevice):
     def purge(self, distance, speed = 150):
         Logger.log("w", "purge is not implemented by this output device.")
 
+    @pyqtSlot()
+    def stopPurge(self):
+        Logger.log("w", "stopPurge is not implemented by this output device")
+
     @pyqtSlot(int)
     def setExtruder(self, index):
         Logger.log("w", "setExtruder is not implemented by this output device.")
