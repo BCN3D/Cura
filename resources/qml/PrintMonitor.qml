@@ -1209,6 +1209,10 @@ Column
             Column
             {
                 spacing: UM.Theme.getSize("default_lining").height
+                enabled: {
+                        var i = extruderSwitch.checked ? 1 : 0;
+                        return connectedPrinter.hotendTemperatures[i] >= 150;
+                    }
 
                 Label
                 {
@@ -1228,10 +1232,6 @@ Column
                     style: monitorButtonStyle
                     width: height
                     height: UM.Theme.getSize("setting_control").height
-                    enabled: {
-                        var i = extruderSwitch.checked ? 1 : 0;
-                        return connectedPrinter.hotendTemperatures[i] >= 150;
-                    }
 
                     onClicked:
                     {
@@ -1239,18 +1239,18 @@ Column
                     }
                 }
 
-//                Button
-//                {
-//                    iconSource: UM.Theme.getIcon("tab_status_paused");
-//                    style: monitorButtonStyle
-//                    width: height
-//                    height: UM.Theme.getSize("setting_control").height
-//
-//                    onClicked:
-//                    {
-//                        connectedPrinter.homeBed()
-//                    }
-//                }
+                Button
+                {
+                    iconSource: UM.Theme.getIcon("tab_status_paused");
+                    style: monitorButtonStyle
+                    width: height
+                    height: UM.Theme.getSize("setting_control").height
+
+                    onClicked:
+                    {
+                        connectedPrinter.stopPurge()
+                    }
+                }
 
                 Button
                 {
@@ -1258,10 +1258,6 @@ Column
                     style: monitorButtonStyle
                     width: height
                     height: UM.Theme.getSize("setting_control").height
-                    enabled: {
-                        var i = extruderSwitch.checked ? 1 : 0;
-                        return connectedPrinter.hotendTemperatures[i] >= 150;
-                    }
 
                     onClicked:
                     {
