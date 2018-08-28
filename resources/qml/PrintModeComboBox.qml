@@ -12,13 +12,7 @@ Item
 
     property bool showInfoIcon: Cura.MachineManager.activeMachineId == "Sigma"
 
-    anchors.top: settingsModeSelection.bottom
-    anchors.topMargin: UM.Theme.getSize("sidebar_margin").height * 2
-    anchors.left: parent.left
-    anchors.leftMargin: UM.Theme.getSize("sidebar_margin").width
-    anchors.right: parent.right
     height: childrenRect.height
-    visible: printModes.visible
 
     UM.I18nCatalog{id: catalog; name:"cura"}
 
@@ -98,8 +92,6 @@ Item
 
     function updateValues() {
         printModes.update();
-        printModeCell.visible = printModes.visible;
-        printModeCell.enabled = printModes.visible;
         populatePrintModeModel();
         updateIndex();
     }
