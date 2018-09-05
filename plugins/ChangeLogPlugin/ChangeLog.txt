@@ -1,3 +1,11 @@
+[2.1.0]
+*Print via USB
+Now you can print directly from Cura when the printer is connected via USB.
+*Control via USB
+Now you can control the bed and the tool heads from Cura. The bed and both noozles can be preheated. Also you can purge and retract material.
+*New SigmaR19
+New printer with all the profiles.
+
 [2.0.2]
 *Improvements:
 
