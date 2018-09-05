@@ -132,6 +132,15 @@ Cura.MachineAction
                 }
             }
         }
+        Label
+        {
+            id: sdUpdateWarning
+            anchors.top: buttonsRow.bottom
+            anchors.topMargin: UM.Theme.getSize("default_margin").height
+            anchors.left: parent.left
+            text: catalog.i18nc("@label", "The latest firmware version requires an LCD files update. <br/>Click 'Automatically upgrade firmware' and, after the installation, follow the instructions.");
+            visible: connectedPrinter != null && connectedPrinter.sdUpdate;
+        }
 
         FileDialog
         {

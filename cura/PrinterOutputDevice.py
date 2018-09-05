@@ -70,6 +70,8 @@ class PrinterOutputDevice(QObject, OutputDevice):
         self._can_pre_heat_bed = True
         self._can_control_manually = True
 
+        self._sd_update = False
+
     def requestWrite(self, nodes, file_name = None, filter_by_machine = False, file_handler = None):
         raise NotImplementedError("requestWrite needs to be implemented")
 
@@ -83,6 +85,8 @@ class PrinterOutputDevice(QObject, OutputDevice):
 
     # Signal when the progress is changed (usually when this output device is printing / sending lots of data)
     progressChanged = pyqtSignal()
+
+    sdUpdateChanged = pyqtSignal()
 
     # Signal to be emitted when hotend temp is changed
     hotendTemperaturesChanged = pyqtSignal()
@@ -715,6 +719,15 @@ class PrinterOutputDevice(QObject, OutputDevice):
         if self._progress != progress:
             self._progress = progress
             self.progressChanged.emit()
+
+    @pyqtProperty(bool, notify = sdUpdateChanged)
+    def sdUpdate(self):
+        return self._sd_update
+
+    def setSdUpdate(self, sd_update):
+        if self._sd_update != sd_update:
+            self._sd_update = sd_update
+            self.sdUpdateChanged.emit()
 
 
 ##  The current processing state of the backend.

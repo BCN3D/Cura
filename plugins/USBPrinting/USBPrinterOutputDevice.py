@@ -117,11 +117,18 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         self._machine_dict = {
             "bcn3dsigma": {
                 "latest_release_api": "http://api.github.com/repos/bcn3d/bcn3dsigma-firmware/releases/latest",
+                "releases_api": "http://api.github.com/repos/bcn3d/bcn3dsigma-firmware/releases",
                 "machine_prefix": 1
             },
             "bcn3dsigmax": {
                 "latest_release_api": "http://api.github.com/repos/bcn3d/bcn3dsigmax-firmware/releases/latest",
+                "releases_api": "http://api.github.com/repos/bcn3d/bcn3dsigmax-firmware/releases",
                 "machine_prefix": 2
+            },
+            "bcn3dsigmar19": {
+                "latest_release_api": "http://api.github.com/repos/bcn3d/bcn3dsigma-firmware/releases/latest",
+                "releases_api": "http://api.github.com/repos/bcn3d/bcn3dsigma-firmware/releases",
+                "machine_prefix": 1
             }
         }
 
@@ -141,10 +148,15 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
     firmwareChange = pyqtSignal()
     firmwareLatestChange = pyqtSignal()
 
+    showSDPopUp = pyqtSignal()
+
     endstopStateChanged = pyqtSignal(str ,bool, arguments = ["key","state"])
 
     def _onFirmwareChange(self):
         Application.getInstance().firmwareChanged.emit()
+
+        machine_id = self._global_stack.getBottom().getId()
+        self.setSdUpdate(self._needsSDUpdate(machine_id))
 
     def _onGlobalStackChanged(self):
         self._global_stack = Application.getInstance().getGlobalContainerStack()
@@ -283,6 +295,32 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         if not self._updating_firmware and not self._connect_thread.isAlive() and self._global_stack is not None:
             self._connect_thread.start()
 
+    def _needsSDUpdate(self, machine_id):
+        if self._firmware_version is None:
+            return False
+        releases_url_api = self._machine_dict[machine_id]["releases_api"]
+        headers = {
+            "User-Agent": "BCN3D Cura"
+        }
+        request = urllib.request.Request(releases_url_api, headers=headers)
+        try:
+            releases = urllib.request.urlopen(request)
+        except Exception as e:
+            Logger.log("e", "Exception when getting the releases from github: %s", repr(e))
+            return False
+        reader = codecs.getreader("utf-8")
+        data = json.load(reader(releases))
+        for release in data:
+            release_firmware_version = FirmwareVersion(release["tag_name"])
+            if release_firmware_version > self._firmware_version:
+                if not release["prerelease"]:
+                    for asset in release["assets"]:
+                        if asset["name"].startswith("SD"):
+                            return True
+            else:
+                break
+        return False
+
     ##  Private function (threaded) that actually uploads the firmware.
     def _updateFirmware(self):
         Logger.log("d", "Attempting to update firmware")
@@ -343,6 +381,9 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
                            self._firmware_latest_version)
                 self._updateFirmwareLatestVersionUploaded()
                 return
+        else:
+            self._tmp_file = False
+            self.setSdUpdate(False)
 
         hex_file = intelHex.readHex(self._firmware_file_name)
 
@@ -423,7 +464,6 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
     ##  Private function which makes sure that firmware update process has successfully completed
     def _updateFirmwareCompletedSucessfully(self):
         self._firmware_version = None
-        self.firmwareChange.emit()
         self.setProgress(100, 100)
         self._firmware_update_finished = True
         self.resetFirmwareUpdate(update_has_finished=True)
@@ -996,7 +1036,8 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         self._update_firmware_thread.join()
         self._update_firmware_thread = threading.Thread(target = self._updateFirmware)
         self._update_firmware_thread.daemon = True
-
+        if self._sd_update:
+            self.showSDPopUp.emit()
         self.connect()
 
     ##  Pre-heats the heated bed of the printer, if it has one.
