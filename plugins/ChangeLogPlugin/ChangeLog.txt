@@ -1,10 +1,12 @@
 [2.1.0]
-*Print via USB
-Now you can print directly from Cura when the printer is connected via USB.
 *Control via USB
-Now you can control the bed and the tool heads from Cura. The bed and both noozles can be preheated. Also you can purge and retract material.
+Plug the printer to the computer via USB and, under the Monitor tab, now you can move the bed and the tool heads. The bed and both noozles can be preheated. Also you can purge and retract material. These features can be useful to perform diagnosis and maintenance operations.
+*Print via USB
+Once the printer is connected to the computer via USB, directly send the sliced printjob to the printer. This option is an alternative to the regular SD standlaone printing and allows to monitor the job with your computer.
 *New SigmaR19
-New printer with all the profiles.
+New printer with all the printing profiles optimized for the new mechanical setup. The new generation of Sigma is also compatible with Mirror and Duplication Print Modes, so far only available for Sigmax.
+*Minor bugfixes
+*Minor visualization improvements
 
 [2.0.2]
 *Improvements:
