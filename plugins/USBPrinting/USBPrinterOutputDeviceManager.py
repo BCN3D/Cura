@@ -39,6 +39,7 @@ class USBPrinterOutputDeviceManager(QObject, OutputDevicePlugin, Extension):
 
         self._check_updates = True
         self._firmware_view = None
+        self._sd_update_view = None
 
         Application.getInstance().applicationShuttingDown.connect(self.stop)
         self.addUSBOutputDeviceSignal.connect(self.addOutputDevice) #Because the model needs to be created in the same thread as the QMLEngine, we use a signal.
@@ -221,7 +222,15 @@ class USBPrinterOutputDeviceManager(QObject, OutputDevicePlugin, Extension):
         device.connect()
         device.progressChanged.connect(self.progressChanged)
         device.firmwareUpdateChange.connect(self.firmwareUpdateChange)
+        device.showSDPopUp.connect(self._onShowSDPopUp)
         self._usb_output_devices[serial_port] = device
+
+    def _onShowSDPopUp(self):
+        if self._sd_update_view is None:
+            path = os.path.join(PluginRegistry.getInstance().getPluginPath("USBPrinting"), "UpdateSDPopUp.qml")
+            self._sd_update_view = Application.getInstance().createQmlComponent(path, {"manager": self})
+
+        self._sd_update_view.show()
 
     ##  If one of the states of the connected devices change, we might need to add / remove them from the global list.
     def _onConnectionStateChanged(self, serial_port):
