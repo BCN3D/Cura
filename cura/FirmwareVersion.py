@@ -17,7 +17,7 @@ class FirmwareVersion(object):
         except IndexError:
             pass
         except ValueError:
-            pass
+            raise ValueError
 
     @classmethod
     def isVersion(cls, version):

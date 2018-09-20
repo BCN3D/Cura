@@ -11,9 +11,9 @@ UM.Dialog
 {
     id: base;
 
-    width: minimumWidth;
-    minimumWidth: 300 * screenScaleFactor;
-    height: minimumHeight;
+    width: 400;
+    minimumWidth: 400 * screenScaleFactor;
+    height: 50;
     minimumHeight: 50 * screenScaleFactor;
 
     visible: true;
@@ -34,7 +34,7 @@ UM.Dialog
                 verticalCenter: parent.verticalCenter;
             }
 
-            text: catalog.i18nc("@label", "<a href='https://www.bcn3dtechnologies.com/wp-content/themes/BCN3D/pdfs/how-to-change-the-micro-sd-card-files-of-the-lcd-screen.pdf'>Click here</a> to view the step by step guide to update the LCD files");
+            text: catalog.i18nc("@label", "<a href='https://www.bcn3dtechnologies.com/wp-content/themes/BCN3D/pdfs/how-to-change-the-micro-sd-card-files-of-the-lcd-screen.pdf'>Click here</a> to view the step by step guide to update the LCD files.");
             onLinkActivated: Qt.openUrlExternally(link);
         }
 

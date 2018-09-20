@@ -311,7 +311,10 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
         reader = codecs.getreader("utf-8")
         data = json.load(reader(releases))
         for release in data:
-            release_firmware_version = FirmwareVersion(release["tag_name"])
+            try:
+                release_firmware_version = FirmwareVersion(release["tag_name"])
+            except Exception:
+                return False
             if release_firmware_version > self._firmware_version:
                 if not release["prerelease"]:
                     for asset in release["assets"]:
@@ -559,7 +562,11 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
             if result is None:
                 return
             else:
-                self._firmware_version = FirmwareVersion(result.group(0))
+                try:
+                    self._firmware_version = FirmwareVersion(result.group(0))
+                except Exception:
+                    self._firmware_version = None
+                    return
                 Application.getInstance().setFirmwareVersion(self._firmware_version)
             Logger.log("i", "Current firmware version: %s", self._firmware_version)
             if self._firmware_version.isPrerelease():
@@ -585,7 +592,10 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
             return
         reader = codecs.getreader("utf-8")
         data = json.load(reader(latest_release))
-        self._firmware_latest_version = FirmwareVersion(data["tag_name"])
+        try:
+            self._firmware_latest_version = FirmwareVersion(data["tag_name"])
+        except Exception:
+            self._firmware_latest_version = None
         Application.getInstance().setLatestFirmwareVersion(self._firmware_latest_version)
         self.firmwareLatestChange.emit()
 
@@ -729,7 +739,10 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
                 self._sendCommand("M115")
                 continue
             if self._firmware_version is None and FirmwareVersion.isVersion(line.decode("utf-8")):
-                self._firmware_version = FirmwareVersion(line.decode("utf-8").split("\n")[0])
+                try:
+                    self._firmware_version = FirmwareVersion(line.decode("utf-8").split("\n")[0])
+                except Exception:
+                    self._firmware_version = None
                 Application.getInstance().setFirmwareVersion(self._firmware_version)
                 self.firmwareChange.emit()
             elif self._firmware_version is None:
