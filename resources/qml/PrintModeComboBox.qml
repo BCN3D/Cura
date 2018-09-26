@@ -55,7 +55,7 @@ Item
 
         onEntered:
         {
-            printModeCell.showTooltip(printModeCell, Qt.point(-UM.Theme.getSize("sidebar_margin").width, infoIcon.height/2), catalog.i18nc("@label", "Mirror and Duplication Print Modes are only compatible for Sigma if the firmware version loaded is 1.3.0 or later.\n\n Check your printer's firmware version via the LCD touchscreen. Select Info icon at the upper right corner of the Main Menu and then, select 'Unit Information'"))
+            printModeCell.showTooltip(printModeCell, Qt.point(-UM.Theme.getSize("sidebar_margin").width, infoIcon.height/2), catalog.i18nc("@label", "Mirror and Duplication Print Modes are only compatible for Sigma if the firmware version loaded is 2.0.2 or later.\n\n Check your printer's firmware version via the LCD touchscreen. Select Info icon at the upper right corner of the Main Menu and then, select 'Unit Information'"))
         }
 
         onExited:
