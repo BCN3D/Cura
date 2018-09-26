@@ -430,14 +430,15 @@ class Bcn3DFixes(Job):
                     line = lines[temp_index]
                     temp_index_2 = 1
                     if self._ZHopAtLayerChange[countingForTool] and line.startswith(";LAYER:") and not (line.startswith(";LAYER:0") or line.startswith(";LAYER:-")):
-                        lines[temp_index] += "\nG91" + \
-                                             "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E-" + str(round(self._retractionAmount[countingForTool], 5)) + \
-                                             "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(round(self._layerHeight + self._ZHopHeightAtLayerChange[countingForTool], 5)) + " ;z hop at layer change" + \
-                                             "\nG90"
-                        while not GCodeUtils.charsInLine(["E"], lines[temp_index + temp_index_2]):
-                            temp_index_2 += 1
-                        lines[temp_index + temp_index_2] += "\nG91" + \
-                                                            "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E" + str(round(self._retractionAmount[countingForTool], 5)) + \
+                        if not line.startswith(";LAYER:1") or self._container.getProperty("print_mode", "value") == "regular":
+                            lines[temp_index] += "\nG91" + \
+                                                 "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E-" + str(round(self._retractionAmount[countingForTool], 5)) + \
+                                                 "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(round(self._layerHeight + self._ZHopHeightAtLayerChange[countingForTool], 5)) + " ;z hop at layer change" + \
+                                                 "\nG90"
+                            while not GCodeUtils.charsInLine(["E"], lines[temp_index + temp_index_2]):
+                                temp_index_2 += 1
+                            lines[temp_index + temp_index_2] += "\nG91" + \
+                                                                "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E" + str(round(self._retractionAmount[countingForTool], 5)) + \
                                                             "\nG90"
                     elif line.startswith("T0"):
                         countingForTool = 0
