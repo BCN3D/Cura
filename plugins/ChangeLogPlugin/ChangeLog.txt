@@ -1,9 +1,15 @@
+[2.1.2]
+*Improvements:
+
+- Improvements in the R19 printers profiles
+
 [2.1.1]
 *Bug fixes:
 
 - Show print mode selector for Sigma
 - Print with duplication and Z hop at layer change setting works as expected
 - Linux issues fixed
+
 [2.1.0]
 *Control via USB
 Plug the printer to the computer via USB and, under the Monitor tab, now you can move the bed and the tool heads. The bed and both noozles can be preheated. Also you can purge and retract material. These features can be useful to perform diagnosis and maintenance operations.
