@@ -26,7 +26,7 @@ class UpgradeFirmwareMachineAction(MachineAction):
         machine_id = Application.getInstance().getGlobalContainerStack().getBottom().getId()
         if machine_id in ["bcn3dsigma", "bcn3dsigmar19"]:
             return "https://github.com/BCN3D/BCN3DSigma-Firmware/releases"
-        elif machine_id == "bcn3dsigmax":
+        elif machine_id in ["bcn3dsigmax", "bcn3dsigmaxr19"]:
             return "https://github.com/BCN3D/BCN3DSigmax-Firmware/releases"
         else:
             return ""

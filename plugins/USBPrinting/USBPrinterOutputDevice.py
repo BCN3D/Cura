@@ -129,6 +129,11 @@ class USBPrinterOutputDevice(PrinterOutputDevice):
                 "latest_release_api": "http://api.github.com/repos/bcn3d/bcn3dsigma-firmware/releases/latest",
                 "releases_api": "http://api.github.com/repos/bcn3d/bcn3dsigma-firmware/releases",
                 "machine_prefix": 1
+            },
+            "bcn3dsigmaxr19": {
+                "latest_release_api": "http://api.github.com/repos/bcn3d/bcn3dsigmax-firmware/releases/latest",
+                "releases_api": "http://api.github.com/repos/bcn3d/bcn3dsigmax-firmware/releases",
+                "machine_prefix": 2
             }
         }
 
