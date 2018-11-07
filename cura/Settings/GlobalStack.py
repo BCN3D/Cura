@@ -18,6 +18,7 @@ from UM.Logger import Logger
 
 from . import Exceptions
 from .CuraContainerStack import CuraContainerStack
+from .ExtruderManager import ExtruderManager
 
 ##  Represents the Global or Machine stack and its related containers.
 #
@@ -103,7 +104,13 @@ class GlobalStack(CuraContainerStack):
 
         # Handle the "limit_to_extruder" property.
         limit_to_extruder = super().getProperty(key, "limit_to_extruder", context)
+        raw_property = super().getRawProperty(key, "limit_to_extruder")
         if limit_to_extruder is not None:
+            if "adhesion_extruder_nr" in str(raw_property) and str(limit_to_extruder) == "-1":
+                used_extruders = ExtruderManager.getUsedExtruders()
+                if len(used_extruders) == 0:
+                    used_extruders = [0]
+                limit_to_extruder = min(used_extruders)
             limit_to_extruder = str(limit_to_extruder)
         if limit_to_extruder is not None and limit_to_extruder != "-1" and limit_to_extruder in self._extruders:
             if super().getProperty(key, "settable_per_extruder", context):
