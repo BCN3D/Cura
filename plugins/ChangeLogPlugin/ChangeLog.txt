@@ -1,4 +1,8 @@
 [2.1.2]
+*New e3D hotends
+Now you can choose between the new e3D hotends and the old ones
+
+[2.1.2]
 *Improvements:
 
 - Improvements in the R19 printers profiles
