@@ -267,6 +267,7 @@ class Bcn3DFixes(Job):
             for index, layer in enumerate(self._gcode_list):
                 lines = layer.split("\n")
                 temp_index = 0
+                apply = True
                 while temp_index < len(lines):
                     try:
                         line = lines[temp_index]
@@ -290,8 +291,13 @@ class Bcn3DFixes(Job):
                             break
                         temp_index += lineCount
                     except:
+                        if self._container.getProperty("support_interface_enable", "value") \
+                                or self._container.getProperty("support_roof_enable", "value") \
+                                or self._container.getProperty("support_bottom_enable", "value"):
+                            apply = False
                         break
-                layer = "\n".join(lines)
+                if apply:
+                    layer = "\n".join(lines)
                 # Fix 2: Fix strange travel to X105 Y297
                 regex = r"\n.*X" + str(int(self._container.getProperty("layer_start_x", "value"))) + " Y" + str(int(self._container.getProperty("layer_start_y", "value"))) + ".*"
                 layer = re.sub(regex, "", layer)

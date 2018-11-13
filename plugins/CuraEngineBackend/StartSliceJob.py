@@ -272,10 +272,10 @@ class StartSliceJob(Job):
         for key in stack.getAllKeys():
             result[key] = stack.getProperty(key, "value")
             if key == "adhesion_extruder_nr" and int(stack.getProperty(key, "value")) == -1:
-                if "Left" in ExtruderManager.getInstance().getUsedExtruderStacks()[0].getName():
-                    result[key] = "0"
-                else:
-                    result[key] = "1"
+                used_extruders = ExtruderManager.getUsedExtruders()
+                if len(used_extruders) == 0:
+                    used_extruders = [0]
+                result[key] = str(min(used_extruders))
             Job.yieldThread()
 
         result["print_bed_temperature"] = result["material_bed_temperature"] # Renamed settings.
@@ -386,10 +386,10 @@ class StartSliceJob(Job):
         for key in stack.getAllKeys():
             extruder = int(round(float(stack.getProperty(key, "limit_to_extruder"))))
             if key == "adhesion_extruder_nr" and int(stack.getProperty(key, "value")) == -1:
-                if "Left" in ExtruderManager.getInstance().getUsedExtruderStacks()[0].getName():
-                    extruder = 0
-                else:
-                    extruder = 1
+                used_extruders = ExtruderManager.getUsedExtruders()
+                if len(used_extruders) == 0:
+                    used_extruders = [0]
+                extruder = min(used_extruders)
             if extruder >= 0: #Set to a specific extruder.
                 setting_extruder = self._slice_message.addRepeatedMessage("limit_to_extruder")
                 setting_extruder.name = key
