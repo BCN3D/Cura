@@ -1,4 +1,4 @@
-[2.1.2]
+[2.1.3]
 *New e3D hotends
 Now you can choose between the new e3D hotends and the old ones
 
