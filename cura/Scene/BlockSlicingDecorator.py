@@ -7,3 +7,6 @@ class BlockSlicingDecorator(SceneNodeDecorator):
 
     def isBlockSlicing(self):
         return True
+
+    def __deepcopy__(self, memo):
+        return BlockSlicingDecorator()
