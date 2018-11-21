@@ -251,7 +251,7 @@ Rectangle
 
     PrintModeComboBox {
         id: printModeCombobox
-        visible: !monitoringPrint && !hideView && printModeEnabled
+        visible: !hideSettings && !monitoringPrint && !hideView && printModeEnabled
 
         anchors.top: settingsModeSelection.bottom
         anchors.topMargin: UM.Theme.getSize("sidebar_margin").height * 2
