@@ -4355,11 +4355,6 @@ msgctxt "@action:button"
 msgid "Arrange current build plate"
 msgstr "Organizar placa de impresión actual"
 
-#: PostSlicing.py
-msgctxt "@info:postslice"
-msgid "Preparing gcode"
-msgstr "Preparando gcode"
-
 #: MachineSettingsAction/plugin.json
 msgctxt "description"
 msgid "Provides a way to change machine settings (such as build volume, nozzle size, etc)"
