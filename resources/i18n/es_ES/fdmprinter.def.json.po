@@ -1861,16 +1861,6 @@ msgid "This setting limits the number of retractions occurring within the minimu
 msgstr "Este ajuste limita el número de retracciones que ocurren dentro de la ventana de distancia mínima de extrusión. Dentro de esta ventana se ignorarán las demás retracciones. Esto evita retraer repetidamente el mismo trozo de filamento, ya que esto podría aplanar el filamento y causar problemas de desmenuzamiento."
 
 #: fdmprinter.def.json
-msgctxt "avoid_grinding_filament label"
-msgid "Prevent Filament Grinding"
-msgstr "Prevención de mordedura del filamento"
-
-#: fdmprinter.def.json
-msgctxt "avoid_grinding_filament description"
-msgid "When retracting repeatedly, this option moves the hotend to the purge tray and primes the needed amount of filament to allow working on a new piece of it. Disabling this feature can flatten the filament and cause grinding issues."
-msgstr "Realizar una purga en el cajetín para renovar la parte del hilo en contacto con el grafilado del extrusor en caso de hacer una determinada cantidad de retracciones. Desactivar esta opción puede producir aplastamiento del filamento y/o mordedura del mismo."
-
-#: fdmprinter.def.json
 msgctxt "max_retract label"
 msgid "Maximum Retraction Count"
 msgstr "Recuento máximo de retracciones"
@@ -2676,26 +2666,6 @@ msgstr "Altura del salto en Z"
 msgctxt "retraction_hop description"
 msgid "The height difference when performing a Z Hop."
 msgstr "Diferencia de altura cuando se realiza un salto en Z."
-
-#: fdmprinter.def.json
-msgctxt "hop_at_layer_change label"
-msgid "Z Hop At Layer Change"
-msgstr "Salto en Z tras cambio de capa"
-
-#: fdmprinter.def.json
-msgctxt "hop_at_layer_change description"
-msgid "Perform a Z Hop when the nozzle is moving to the next layer."
-msgstr "Cuando la máquina cambia de capa, la placa de impresión se baja para crear holgura entre la tobera y la impresión. Esto impide que el material rezumado quede fuera de la impresión."
-
-#: fdmprinter.def.json
-msgctxt "retraction_hop_height_at_layer_change label"
-msgid "Z Hop Height At Layer Change"
-msgstr "Altura del salto en Z tras cambio de capa"
-
-#: fdmprinter.def.json
-msgctxt "retraction_hop_height_at_layer_change description"
-msgid "Distance to lift Z when the nozzle is moving to the next layer."
-msgstr "Diferencia de altura cuando se realiza un salto en Z tras cambio de capa."
 
 #: fdmprinter.def.json
 msgctxt "retraction_hop_after_extruder_switch label"

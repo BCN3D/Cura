@@ -116,7 +116,7 @@ UM.PreferencesPage
                     id: definitionsModel
                     containerId: Cura.MachineManager.activeDefinitionId
                     showAll: true
-                    exclude: ["machine_settings", "command_line_settings", "print_mode", "print_mode_gcode", "clone_cool_fan_gcode", "fix_tool_change_travel"]
+                    exclude: ["machine_settings", "command_line_settings", "print_mode", "print_mode_gcode"]
                     showAncestors: true
                     expanded: ["*"]
                     visibilityHandler: UM.SettingPreferenceVisibilityHandler { }
