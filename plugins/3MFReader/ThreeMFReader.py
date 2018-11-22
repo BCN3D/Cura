@@ -18,6 +18,8 @@ from cura.Scene.CuraSceneNode import CuraSceneNode
 from cura.Scene.BuildPlateDecorator import BuildPlateDecorator
 from cura.Scene.SliceableObjectDecorator import SliceableObjectDecorator
 from cura.Scene.ZOffsetDecorator import ZOffsetDecorator
+from cura.Scene.DuplicatedNode import DuplicatedNode
+from cura.PrintModeManager import PrintModeManager
 
 MYPY = False
 
@@ -212,6 +214,11 @@ class ThreeMFReader(MeshReader):
                     if minimum_z_value < 0:
                         um_node.addDecorator(ZOffsetDecorator())
                         um_node.callDecoration("setZOffset", minimum_z_value)
+
+                if Application.getInstance().getGlobalContainerStack().getProperty("print_mode", "enabled"):
+                    node_dup = DuplicatedNode(um_node)
+                    PrintModeManager.getInstance().addDuplicatedNode(node_dup)
+
 
                 result.append(um_node)
 
