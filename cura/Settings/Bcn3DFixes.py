@@ -391,6 +391,7 @@ class Bcn3DFixes(Job):
                                                             # Add purge commands
                                                             lines[temp_index] += "\n;prevent filament grinding on T" + str(countingForTool) + \
                                                                                 "\nG1 F" + self._travelSpeed[countingForTool] + \
+                                                                                "\nG4" + \
                                                                                 "\nG71" + \
                                                                                 "\nG91" + \
                                                                                 "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(self._retractionHopHeightAfterExtruderSwitch[countingForTool]) + \
