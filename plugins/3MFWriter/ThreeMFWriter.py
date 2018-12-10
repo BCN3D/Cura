@@ -25,6 +25,8 @@ except ImportError:
 import zipfile
 import UM.Application
 
+from cura.Scene.DuplicatedNode import DuplicatedNode
+
 
 class ThreeMFWriter(MeshWriter):
     def __init__(self):
@@ -157,10 +159,11 @@ class ThreeMFWriter(MeshWriter):
             for node in nodes:
                 if node == root_node:
                     for root_child in node.getChildren():
-                        savitar_node = self._convertUMNodeToSavitarNode(root_child, transformation_matrix)
-                        if savitar_node:
-                            savitar_scene.addSceneNode(savitar_node)
-                else:
+                        if type(root_child) != DuplicatedNode:
+                            savitar_node = self._convertUMNodeToSavitarNode(root_child, transformation_matrix)
+                            if savitar_node:
+                                savitar_scene.addSceneNode(savitar_node)
+                elif type(node) != DuplicatedNode:
                     savitar_node = self._convertUMNodeToSavitarNode(node, transformation_matrix)
                     if savitar_node:
                         savitar_scene.addSceneNode(savitar_node)

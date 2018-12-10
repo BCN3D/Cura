@@ -10,6 +10,7 @@ from cura.Scene.CuraSceneNode import CuraSceneNode
 from cura.Scene.DuplicatedNode import DuplicatedNode
 from cura.Settings.ExtruderManager import ExtruderManager
 from cura.Arranging.ShapeArray import ShapeArray
+from cura.Scene.ConvexHullDecorator import ConvexHullDecorator
 
 class PrintModeManager:
 
@@ -132,6 +133,8 @@ class PrintModeManager:
                     self._setActiveExtruder(node)
                     if (node.callDecoration("isSliceable") or node.callDecoration("isGroup") ) and not isinstance(node, DuplicatedNode):
                         sliceable_nodes.append(node)
+                        if not node.getDecorator(ConvexHullDecorator):
+                            node.addDecorator(ConvexHullDecorator())
                         offset_shape_arr, hull_shape_arr = ShapeArray.fromNode(node, 4)
                         position = node.getPosition()
                         max_offset = max(abs(offset_shape_arr.offset_x) + position.x + margin, max_offset)
