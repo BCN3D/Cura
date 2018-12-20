@@ -72,6 +72,28 @@ Menu
         visible: automaticMaterial.visible
     }
 
+    Instantiator
+    {
+        model: genericMaterialsModel
+        MenuItem
+        {
+            text: model.name
+            checkable: true
+            checked: model.id == Cura.MachineManager.allActiveMaterialIds[Cura.ExtruderManager.extruderIds[extruderIndex]]
+            exclusiveGroup: group
+            onTriggered:
+            {
+                // This workaround is done because of the application menus for materials and variants for multiextrusion printers.
+                // The extruder menu would always act on the correspoding extruder only, instead of acting on the extruder selected in the UI.
+                var activeExtruderIndex = Cura.ExtruderManager.activeExtruderIndex;
+                Cura.ExtruderManager.setActiveExtruderIndex(extruderIndex);
+                Cura.MachineManager.setActiveMaterial(model.id);
+                Cura.ExtruderManager.setActiveExtruderIndex(activeExtruderIndex);
+            }
+        }
+        onObjectAdded: menu.insertItem(index, object)
+        onObjectRemoved: menu.removeItem(object)
+    }
     MenuSeparator { }
     Instantiator
     {
@@ -124,11 +146,15 @@ Menu
         onObjectRemoved: menu.removeItem(object)
     }
 
+    ListModel
+    {
+        id: genericMaterialsModel
+        Component.onCompleted: populateMenuModels()
+    }
 
     ListModel
     {
         id: brandModel
-        Component.onCompleted: populateMenuModels()
     }
 
     //: Model used to populate the brandModel
@@ -168,6 +194,7 @@ Menu
     function populateMenuModels()
     {
         // Create a structure of unique brands and their material-types
+        genericMaterialsModel.clear()
         brandModel.clear();
 
         var items = materialsModel.items;
@@ -176,19 +203,31 @@ Menu
             var brandName = items[i]["metadata"]["brand"];
             var materialName = items[i]["metadata"]["material"];
 
-            // Add to per-brand, per-material menu
-            if (!materialsByBrand.hasOwnProperty(brandName))
+            if (brandName == "Generic")
             {
-                materialsByBrand[brandName] = {};
+                // Add to top section
+                var materialId = items[i].id;
+                genericMaterialsModel.append({
+                    id: materialId,
+                    name: items[i].name
+                });
             }
-            if (!materialsByBrand[brandName].hasOwnProperty(materialName))
+            else
             {
-                materialsByBrand[brandName][materialName] = [];
+                // Add to per-brand, per-material menu
+                if (!materialsByBrand.hasOwnProperty(brandName))
+                {
+                    materialsByBrand[brandName] = {};
+                }
+                if (!materialsByBrand[brandName].hasOwnProperty(materialName))
+                {
+                    materialsByBrand[brandName][materialName] = [];
+                }
+                materialsByBrand[brandName][materialName].push({
+                    id: items[i].id,
+                    name: items[i].name
+                });
             }
-            materialsByBrand[brandName][materialName].push({
-                id: items[i].id,
-                name: items[i].name
-            });
         }
 
         for (var brand in materialsByBrand)
