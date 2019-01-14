@@ -72,27 +72,33 @@ Menu
         visible: automaticMaterial.visible
     }
 
-    Instantiator
+    Menu
     {
-        model: genericMaterialsModel
-        MenuItem
+        id: genericMenu
+        title: catalog.i18nc("@label:category menu label", "Generic")
+
+        Instantiator
         {
-            text: model.name
-            checkable: true
-            checked: model.id == Cura.MachineManager.allActiveMaterialIds[Cura.ExtruderManager.extruderIds[extruderIndex]]
-            exclusiveGroup: group
-            onTriggered:
+            model: genericMaterialsModel
+            delegate: MenuItem
             {
-                // This workaround is done because of the application menus for materials and variants for multiextrusion printers.
-                // The extruder menu would always act on the correspoding extruder only, instead of acting on the extruder selected in the UI.
-                var activeExtruderIndex = Cura.ExtruderManager.activeExtruderIndex;
-                Cura.ExtruderManager.setActiveExtruderIndex(extruderIndex);
-                Cura.MachineManager.setActiveMaterial(model.id);
-                Cura.ExtruderManager.setActiveExtruderIndex(activeExtruderIndex);
+                text: model.name
+                checkable: true
+                checked: model.root_material_id == Cura.MachineManager.allActiveMaterialIds[Cura.ExtruderManager.extruderIds[extruderIndex]]
+                exclusiveGroup: group
+                onTriggered:
+                {
+                    // This workaround is done because of the application menus for materials and variants for multiextrusion printers.
+                    // The extruder menu would always act on the correspoding extruder only, instead of acting on the extruder selected in the UI.
+                    var activeExtruderIndex = Cura.ExtruderManager.activeExtruderIndex;
+                    Cura.ExtruderManager.setActiveExtruderIndex(extruderIndex);
+                    Cura.MachineManager.setActiveMaterial(model.id);
+                    Cura.ExtruderManager.setActiveExtruderIndex(activeExtruderIndex);
+                }
             }
+            onObjectAdded: genericMenu.insertItem(index, object)
+            onObjectRemoved: genericMenu.removeItem(object) // TODO: This ain't gonna work, removeItem() takes an index, not object
         }
-        onObjectAdded: menu.insertItem(index, object)
-        onObjectRemoved: menu.removeItem(object)
     }
     MenuSeparator { }
     Instantiator
