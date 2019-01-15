@@ -846,7 +846,7 @@ class ContainerManager(QObject):
             return ""
 
         approximate_diameter = str(round(global_stack.getProperty("material_diameter", "value")))
-        containers = self._container_registry.findInstanceContainersMetadata(id = "BCN3D_Filaments_PLA_White", approximate_diameter = approximate_diameter)
+        containers = self._container_registry.findInstanceContainersMetadata(id = "generic_pla*", approximate_diameter = approximate_diameter)
         if not containers:
             Logger.log("d", "Unable to create a new material by cloning Generic PLA, because it cannot be found for the material diameter for this machine.")
             return ""

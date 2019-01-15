@@ -46,12 +46,10 @@ UM.ManagementPage
 
     delegate: Rectangle
     {
-        property bool isGeneric: model.metadata.color_name == "Generic"
         width: objectList.width;
-        height: isGeneric ? 0 : childrenRect.height;
-        color: isCurrentItem ? palette.highlight : palette.base
+        height: childrenRect.height;
+        color: isCurrentItem ? palette.highlight : index % 2 ? palette.base : palette.alternateBase
         property bool isCurrentItem: ListView.isCurrentItem
-        visible: !isGeneric;
 
         Row
         {
@@ -61,8 +59,8 @@ UM.ManagementPage
             anchors.right: parent.right
             Rectangle
             {
-                width: Math.round(parent.height * 0.8) | 0
-                height: Math.round(parent.height * 0.8) | 0
+                width: Math.round(parent.height * 0.8)
+                height: Math.round(parent.height * 0.8)
                 color: model.metadata.color_code
                 border.color: isCurrentItem ? palette.highlightedText : palette.text;
                 anchors.verticalCenter: parent.verticalCenter
