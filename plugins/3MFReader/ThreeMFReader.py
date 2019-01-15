@@ -17,6 +17,7 @@ from cura.QualityManager import QualityManager
 from cura.Scene.CuraSceneNode import CuraSceneNode
 from cura.Scene.BuildPlateDecorator import BuildPlateDecorator
 from cura.Scene.SliceableObjectDecorator import SliceableObjectDecorator
+from cura.Scene.ConvexHullDecorator import ConvexHullDecorator
 from cura.Scene.ZOffsetDecorator import ZOffsetDecorator
 from cura.Scene.DuplicatedNode import DuplicatedNode
 from cura.PrintModeManager import PrintModeManager
@@ -87,6 +88,7 @@ class ThreeMFReader(MeshReader):
 
         um_node = CuraSceneNode()
         um_node.addDecorator(BuildPlateDecorator(active_build_plate))
+        um_node.addDecorator(ConvexHullDecorator())
         um_node.setName(node_name)
         transformation = self._createMatrixFromTransformationString(savitar_node.getTransformation())
         um_node.setTransformation(transformation)
