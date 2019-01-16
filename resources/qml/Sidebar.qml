@@ -249,12 +249,21 @@ Rectangle
         }
     }
 
+    ProfileSelection {
+        id: profileSelection
+
+        anchors {
+            top: settingsModeSelection.bottom
+            topMargin: UM.Theme.getSize("sidebar_margin").height
+        }
+    }
+
     PrintModeComboBox {
         id: printModeCombobox
         visible: !hideSettings && !monitoringPrint && !hideView && printModeEnabled
 
-        anchors.top: settingsModeSelection.bottom
-        anchors.topMargin: UM.Theme.getSize("sidebar_margin").height * 2
+        anchors.top: profileSelection.bottom
+        anchors.topMargin: UM.Theme.getSize("sidebar_margin").height
         anchors.left: parent.left
         anchors.leftMargin: UM.Theme.getSize("sidebar_margin").width
         anchors.right: parent.right
