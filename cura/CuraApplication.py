@@ -441,7 +441,8 @@ class CuraApplication(QtApplication):
                 print_sequence
                 magic_spiralize
             experimental
-                coasting_volume
+                coasting_enable
+                coasting_length
                 adaptive_layer_height_enabled
         """.replace("\n", ";").replace(" ", ""))
 
