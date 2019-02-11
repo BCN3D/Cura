@@ -794,7 +794,7 @@ class CuraApplication(QtApplication):
 
     def getMachineManager(self, *args) -> MachineManager:
         if self._machine_manager is None:
-            self._machine_manager = MachineManager.createMachineManager()
+            self._machine_manager = MachineManager(self)
         return self._machine_manager
 
     def getExtruderManager(self, *args):
@@ -1125,8 +1125,8 @@ class CuraApplication(QtApplication):
 
             for node in nodes:
                 print_mode_enabled = self.getGlobalContainerStack().getProperty("print_mode", "enabled")
-                if print_mode_enabled:
-                    node_dup = self._print_mode_manager.getDuplicatedNode(node)
+                node_dup = self._print_mode_manager.getDuplicatedNode(node)
+                if print_mode_enabled and node_dup:
                     op.addOperation(RemoveNodesOperation(node_dup))
                 else:
                     op.addOperation(RemoveSceneNodeOperation(node))
