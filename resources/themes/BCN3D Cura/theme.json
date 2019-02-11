@@ -182,7 +182,7 @@
         "setting_validation_warning": [204, 146, 0, 100],
         "setting_validation_ok": [58, 58, 58, 255],
 
-        "material_compatibility_warning": [0, 0, 0, 255],
+        "material_compatibility_warning": [255, 255, 255, 255],
 
         "progressbar_background": [58, 58, 58, 255],
         "progressbar_control": [0, 151, 217, 255],
