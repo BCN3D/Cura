@@ -713,6 +713,18 @@ class MachineManager(QObject):
                 return Util.parseBool(quality.getMetaDataEntry("supported", True))
         return False
 
+    @pyqtProperty(bool, notify=activeVariantChanged)
+    def sameNozzleExtruders(self):
+        extruder_stacks = ExtruderManager.getInstance().getExtruderStacks()
+        if not extruder_stacks:
+            return False
+        aux_extruder = extruder_stacks[0]
+        for extruder in extruder_stacks[1:]:
+            if extruder.variant != aux_extruder.variant:
+                return False
+            aux_extruder = extruder
+        return True
+
     ##  Returns whether there is anything unsupported in the current set-up.
     #
     #   The current set-up signifies the global stack and all extruder stacks,

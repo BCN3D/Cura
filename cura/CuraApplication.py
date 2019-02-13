@@ -441,6 +441,7 @@ class CuraApplication(QtApplication):
                 print_sequence
                 magic_spiralize
             experimental
+                coasting_enable
                 coasting_volume
                 adaptive_layer_height_enabled
         """.replace("\n", ";").replace(" ", ""))
@@ -793,7 +794,7 @@ class CuraApplication(QtApplication):
 
     def getMachineManager(self, *args) -> MachineManager:
         if self._machine_manager is None:
-            self._machine_manager = MachineManager.createMachineManager()
+            self._machine_manager = MachineManager(self)
         return self._machine_manager
 
     def getExtruderManager(self, *args):

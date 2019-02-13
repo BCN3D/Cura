@@ -38,6 +38,40 @@ Item
             anchors.bottom: parent.bottom
         }
 
+        MouseArea {
+            property color color: UM.Theme.getColor("setting_control_button");
+            property color hoverColor: UM.Theme.getColor("setting_control_button_hover");
+
+            height: Math.round(parent.height / 2)
+            width: height
+            anchors.right: globalProfileSelection.left
+            anchors.rightMargin: UM.Theme.getSize("sidebar_margin_thin").width
+            anchors.verticalCenter: parent.verticalCenter
+            hoverEnabled: true
+            visible: !Cura.MachineManager.sameNozzleExtruders
+
+            UM.RecolorImage {
+                id: infoIcon;
+
+                anchors.fill: parent;
+                sourceSize.width: width
+                sourceSize.height: width
+                source: UM.Theme.getIcon("notice")
+
+                color: parent.containsMouse ? parent.hoverColor : parent.color;
+            }
+
+            onEntered:
+            {
+                base.showTooltip(globalProfileRow, Qt.point(-UM.Theme.getSize("sidebar_margin").width, infoIcon.height/2), catalog.i18nc("@label", "Since there are different hotends on the left and right extruder, only profiles with common layer heights are available. If you want to print with just one extruder, please select the same hotend on both extruders."))
+            }
+
+            onExited:
+            {
+                base.hideTooltip();
+            }
+        }
+
         ToolButton
         {
             id: globalProfileSelection

@@ -636,6 +636,13 @@ class ExtruderManager(QObject):
     #   global stack if not found.
     @staticmethod
     def getExtruderValue(extruder_index, key):
+        if extruder_index == "-1":
+            used_extruders = ExtruderManager.getUsedExtruders()
+            if used_extruders:
+                extruder_index = used_extruders[0]
+            else:
+                extruder_index = 0
+
         extruder = ExtruderManager.getInstance().getExtruderStack(extruder_index)
 
         if extruder:

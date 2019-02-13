@@ -1,0 +1,8 @@
+{
+    "name": "First run",
+    "author": "BCN3D Technologies",
+    "version": "1.0.0",
+    "description": "Handles actions to be executed on the first run of the app",
+    "api": 4,
+    "i18n-catalog": "cura"
+}

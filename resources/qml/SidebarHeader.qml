@@ -302,6 +302,39 @@ Column
             color: UM.Theme.getColor("text");
         }
 
+        MouseArea {
+            property color color: UM.Theme.getColor("setting_control_button");
+            property color hoverColor: UM.Theme.getColor("setting_control_button_hover");
+
+            height: Math.round(parent.height / 2)
+            width: height
+            anchors.right: variantSelection.left
+            anchors.rightMargin: UM.Theme.getSize("sidebar_margin_thin").width
+            anchors.verticalCenter: parent.verticalCenter
+            hoverEnabled: true
+
+            UM.RecolorImage {
+                id: infoIcon;
+
+                anchors.fill: parent;
+                sourceSize.width: width
+                sourceSize.height: width
+                source: UM.Theme.getIcon("notice")
+
+                color: parent.containsMouse ? parent.hoverColor : parent.color;
+            }
+
+            onEntered:
+            {
+                base.showTooltip(variantRow, Qt.point(-UM.Theme.getSize("sidebar_margin").width, infoIcon.height/2), catalog.i18nc("@label", "Check the hotend size installed on your printer. Via LCD go to: Utilities --> Printer Setup --> Components Setup"))
+            }
+
+            onExited:
+            {
+                base.hideTooltip();
+            }
+        }
+
         ToolButton {
             id: variantSelection
             text: Cura.MachineManager.activeVariantName
