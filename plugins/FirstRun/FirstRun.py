@@ -17,5 +17,5 @@ class FirstRun(Extension):
             Preferences.getInstance().setValue("cura/first_run", False)
             global_stack = Application.getInstance().getGlobalContainerStack()
             if global_stack.getBottom().getId() == "bcn3dsigmaxr19":
-                message = Message("Now the default hotends size is 0.4. You can check it in the printer screeen.", title="New default hotends")
+                message = Message("Latest Sigmax R19 printers come with 0.4mm nozzles installed. Make sure to select the correct hotend when preparing the print file.", title="Sigmax default hotends")
                 message.show()
