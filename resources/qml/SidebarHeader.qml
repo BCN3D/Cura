@@ -326,7 +326,7 @@ Column
 
             onEntered:
             {
-                base.showTooltip(variantRow, Qt.point(-UM.Theme.getSize("sidebar_margin").width, infoIcon.height/2), catalog.i18nc("@label", "The installed hotends can be checked in the machine printer"))
+                base.showTooltip(variantRow, Qt.point(-UM.Theme.getSize("sidebar_margin").width, infoIcon.height/2), catalog.i18nc("@label", "Check the hotend size installed on your printer. Via LCD go to: Utilities --> Printer Setup --> Components Setup"))
             }
 
             onExited:
