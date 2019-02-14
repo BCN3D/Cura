@@ -1,3 +1,10 @@
+[2.1.5]
+*0.4mm hotend default for Sigmax R19
+*Information tooltip explaining the behaviour of quality profiles when using different hotends
+*Profile selector also visible in recommended tab
+*Fixed behaviour of custom materials
+*Improved printing profiles
+
 [2.1.4]
 *Improved printing profiles
 
@@ -8,7 +15,7 @@ Now you can choose between the new e3D hotends and the old ones
 *Bug fixes:
 
 - Visualization of gcode files has been fixed
-- Prevent grinding filament works in mirror/duplicadon mode
+- Prevent grinding filament works in mirror/duplication mode
 
 [2.1.2]
 *Improvements:
