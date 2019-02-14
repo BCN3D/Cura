@@ -46,7 +46,7 @@ Item
                 id: infillCellLeft
 
                 anchors.top: parent.top
-                anchors.topMargin: UM.Theme.getSize("sidebar_margin").height
+                anchors.topMargin: UM.Theme.getSize("default_margin").height
                 anchors.left: parent.left
 
                 width: Math.round(UM.Theme.getSize("sidebar").width * .45 - UM.Theme.getSize("sidebar_margin").width)
@@ -59,7 +59,7 @@ Item
                     color: UM.Theme.getColor("text")
 
                     anchors.top: parent.top
-                    anchors.topMargin: Math.round(UM.Theme.getSize("sidebar_margin").height * 1.7)
+                    anchors.topMargin: Math.round(UM.Theme.getSize("default_margin").height * 1.8)
                     anchors.left: parent.left
                     anchors.leftMargin: UM.Theme.getSize("sidebar_margin").width
                 }
@@ -74,7 +74,7 @@ Item
 
                 anchors.left: infillCellLeft.right
                 anchors.top: infillCellLeft.top
-                anchors.topMargin: UM.Theme.getSize("sidebar_margin").height
+                anchors.topMargin: UM.Theme.getSize("default_margin").height
 
                 Label {
                     id: selectedInfillRateText
