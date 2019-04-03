@@ -105,7 +105,9 @@ class SliceInfo(Extension):
                 extruder_dict["material"] = {"GUID": extruder.material.getMetaData().get("GUID", ""),
                                              "type": extruder.material.getMetaData().get("material", ""),
                                              "brand": extruder.material.getMetaData().get("brand", ""),
-                                             "color": extruder.material.getMetaData().get("color_name", "")
+                                             "color": extruder.material.getMetaData().get("color_name", ""),
+                                             "density": extruder.material.getMetaData().get("properties", {}).get("density", ""),
+                                             "diameter": extruder.material.getMetaData().get("properties", {}).get("diameter", "")
                                              }
                 extruder_position = int(extruder.getMetaDataEntry("position", "0"))
                 if len(print_information.materialLengths) > extruder_position:
