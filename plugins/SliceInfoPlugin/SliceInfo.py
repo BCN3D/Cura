@@ -102,6 +102,7 @@ class SliceInfo(Extension):
             for extruder in extruders:
                 extruder_dict = dict()
                 extruder_dict["active"] = ExtruderManager.getInstance().getActiveExtruderStack() == extruder
+                extruder_dict["enabled"] = extruder in ExtruderManager.getInstance().getUsedExtruderStacks()
                 extruder_dict["material"] = {"GUID": extruder.material.getMetaData().get("GUID", ""),
                                              "type": extruder.material.getMetaData().get("material", ""),
                                              "brand": extruder.material.getMetaData().get("brand", ""),
