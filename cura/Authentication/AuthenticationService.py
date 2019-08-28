@@ -2,7 +2,6 @@ from PyQt5.QtCore import QObject, pyqtSlot, pyqtProperty, pyqtSignal
 from UM.Message import Message
 
 import requests
-import json
 
 
 class AuthenticationService(QObject):
@@ -29,9 +28,8 @@ class AuthenticationService(QObject):
     @pyqtSlot(str, str, result=bool)
     def signIn(self, email, password):
         self._email = email
-        json_data = json.dumps({"email": email, "password": password})
         data = {"email": email, "password": password}
-        response = requests.post(self.api_url + "/sign_in", data=json_data)
+        response = requests.post(self.api_url + "/sign_in", json=data)
         if response.status_code == 200:
             response_message = response.json()
             self._access_token = response_message["AccessToken"]
