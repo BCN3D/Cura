@@ -4,12 +4,9 @@ from UM.Message import Message
 
 from cura.Authentication.AuthenticationService import AuthenticationService
 
-from PyQt5.QtCore import QCoreApplication
-from typing import Optional
 import gzip
-import sys
 import tempfile
-from zipfile import ZipFile
+import os
 
 from UM.i18n import i18nCatalog
 catalog = i18nCatalog("cura")
@@ -29,7 +26,8 @@ class CloudOutputDevice(OutputDevice):
         self._gcode = []
         self._writing = False
         self._compressing_gcode = False
-        self._progress_message = Message("Compressing gcode to send", dismissable=False, title="Compressing gcode")
+        self._progress_message = Message("Sending the gcode to the cloud",
+                                         title="Send to cloud", dismissable=False, progress=-1)
 
     def requestWrite(self, nodes, file_name=None, limit_mimetypes=False, file_handler=None, **kwargs):
         self._progress_message.show()
@@ -37,11 +35,13 @@ class CloudOutputDevice(OutputDevice):
         active_build_plate = Application.getInstance().getBuildPlateModel().activeBuildPlate
         self._gcode = getattr(Application.getInstance().getController().getScene(), "gcode_dict")[active_build_plate]
         gcode = self._joinGcode()
-        gcode_path = tempfile.gettempdir() + "/temp.gcode.gz"
+        file_name_with_extension = file_name + ".gcode.gz"
+        gcode_path = os.path.join(tempfile.gettempdir(), file_name_with_extension)
         with gzip.open(gcode_path, "wb") as gcode_file:
             gcode_file.write(gcode.encode())
-        self._auth_service.sendGcode(gcode_path, "temp.gcode.gz")
+        self._auth_service.sendGcode(gcode_path, file_name_with_extension)
         self.writeFinished.emit()
+        self._progress_message.hide()
 
     def _joinGcode(self):
         gcode = ""
