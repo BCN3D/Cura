@@ -78,6 +78,16 @@ Rectangle
         ExclusiveGroup { id: topbarMenuGroup }
     }
 
+    SignIn {
+        id: signInDialog
+
+        anchors {
+            verticalCenter: base.verticalCenter
+            left: stagesMenuContainer.right
+            leftMargin: 40
+        }
+    }
+
     // View orientation Item
     Row
     {
