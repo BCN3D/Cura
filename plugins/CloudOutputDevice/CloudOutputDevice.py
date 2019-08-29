@@ -4,9 +4,9 @@ from UM.Message import Message
 
 from cura.Authentication.AuthenticationService import AuthenticationService
 
-import gzip
 import tempfile
 import os
+from zipfile import ZipFile
 
 from UM.i18n import i18nCatalog
 catalog = i18nCatalog("cura")
@@ -35,10 +35,12 @@ class CloudOutputDevice(OutputDevice):
         active_build_plate = Application.getInstance().getBuildPlateModel().activeBuildPlate
         self._gcode = getattr(Application.getInstance().getController().getScene(), "gcode_dict")[active_build_plate]
         gcode = self._joinGcode()
-        file_name_with_extension = file_name + ".gcode.gz"
+        temp_file = tempfile.NamedTemporaryFile()
+        temp_file.write(gcode.encode())
+        file_name_with_extension = file_name + ".gcode.zip"
         gcode_path = os.path.join(tempfile.gettempdir(), file_name_with_extension)
-        with gzip.open(gcode_path, "wb") as gcode_file:
-            gcode_file.write(gcode.encode())
+        with ZipFile(gcode_path, "w") as gcode_zip:
+            gcode_zip.write(temp_file.name, arcname=file_name + ".gcode")
         self._auth_service.sendGcode(gcode_path, file_name_with_extension)
         self.writeFinished.emit()
         self._progress_message.hide()
