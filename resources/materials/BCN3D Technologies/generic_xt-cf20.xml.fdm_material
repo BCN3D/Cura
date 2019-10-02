@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fdmmaterial xmlns="http://www.ultimaker.com/material" version="1.3">
+    <metadata>
+        <name>
+            <brand>Generic</brand>
+            <material>XT-CF20</material>
+            <color>Generic</color>
+        </name>
+        <GUID>b8bfb340-b5c6-5c30-8740-42c7e7b642cf</GUID>
+        <version>1</version>
+        <color_code>#343537</color_code>
+    </metadata>
+    <properties>
+        <density>1.36</density>
+        <diameter>2.85</diameter>
+    </properties>
+    <settings>
+        <setting key="print temperature">260</setting>
+        <setting key="heated bed temperature">80</setting>
+        <setting key="standby temperature">150</setting>
+        <setting key="print cooling">100</setting>
+        <setting key="retraction amount">2</setting>
+
+        <machine>
+           <machine_identifier manufacturer="BCN3D Technologies" product="bcn3dsigma" />
+           <hotend id="0.3mm - Brass">
+                <setting key="hardware compatible">no</setting>
+           </hotend>
+           <hotend id="0.4mm - Brass">
+                <setting key="hardware compatible">no</setting>
+           </hotend>
+           <hotend id="0.5mm - Hardened Steel" />
+           <hotend id="0.6mm - Brass">
+                <setting key="hardware compatible">no</setting>
+           </hotend>
+           <hotend id="0.8mm - Brass">
+                <setting key="hardware compatible">no</setting>
+           </hotend>
+           <hotend id="1.0mm - Brass">
+                <setting key="hardware compatible">no</setting>
+           </hotend>
+           <hotend id="e3D - 0.3mm - Brass">
+                <setting key="hardware compatible">no</setting>
+           </hotend>
+           <hotend id="e3D - 0.4mm - Brass">
+                <setting key="hardware compatible">no</setting>
+           </hotend>
+           <hotend id="e3D - 0.5mm - Hardened Steel" />
+           <hotend id="e3D - 0.6mm - Brass">
+                <setting key="hardware compatible">no</setting>
+           </hotend>
+           <hotend id="e3D - 0.8mm - Brass">
+                <setting key="hardware compatible">no</setting>
+           </hotend>
+           <hotend id="e3D - 1.0mm - Brass">
+                <setting key="hardware compatible">no</setting>
+           </hotend>
+        </machine>
+        <machine>
+           <machine_identifier manufacturer="BCN3D Technologies" product="bcn3dsigmar19" />
+           <hotend id="e3D - 0.3mm - Brass">
+                <setting key="hardware compatible">no</setting>
+           </hotend>
+           <hotend id="e3D - 0.4mm - Brass">
+                <setting key="hardware compatible">no</setting>
+           </hotend>
+           <hotend id="e3D - 0.5mm - Hardened Steel" />
+           <hotend id="e3D - 0.6mm - Brass">
+                <setting key="hardware compatible">no</setting>
+           </hotend>
+           <hotend id="e3D - 0.8mm - Brass">
+                <setting key="hardware compatible">no</setting>
+           </hotend>
+           <hotend id="e3D - 1.0mm - Brass">
+                <setting key="hardware compatible">no</setting>
+           </hotend>
+        </machine>
+    </settings>
+</fdmmaterial>

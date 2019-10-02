@@ -72,12 +72,3 @@ install_dir*/
 run.sh
 .scannerwork/
 CuraEngine
-
-#resources
-resources/definitions
-resources/extruders
-resources/materials
-resources/meshes
-resources/quality
-resources/variants
-
