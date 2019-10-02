@@ -34,38 +34,47 @@ Item {
 
     }
 
-    Button {
+    ToolButton {
         id: userButton
 
         visible: Cura.AuthenticationService.isLoggedIn
         anchors.verticalCenter: parent.verticalCenter
 
+        text: Cura.AuthenticationService.email
+
         style: ButtonStyle {
             background: Rectangle {
-                border.width: 0
-                color: "transparent"
+                color: {
+                    if(control.pressed) {
+                        return UM.Theme.getColor("sidebar_header_active");
+                    }
+                    else if(control.hovered) {
+                        return UM.Theme.getColor("sidebar_header_hover");
+                    }
+                    else {
+                        return UM.Theme.getColor("topbar_background_color");
+                    }
+                }
+                Behavior on color { ColorAnimation { duration: 50; } }
             }
-            label: Text {
-                text: Cura.AuthenticationService.email
-                color: UM.Theme.getColor("topbar_button_text_active")
+            label: Label {
+                id: label
+                color: UM.Theme.getColor("sidebar_header_text_active")
+                text: control.text;
+                elide: Text.ElideRight;
+                anchors.left: parent.left;
+                anchors.leftMargin: UM.Theme.getSize("default_margin").width / 2
+                anchors.right: downArrow.left;
+                anchors.rightMargin: control.rightMargin;
+                anchors.verticalCenter: parent.verticalCenter;
+                font: UM.Theme.getFont("default_bold")
             }
         }
 
-        MouseArea {
-            hoverEnabled: true
-            anchors.fill: parent
-            acceptedButtons: Qt.NoButton
-            cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
-        }
-
-        onClicked: userMenu.popup()
-
-        Menu {
+        menu: Menu {
             id: userMenu
-
             MenuItem {
                 text: "Logout"
-
                 onTriggered: signInDialog.signOut()
             }
         }
