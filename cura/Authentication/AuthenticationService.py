@@ -32,8 +32,8 @@ class AuthenticationService(QObject):
         response = requests.post(self.api_url + "/sign_in", json=data)
         if response.status_code == 200:
             response_message = response.json()
-            self._access_token = response_message["AccessToken"]
-            self._refresh_token = response_message["RefreshToken"]
+            self._access_token = response_message["accessToken"]
+            self._refresh_token = response_message["refreshToken"]
             self.onAuthStateChanged.emit(True)
             message = Message("Now you can print through the cloud!", title="Sign In successfully")
             message.show()
