@@ -84,6 +84,8 @@ from cura.Settings.MaterialSettingsVisibilityHandler import MaterialSettingsVisi
 from cura.Settings.QualitySettingsModel import QualitySettingsModel
 from cura.Settings.ContainerManager import ContainerManager
 
+from cura.Authentication.AuthenticationService import AuthenticationService
+
 from cura.ObjectsModel import ObjectsModel
 from cura.BuildPlateModel import BuildPlateModel
 
@@ -224,6 +226,7 @@ class CuraApplication(QtApplication):
         self._machine_manager = None    # This is initialized on demand.
         self._extruder_manager = None
         self._material_manager = None
+        self._authentication_service = None
         self._object_manager = None
         self._build_plate_model = None
         self._setting_inheritance_manager = None
@@ -758,6 +761,7 @@ class CuraApplication(QtApplication):
         qmlRegisterSingletonType(ExtruderManager, "Cura", 1, 0, "ExtruderManager", self.getExtruderManager)
         qmlRegisterSingletonType(MachineManager, "Cura", 1, 0, "MachineManager", self.getMachineManager)
         qmlRegisterSingletonType(MaterialManager, "Cura", 1, 0, "MaterialManager", self.getMaterialManager)
+        qmlRegisterSingletonType(AuthenticationService, "Cura", 1, 0, "AuthenticationService", self.getAuthenticationService)
 
         qmlRegisterSingletonType(SettingInheritanceManager, "Cura", 1, 0, "SettingInheritanceManager",
                                  self.getSettingInheritanceManager)
@@ -806,6 +810,11 @@ class CuraApplication(QtApplication):
         if self._material_manager is None:
             self._material_manager = MaterialManager.createMaterialManager()
         return self._material_manager
+
+    def getAuthenticationService(self, *args):
+        if self._authentication_service is None:
+            self._authentication_service = AuthenticationService.getInstance()
+        return self._authentication_service
 
     def getObjectsModel(self, *args):
         if self._object_manager is None:

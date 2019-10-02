@@ -1,0 +1,8 @@
+{
+    "name": "Cloud Output Device",
+    "description": "Enables sending to the cloud.",
+    "author": "BCN3D Technologies",
+    "version": "1.0.0",
+    "api": 4,
+    "i18n-catalog": "cura"
+}
