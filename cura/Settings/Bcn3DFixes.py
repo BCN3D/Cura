@@ -127,6 +127,12 @@ class Bcn3DFixes(Job):
 
         # self._handleFixTemperatureOscilation() # Changes to proper temperatures if auto temperature is on. Auto temperature is not on and it's an experimental feature, this will be probably solved from the engine perspective. Therefore it's temporary commented
 
+        # Add build chamber temperature gcode
+        layer = self._gcode_list[1]
+        lines = layer.split("\n")
+        lines[0] += "\nM141 S" + str(self._container.getProperty("material_build_chamber_temperature", "value"))
+        self._gcode_list[1] = "\n".join(lines)
+
         # Write BCN3DFixes info
         written_info = False
         for index, layer in enumerate(self._gcode_list):
