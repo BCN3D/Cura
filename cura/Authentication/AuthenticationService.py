@@ -5,7 +5,8 @@ import requests
 
 
 class AuthenticationService(QObject):
-    api_url = "https://5zkg780dt3.execute-api.eu-west-1.amazonaws.com/dev"
+    data_api_url = "https://i0fsfve8ha.execute-api.eu-west-1.amazonaws.com/dev"
+    auth_api_url = "https://5zkg780dt3.execute-api.eu-west-1.amazonaws.com/dev"
     onAuthStateChanged = pyqtSignal(bool)
 
     def __init__(self):
@@ -29,7 +30,7 @@ class AuthenticationService(QObject):
     def signIn(self, email, password):
         self._email = email
         data = {"email": email, "password": password}
-        response = requests.post(self.api_url + "/sign_in", json=data)
+        response = requests.post(self.auth_api_url + "/sign_in", json=data)
         if response.status_code == 200:
             response_message = response.json()
             self._access_token = response_message["accessToken"]
@@ -45,7 +46,7 @@ class AuthenticationService(QObject):
     @pyqtSlot(result=bool)
     def signOut(self):
         headers = {"Authorization": "Bearer {}".format(self._access_token)}
-        response = requests.post(self.api_url + "/sign_out", headers=headers)
+        response = requests.post(self.auth_api_url + "/sign_out", headers=headers)
         if response.status_code == 200:
             self._access_token = None
             self._refresh_token = None
@@ -58,8 +59,8 @@ class AuthenticationService(QObject):
     def sendGcode(self, gcode_path, gcode_name):
         headers = {"Authorization": "Bearer {}".format(self._access_token)}
         files = {"file": (gcode_path, open(gcode_path, "rb"))}
-        data = {"serialNumber": "xxxxxx", "fileName": gcode_name}
-        response = requests.post(self.api_url + "/gcodes", json=data, headers=headers)
+        data = {"serialNumber": "000_000000_0000", "fileName": gcode_name}
+        response = requests.post(self.data_api_url + "/gcodes", json=data, headers=headers)
         if response.status_code == 200:
             response_message = response.json()
             presigned_url = response_message["url"]
