@@ -64,7 +64,6 @@ Item {
                 elide: Text.ElideRight;
                 anchors.left: parent.left;
                 anchors.leftMargin: UM.Theme.getSize("default_margin").width / 2
-                anchors.right: downArrow.left;
                 anchors.rightMargin: control.rightMargin;
                 anchors.verticalCenter: parent.verticalCenter;
                 font: UM.Theme.getFont("default_bold")

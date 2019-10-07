@@ -2,7 +2,7 @@ from UM.Application import Application
 from UM.OutputDevice.OutputDevice import OutputDevice
 from UM.Message import Message
 
-from cura.Authentication.AuthenticationService import AuthenticationService
+from cura.Bcn3DApi.DataApiService import DataApiService
 
 import tempfile
 import os
@@ -21,7 +21,7 @@ class CloudOutputDevice(OutputDevice):
         self.setDescription(catalog.i18nc("@info:tooltip", "Send to cloud"))
         self.setIconName("cloud")
 
-        self._auth_service = AuthenticationService.getInstance()
+        self._data_api_service = DataApiService.getInstance()
 
         self._gcode = []
         self._writing = False
@@ -41,7 +41,7 @@ class CloudOutputDevice(OutputDevice):
         gcode_path = os.path.join(tempfile.gettempdir(), file_name_with_extension)
         with ZipFile(gcode_path, "w") as gcode_zip:
             gcode_zip.write(temp_file.name, arcname=file_name + ".gcode")
-        self._auth_service.sendGcode(gcode_path, file_name_with_extension)
+        self._data_api_service.sendGcode(gcode_path, file_name_with_extension)
         self.writeFinished.emit()
         self._progress_message.hide()
 

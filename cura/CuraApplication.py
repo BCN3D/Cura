@@ -84,7 +84,7 @@ from cura.Settings.MaterialSettingsVisibilityHandler import MaterialSettingsVisi
 from cura.Settings.QualitySettingsModel import QualitySettingsModel
 from cura.Settings.ContainerManager import ContainerManager
 
-from cura.Authentication.AuthenticationService import AuthenticationService
+from cura.Bcn3DApi.AuthApiService import AuthApiService
 
 from cura.ObjectsModel import ObjectsModel
 from cura.BuildPlateModel import BuildPlateModel
@@ -761,7 +761,7 @@ class CuraApplication(QtApplication):
         qmlRegisterSingletonType(ExtruderManager, "Cura", 1, 0, "ExtruderManager", self.getExtruderManager)
         qmlRegisterSingletonType(MachineManager, "Cura", 1, 0, "MachineManager", self.getMachineManager)
         qmlRegisterSingletonType(MaterialManager, "Cura", 1, 0, "MaterialManager", self.getMaterialManager)
-        qmlRegisterSingletonType(AuthenticationService, "Cura", 1, 0, "AuthenticationService", self.getAuthenticationService)
+        qmlRegisterSingletonType(AuthApiService, "Cura", 1, 0, "AuthenticationService", self.getAuthenticationService)
 
         qmlRegisterSingletonType(SettingInheritanceManager, "Cura", 1, 0, "SettingInheritanceManager",
                                  self.getSettingInheritanceManager)
@@ -813,7 +813,7 @@ class CuraApplication(QtApplication):
 
     def getAuthenticationService(self, *args):
         if self._authentication_service is None:
-            self._authentication_service = AuthenticationService.getInstance()
+            self._authentication_service = AuthApiService.getInstance()
         return self._authentication_service
 
     def getObjectsModel(self, *args):

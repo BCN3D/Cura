@@ -4,9 +4,8 @@ from UM.Message import Message
 import requests
 
 
-class AuthenticationService(QObject):
-    data_api_url = "https://i0fsfve8ha.execute-api.eu-west-1.amazonaws.com/dev"
-    auth_api_url = "https://5zkg780dt3.execute-api.eu-west-1.amazonaws.com/dev"
+class AuthApiService(QObject):
+    api_url = "https://5zkg780dt3.execute-api.eu-west-1.amazonaws.com/dev"
     onAuthStateChanged = pyqtSignal(bool)
 
     def __init__(self):
@@ -17,6 +16,9 @@ class AuthenticationService(QObject):
 
         self._email = None
         self._is_logged_in = False
+
+    def getAccessToken(self):
+        return self._access_token
 
     @pyqtProperty(str, notify=onAuthStateChanged)
     def email(self):
@@ -30,8 +32,8 @@ class AuthenticationService(QObject):
     def signIn(self, email, password):
         self._email = email
         data = {"email": email, "password": password}
-        response = requests.post(self.auth_api_url + "/sign_in", json=data)
-        if response.status_code == 200:
+        response = requests.post(self.api_url + "/sign_in", json=data)
+        if 200 <= response.status_code < 300:
             response_message = response.json()
             self._access_token = response_message["accessToken"]
             self._refresh_token = response_message["refreshToken"]
@@ -46,8 +48,8 @@ class AuthenticationService(QObject):
     @pyqtSlot(result=bool)
     def signOut(self):
         headers = {"Authorization": "Bearer {}".format(self._access_token)}
-        response = requests.post(self.auth_api_url + "/sign_out", headers=headers)
-        if response.status_code == 200:
+        response = requests.post(self.api_url + "/sign_out", headers=headers)
+        if 200 <= response.status_code < 300:
             self._access_token = None
             self._refresh_token = None
             self._email = None
@@ -56,22 +58,10 @@ class AuthenticationService(QObject):
         else:
             return False
 
-    def sendGcode(self, gcode_path, gcode_name):
-        headers = {"Authorization": "Bearer {}".format(self._access_token)}
-        files = {"file": (gcode_path, open(gcode_path, "rb"))}
-        data = {"serialNumber": "000_000000_0000", "fileName": gcode_name}
-        response = requests.post(self.data_api_url + "/gcodes", json=data, headers=headers)
-        if response.status_code == 200:
-            response_message = response.json()
-            presigned_url = response_message["url"]
-            fields = response_message["fields"]
-            response2 = requests.post(presigned_url, data=fields, files=files)
-
-
     __instance = None
 
     @classmethod
-    def getInstance(cls) -> "AuthenticationService":
+    def getInstance(cls) -> "AuthApiService":
         if not cls.__instance:
-            cls.__instance = AuthenticationService()
+            cls.__instance = AuthApiService()
         return cls.__instance

@@ -1,7 +1,7 @@
 from UM.OutputDevice.OutputDevicePlugin import OutputDevicePlugin
 from .CloudOutputDevice import CloudOutputDevice
 
-from cura.Authentication.AuthenticationService import AuthenticationService
+from cura.Bcn3DApi.AuthApiService import AuthApiService
 
 from UM.i18n import i18nCatalog
 catalog = i18nCatalog("cura")
@@ -13,7 +13,7 @@ class CloudOutputDevicePlugin(OutputDevicePlugin):
         super().__init__()
 
     def start(self):
-        AuthenticationService.getInstance().onAuthStateChanged.connect(self._authStateChanged)
+        AuthApiService.getInstance().onAuthStateChanged.connect(self._authStateChanged)
 
     def stop(self):
         self.getOutputDeviceManager().removeOutputDevice("cloud")
