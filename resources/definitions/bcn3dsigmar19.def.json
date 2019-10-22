@@ -6,7 +6,7 @@
         "author": "BCN3D Technologies",
         "category": "BCN3D Technologies",
         "additional_info": "Or with R19 upgrade kit installed",
-        "weight": "2",
+        "weight": "3",
         "manufacturer": "BCN3D Technologies",
         "file_formats": "text/x-gcode",
         "platform": "bcn3dsigma_bed.stl",

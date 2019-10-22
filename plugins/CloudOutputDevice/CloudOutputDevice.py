@@ -17,8 +17,8 @@ class CloudOutputDevice(OutputDevice):
         super().__init__("cloud")
 
         self.setName(catalog.i18nc("@item:inmenu", "Cloud"))
-        self.setShortDescription(catalog.i18nc("@action:button Preceded by 'Ready to'.", "Send to cloud"))
-        self.setDescription(catalog.i18nc("@info:tooltip", "Send to cloud"))
+        self.setShortDescription(catalog.i18nc("@action:button Preceded by 'Ready to'.", "Send to Printer"))
+        self.setDescription(catalog.i18nc("@info:tooltip", "Send to Printer"))
         self.setIconName("cloud")
 
         self._data_api_service = DataApiService.getInstance()
@@ -26,8 +26,8 @@ class CloudOutputDevice(OutputDevice):
         self._gcode = []
         self._writing = False
         self._compressing_gcode = False
-        self._progress_message = Message("Sending the gcode to the cloud",
-                                         title="Send to cloud", dismissable=False, progress=-1)
+        self._progress_message = Message("Sending the gcode to the printer",
+                                         title="Send to Printer", dismissable=False, progress=-1)
 
     def requestWrite(self, nodes, file_name=None, limit_mimetypes=False, file_handler=None, **kwargs):
         self._progress_message.show()

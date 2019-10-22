@@ -6,7 +6,7 @@
         "author": "BCN3D Technologies",
         "category": "BCN3D Technologies",
         "additional_info": "",
-        "weight": "4",
+        "weight": "5",
         "manufacturer": "BCN3D Technologies",
         "file_formats": "text/x-gcode",
         "platform": "bcn3dsigma_bed.stl",
