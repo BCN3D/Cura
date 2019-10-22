@@ -1985,7 +1985,7 @@
                     "description": "The build chamber temperature",
                     "unit": "ºC",
                     "type":  "float",
-                    "resolve": "min(extruderValues('material_build_chamber_temperature')",
+                    "resolve": "min(extruderValues('material_build_chamber_temperature'))",
                     "default_value": 50,
                     "settable_per_mesh": false,
                     "settable_per_extruder": false,
