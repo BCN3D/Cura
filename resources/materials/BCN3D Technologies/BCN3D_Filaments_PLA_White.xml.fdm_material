@@ -65,6 +65,7 @@
         </machine>
         <machine>
            <machine_identifier manufacturer="BCN3D Technologies" product="bcn3dsigmar19" />
+           <machine_identifier manufacturer="BCN3D Technologies" product="bcn3depsilon" />
            <hotend id="e3D - 0.3mm - Brass" />
            <hotend id="e3D - 0.4mm - Brass" />
            <hotend id="e3D - 0.5mm - Hardened Steel" />

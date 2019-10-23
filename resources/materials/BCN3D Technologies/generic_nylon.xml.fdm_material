@@ -3,7 +3,7 @@
     <metadata>
         <name>
             <brand>Generic</brand>
-            <material>Nylon</material>
+            <material>PAHT CF15</material>
             <color>Generic</color>
         </name>
         <GUID>4b47e557-e413-5136-bda6-86af1802d7d2</GUID>
@@ -38,6 +38,7 @@
         </machine>
         <machine>
            <machine_identifier manufacturer="BCN3D Technologies" product="bcn3dsigmar19" />
+           <machine_identifier manufacturer="BCN3D Technologies" product="bcn3depsilon" />
            <hotend id="e3D - 0.3mm - Brass" />
            <hotend id="e3D - 0.4mm - Brass" />
            <hotend id="e3D - 0.5mm - Hardened Steel" />

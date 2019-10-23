@@ -3,12 +3,12 @@
     <metadata>
         <name>
             <brand>BCN3D Filaments</brand>
-            <material>TPU</material>
+            <material>PP GF30</material>
             <color>Black</color>
         </name>
-        <GUID>3d92bf02-7803-570c-8ee9-290da7301a37</GUID>
+        <GUID>4677bce0-a247-5de0-8664-42cee707aebf</GUID>
         <version>1</version>
-        <color_code>#060906</color_code>
+        <color_code>#0E0E0E</color_code>
         <instructions>http://bcn3dtechnologies.com/en/3d-printer-filaments</instructions>
         <author>
             <organization>BCN3D Technologies</organization>
@@ -38,15 +38,15 @@
         </supplier>
     </metadata>
     <properties>
-        <density>1.22</density>
+        <density>1.25</density>
         <diameter>2.85</diameter>
     </properties>
     <settings>
-        <setting key="print temperature">240</setting>
-        <setting key="heated bed temperature">65</setting>
+        <setting key="print temperature">200</setting>
+        <setting key="heated bed temperature">60</setting>
         <setting key="standby temperature">150</setting>
         <setting key="print cooling">100</setting>
-        <setting key="retraction amount">9</setting>
+        <setting key="retraction amount">6.5</setting>
 
         <machine>
            <machine_identifier manufacturer="BCN3D Technologies" product="bcn3dsigma" />

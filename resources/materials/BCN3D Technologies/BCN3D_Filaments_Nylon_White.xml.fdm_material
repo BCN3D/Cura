@@ -3,7 +3,7 @@
     <metadata>
         <name>
             <brand>BCN3D Filaments</brand>
-            <material>Nylon</material>
+            <material>PAHT CF15</material>
             <color>White</color>
         </name>
         <GUID>ee757db6-d265-5f4f-99b3-9eddf349c4a2</GUID>
@@ -65,6 +65,7 @@
         </machine>
         <machine>
            <machine_identifier manufacturer="BCN3D Technologies" product="bcn3dsigmar19" />
+           <machine_identifier manufacturer="BCN3D Technologies" product="bcn3depsilon" />
            <hotend id="e3D - 0.3mm - Brass" />
            <hotend id="e3D - 0.4mm - Brass" />
            <hotend id="e3D - 0.5mm - Hardened Steel" />
