@@ -186,6 +186,16 @@
                     "settable_per_extruder": false,
                     "settable_per_meshgroup": false
                 },
+                "machine_heated_build_volume":
+                {
+                    "label": "Has Build Volume Temperature Stabilization",
+                    "description": "Whether the machine is able to stabilize the build volume temperature.",
+                    "default_value": false,
+                    "type": "bool",
+                    "settable_per_mesh": false,
+                    "settable_per_extruder": false,
+                    "settable_per_meshgroup": false
+                },
                 "machine_center_is_zero":
                 {
                     "label": "Is Center Origin",
@@ -1980,17 +1990,18 @@
                     "settable_per_extruder": false,
                     "settable_per_meshgroup": false
                 },
-                "material_build_chamber_temperature":
+                  "build_volume_temperature":
                 {
-                    "label": "Build Chamber Temperature",
-                    "description": "The build chamber temperature",
+                    "label": "Build Volume Temperature",
+                    "description": "The temperature of the environment to print in.",
                     "unit": "ºC",
                     "type":  "float",
-                    "resolve": "min(extruderValues('material_build_chamber_temperature'))",
+                    "resolve": "min(extruderValues('build_volume_temperature'))",
                     "default_value": 50,
                     "settable_per_mesh": false,
                     "settable_per_extruder": false,
-                    "settable_per_meshgroup": false
+                    "settable_per_meshgroup": false,
+                    "enabled": "machine_heated_build_volume"
                 },
                 "material_diameter":
                 {

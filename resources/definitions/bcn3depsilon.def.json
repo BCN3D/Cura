@@ -33,6 +33,7 @@
     "overrides": {
         "machine_name": { "default_value": "Epsilon" },
         "machine_prefix": { "default_value": "E" },
+        "machine_heated_build_volume": { "value": true },
         "machine_acceleration": { "default_value": 600 },
         "machine_max_jerk_xy": { "value": 12.5 },
         "machine_width": { "default_value": 420 },

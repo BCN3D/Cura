@@ -395,6 +395,7 @@ class CuraApplication(QtApplication):
                 material_print_temperature
                 material_print_temperature_layer_0
                 material_bed_temperature
+                build_volume_temperature
                 material_diameter
                 material_flow
                 retraction_enable
