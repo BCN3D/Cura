@@ -8,6 +8,7 @@ import os
 import sys
 
 from UM.Platform import Platform
+from UM.Logger import Logger
 
 parser = argparse.ArgumentParser(prog = "BCN3D Cura",
                                  add_help = False)
@@ -38,7 +39,7 @@ if not known_args["debug"]:
         os.makedirs(dirpath, exist_ok = True)
         sys.stdout = open(os.path.join(dirpath, "stdout.log"), "w", encoding = "utf-8")
         sys.stderr = open(os.path.join(dirpath, "stderr.log"), "w", encoding = "utf-8")
-        os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.path.abspath("."), "cacert.pem")
+        os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.path.dirname(sys.executable), "cacert.pem")
 
 import platform
 import faulthandler
