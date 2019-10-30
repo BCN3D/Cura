@@ -36,6 +36,9 @@ class CloudOutputDevice(OutputDevice):
         self._gcode = getattr(Application.getInstance().getController().getScene(), "gcode_dict")[active_build_plate]
         gcode = self._joinGcode()
         temp_file = tempfile.NamedTemporaryFile()
+        temp_folder_path = os.path.dirname(temp_file)
+        if not os.path.exists(temp_folder_path):
+            os.makedirs(temp_folder_path, 0o0755)
         temp_file.write(gcode.encode())
         file_name_with_extension = file_name + ".gcode.zip"
         gcode_path = os.path.join(tempfile.gettempdir(), file_name_with_extension)
