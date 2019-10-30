@@ -35,9 +35,7 @@ class CloudOutputDevice(OutputDevice):
         active_build_plate = Application.getInstance().getBuildPlateModel().activeBuildPlate
         self._gcode = getattr(Application.getInstance().getController().getScene(), "gcode_dict")[active_build_plate]
         gcode = self._joinGcode()
-        temp_file = tempfile.NamedTemporaryFile()
-        # if not os.path.exists(tempfile.gettempdir()):
-        #     os.makedirs(tempfile.gettempdir(), 0o0755)
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
         temp_file.write(gcode.encode())
         temp_file_name = temp_file.name
         temp_file.close()
@@ -46,6 +44,8 @@ class CloudOutputDevice(OutputDevice):
         with ZipFile(gcode_path, "w") as gcode_zip:
             gcode_zip.write(temp_file_name, arcname=file_name + ".gcode")
         self._data_api_service.sendGcode(gcode_path, file_name_with_extension)
+        os.remove(temp_file_name)
+        os.remove(gcode_path)
         self.writeFinished.emit()
         self._progress_message.hide()
 
