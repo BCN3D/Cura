@@ -19,7 +19,7 @@ Menu
         }
         MenuItem
         {
-            text: model.name;
+            text: model.is_network_machine ? model.name + " (Network Printer)" : model.name
             checkable: true;
             checked: Cura.MachineManager.activeMachineId == model.id
             exclusiveGroup: group;

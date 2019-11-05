@@ -1,5 +1,6 @@
 from UM.Application import Application
 from UM.OutputDevice.OutputDevicePlugin import OutputDevicePlugin
+from UM import Util
 
 from cura.Bcn3DApi.AuthApiService import AuthApiService
 
@@ -35,7 +36,7 @@ class CloudOutputDevicePlugin(OutputDevicePlugin):
         self._global_stack = Application.getInstance().getGlobalContainerStack()
 
         if self._global_stack:
-            self._supports_cloud_connection = self._global_stack.getMetaDataEntry("supports_cloud_connection")
+            self._supports_cloud_connection = Util.parseBool(self._global_stack.getMetaDataEntry("is_network_machine"))
 
             if self._supports_cloud_connection and self._is_logged_in:
                 self.getOutputDeviceManager().addOutputDevice(CloudOutputDevice())

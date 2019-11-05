@@ -8,7 +8,6 @@ import os
 import sys
 
 from UM.Platform import Platform
-from UM.Logger import Logger
 
 parser = argparse.ArgumentParser(prog = "BCN3D Cura",
                                  add_help = False)

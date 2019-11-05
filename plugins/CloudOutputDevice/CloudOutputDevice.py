@@ -31,6 +31,20 @@ class CloudOutputDevice(OutputDevice):
 
     def requestWrite(self, nodes, file_name=None, limit_mimetypes=False, file_handler=None, **kwargs):
         self._progress_message.show()
+        serial_number = Application.getInstance().getGlobalContainerStack().getMetaDataEntry("serial_number")
+        if not serial_number:
+            self._progress_message.hide()
+            Message("The selected printer doesn't support this feature.", title="Can't send gcode to printer").show()
+            return
+        printer = self._data_api_service.getPrinter(serial_number)
+        if not printer:
+            self._progress_message.hide()
+            Message("The selected printer doesn't exist or you don't have permissions to print.", title="Can't send gcode to printer").show()
+            return
+        if printer.state != "Idle":
+            self._progress_message.hide()
+            Message("The selected printer isn't ready to print.", title="Can't send gcode to printer").show()
+            return
         self.writeStarted.emit(self)
         active_build_plate = Application.getInstance().getBuildPlateModel().activeBuildPlate
         self._gcode = getattr(Application.getInstance().getController().getScene(), "gcode_dict")[active_build_plate]
@@ -43,7 +57,7 @@ class CloudOutputDevice(OutputDevice):
         gcode_path = os.path.join(tempfile.gettempdir(), file_name_with_extension)
         with ZipFile(gcode_path, "w") as gcode_zip:
             gcode_zip.write(temp_file_name, arcname=file_name + ".gcode")
-        self._data_api_service.sendGcode(gcode_path, file_name_with_extension)
+        self._data_api_service.sendGcode(gcode_path, file_name_with_extension, serial_number)
         os.remove(temp_file_name)
         os.remove(gcode_path)
         self.writeFinished.emit()

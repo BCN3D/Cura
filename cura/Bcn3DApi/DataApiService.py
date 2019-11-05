@@ -16,10 +16,10 @@ class DataApiService:
         DataApiService._instance = self
         self._auth_api_service = AuthApiService.getInstance()
 
-    def sendGcode(self, gcode_path, gcode_name):
+    def sendGcode(self, gcode_path, gcode_name, serial_number):
         headers = {"Authorization": "Bearer {}".format(self._auth_api_service.getAccessToken())}
         files = {"file": (gcode_path, open(gcode_path, "rb"))}
-        data = {"serialNumber": "000_000000_0000", "fileName": gcode_name}
+        data = {"serialNumber": serial_number, "fileName": gcode_name}
         response = requests.post(self.data_api_url + "/gcodes", json=data, headers=headers)
         if 200 <= response.status_code < 300:
             response_message = response.json()
@@ -35,6 +35,22 @@ class DataApiService:
         else:
             message = Message("There was an error sending the gcode to the cloud", title="Gcode sent error")
             message.show()
+
+    def getPrinters(self):
+        headers = {"Authorization": "Bearer {}".format(self._auth_api_service.getAccessToken())}
+        response = requests.get(self.data_api_url + "/printers", headers=headers)
+        if 200 <= response.status_code < 300:
+            return response.json()
+        else:
+            return []
+
+    def getPrinter(self, serial_number: str):
+        headers = {"Authorization": "Bearer {}".format(self._auth_api_service.getAccessToken())}
+        response = requests.get(self.data_api_url + "/printers/" + serial_number, headers=headers)
+        if 200 <= response.status_code < 300:
+            return response.json()
+        else:
+            return {}
 
     @classmethod
     def getInstance(cls):

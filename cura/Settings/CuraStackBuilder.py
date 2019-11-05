@@ -21,7 +21,7 @@ class CuraStackBuilder:
     #
     #   \return The new global stack or None if an error occurred.
     @classmethod
-    def createMachine(cls, name: str, definition_id: str) -> Optional[GlobalStack]:
+    def createMachine(cls, name: str, definition_id: str, is_network_machine=False, serial_number=None) -> Optional[GlobalStack]:
         registry = ContainerRegistry.getInstance()
         definitions = registry.findDefinitionContainers(id = definition_id)
         if not definitions:
@@ -86,6 +86,8 @@ class CuraStackBuilder:
 
         # Register the global stack after the extruder stacks are created. This prevents the registry from adding another
         # extruder stack because the global stack didn't have one yet (which is enforced since Cura 3.1).
+        new_global_stack.addMetaDataEntry("is_network_machine", is_network_machine)
+        new_global_stack.addMetaDataEntry("serial_number", serial_number)
         registry.addContainer(new_global_stack)
 
         return new_global_stack

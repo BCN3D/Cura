@@ -390,8 +390,9 @@ class MachineManager(QObject):
         self.__emitChangedSignals()
 
     @pyqtSlot(str, str)
-    def addMachine(self, name: str, definition_id: str) -> None:
-        new_stack = CuraStackBuilder.createMachine(name, definition_id)
+    @pyqtSlot(str, str, bool, str)
+    def addMachine(self, name: str, definition_id: str, is_network_machine=False, serial_number=None) -> None:
+        new_stack = CuraStackBuilder.createMachine(name, definition_id, is_network_machine, serial_number)
         if new_stack:
             # Instead of setting the global container stack here, we set the active machine and so the signals are emitted
             self.setActiveMachine(new_stack.getId())
@@ -526,6 +527,16 @@ class MachineManager(QObject):
             return self._global_container_stack.getId()
 
         return ""
+
+    @pyqtProperty(bool, notify = globalContainerChanged)
+    def activeMachineIsNetwork(self):
+        if self._global_container_stack:
+            is_network_printer = Util.parseBool(self._global_container_stack.getMetaDataEntry("is_network_machine"))
+            if type(is_network_printer) is str:
+                is_network_printer = is_network_printer == "True"
+            return is_network_printer
+        else:
+            return False
 
     @pyqtProperty(QObject, notify = globalContainerChanged)
     def activeMachine(self) -> Optional["GlobalStack"]:

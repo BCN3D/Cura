@@ -12,7 +12,7 @@ import "Menus"
 
 ToolButton
 {
-    text: Cura.MachineManager.activeMachineName
+    text: Cura.MachineManager.activeMachineIsNetwork ? Cura.MachineManager.activeMachineName + " (Network Printer)" : Cura.MachineManager.activeMachineName
 
     tooltip: Cura.MachineManager.activeMachineName
 
