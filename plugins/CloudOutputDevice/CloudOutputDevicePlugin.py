@@ -19,7 +19,7 @@ class CloudOutputDevicePlugin(OutputDevicePlugin):
         self._is_logged_in = False
 
     def start(self):
-        AuthApiService.getInstance().onAuthStateChanged.connect(self._authStateChanged)
+        AuthApiService.getInstance().authStateChanged.connect(self._authStateChanged)
         Application.getInstance().globalContainerStackChanged.connect(self._globalStackChanged)
 
     def stop(self):

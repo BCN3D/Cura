@@ -13,7 +13,6 @@ Item {
     Button {
         id: signInButton
 
-        visible: !Cura.AuthenticationService.isLoggedIn
         anchors.verticalCenter: parent.verticalCenter
         width: 80
 
@@ -37,7 +36,6 @@ Item {
     ToolButton {
         id: userButton
 
-        visible: Cura.AuthenticationService.isLoggedIn
         anchors.verticalCenter: parent.verticalCenter
 
         text: Cura.AuthenticationService.email
@@ -77,6 +75,21 @@ Item {
                 onTriggered: signInDialog.signOut()
             }
         }
+    }
+
+    Connections {
+        target: Cura.AuthenticationService
+
+        onAuthStateChanged: {
+            signInButton.visible = !isLoggedIn
+            userButton.visible = isLoggedIn
+        }
+    }
+
+    Component.onCompleted: {
+        var isLoggedIn = Cura.AuthenticationService.isLoggedIn
+            signInButton.visible = !isLoggedIn
+            userButton.visible = isLoggedIn
     }
 
     UM.Dialog {

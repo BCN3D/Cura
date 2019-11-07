@@ -2,7 +2,7 @@ from UM.Message import Message
 
 import requests
 
-from .AuthApiService import AuthApiService
+from .SessionManager import SessionManager
 
 
 class DataApiService:
@@ -10,14 +10,14 @@ class DataApiService:
 
     def __init__(self):
         super().__init__()
-        if DataApiService._instance is not None:
+        if DataApiService.__instance is not None:
             raise ValueError("Duplicate singleton creation")
 
         DataApiService._instance = self
-        self._auth_api_service = AuthApiService.getInstance()
+        self._session_manager = SessionManager.getInstance()
 
     def sendGcode(self, gcode_path, gcode_name, serial_number):
-        headers = {"Authorization": "Bearer {}".format(self._auth_api_service.getAccessToken())}
+        headers = {"Authorization": "Bearer {}".format(self._session_manager.getAccessToken())}
         files = {"file": (gcode_path, open(gcode_path, "rb"))}
         data = {"serialNumber": serial_number, "fileName": gcode_name}
         response = requests.post(self.data_api_url + "/gcodes", json=data, headers=headers)
@@ -37,7 +37,7 @@ class DataApiService:
             message.show()
 
     def getPrinters(self):
-        headers = {"Authorization": "Bearer {}".format(self._auth_api_service.getAccessToken())}
+        headers = {"Authorization": "Bearer {}".format(self._session_manager.getAccessToken())}
         response = requests.get(self.data_api_url + "/printers", headers=headers)
         if 200 <= response.status_code < 300:
             return response.json()
@@ -45,7 +45,7 @@ class DataApiService:
             return []
 
     def getPrinter(self, serial_number: str):
-        headers = {"Authorization": "Bearer {}".format(self._auth_api_service.getAccessToken())}
+        headers = {"Authorization": "Bearer {}".format(self._session_manager.getAccessToken())}
         response = requests.get(self.data_api_url + "/printers/" + serial_number, headers=headers)
         if 200 <= response.status_code < 300:
             return response.json()
@@ -54,9 +54,9 @@ class DataApiService:
 
     @classmethod
     def getInstance(cls):
-        if not DataApiService._instance:
-            DataApiService._instance = cls()
+        if not DataApiService.__instance:
+            DataApiService.__instance = cls()
 
-        return DataApiService._instance
+        return DataApiService.__instance
 
-    _instance = None
+    __instance = None
