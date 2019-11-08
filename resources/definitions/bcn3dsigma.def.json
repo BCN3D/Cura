@@ -88,7 +88,6 @@
         "skin_angles": { "value": "[45, -45]" },
         "wall_0_inset": { "value": 0 },
         "optimize_wall_printing_order": { "value": true },
-        "outer_inset_first": { "value": true },
         "z_seam_x": { "value": "int(machine_width/2.) if print_mode == 'regular' else int((machine_width/2.)/2.) if print_mode == 'duplication' else int((machine_width/2. - 54/2)/2.)" },
         "z_seam_y": { "value": "machine_depth" },
         "infill_pattern": { "value": "'grid'" },

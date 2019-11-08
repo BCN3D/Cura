@@ -43,35 +43,17 @@
     </properties>
     <settings>
         <setting key="print temperature">200</setting>
-        <setting key="heated bed temperature">60</setting>
+        <setting key="heated bed temperature">80</setting>
         <setting key="standby temperature">150</setting>
         <setting key="print cooling">100</setting>
         <setting key="retraction amount">6.5</setting>
 
         <machine>
-           <machine_identifier manufacturer="BCN3D Technologies" product="bcn3dsigma" />
-           <hotend id="0.3mm - Brass" />
-           <hotend id="0.4mm - Brass" />
-           <hotend id="0.5mm - Hardened Steel" />
-           <hotend id="0.6mm - Brass" />
-           <hotend id="0.8mm - Brass" />
-           <hotend id="1.0mm - Brass" />
-           <hotend id="e3D - 0.3mm - Brass" />
-           <hotend id="e3D - 0.4mm - Brass" />
-           <hotend id="e3D - 0.5mm - Hardened Steel" />
-           <hotend id="e3D - 0.6mm - Brass" />
-           <hotend id="e3D - 0.8mm - Brass" />
-           <hotend id="e3D - 1.0mm - Brass" />
-        </machine>
-        <machine>
-           <machine_identifier manufacturer="BCN3D Technologies" product="bcn3dsigmar19" />
-           <machine_identifier manufacturer="BCN3D Technologies" product="bcn3depsilon" />
-           <hotend id="e3D - 0.3mm - Brass" />
-           <hotend id="e3D - 0.4mm - Brass" />
-           <hotend id="e3D - 0.5mm - Hardened Steel" />
-           <hotend id="e3D - 0.6mm - Brass" />
-           <hotend id="e3D - 0.8mm - Brass" />
-           <hotend id="e3D - 1.0mm - Brass" />
+            <machine_identifier manufacturer="BCN3D Technologies" product="bcn3depsilon" />
+            <hotend id="e3D - 0.4mm - Brass">
+                <setting key="hardware compatible">no</setting>
+            </hotend>
+            <hotend id="e3D - 0.6mm - NozzleX" />
         </machine>
     </settings>
 </fdmmaterial>

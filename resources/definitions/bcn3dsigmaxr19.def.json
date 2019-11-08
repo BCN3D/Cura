@@ -39,7 +39,7 @@
         "avoid_grinding_filament": { "value": false },
         "retraction_speed": { "maximum_value_warning": "machine_max_feedrate_e" },
         "retraction_amount_multiplier": { "value": 1 },
-        "retraction_count_max": { "value": 100 },
+        "retraction_count_max": { "value": 10 },
         "retraction_retract_speed":
         {
             "value": "min(retraction_speed, machine_max_feedrate_e)",

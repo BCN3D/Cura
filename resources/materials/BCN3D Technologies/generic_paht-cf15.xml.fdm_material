@@ -3,7 +3,7 @@
     <metadata>
         <name>
             <brand>Generic</brand>
-            <material>PP GF30</material>
+            <material>PAHT CF15</material>
             <color>Generic</color>
         </name>
         <GUID>3127d1cd-80c2-5da1-8249-c51583880eec</GUID>
@@ -16,7 +16,7 @@
     </properties>
     <settings>
         <setting key="print temperature">200</setting>
-        <setting key="heated bed temperature">80</setting>
+        <setting key="heated bed temperature">95</setting>
         <setting key="standby temperature">150</setting>
         <setting key="print cooling">100</setting>
         <setting key="retraction amount">6.5</setting>
