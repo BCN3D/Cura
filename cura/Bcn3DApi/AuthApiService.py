@@ -9,7 +9,7 @@ import json
 
 
 class AuthApiService(QObject):
-    api_url = "https://5zkg780dt3.execute-api.eu-west-1.amazonaws.com/dev"
+    api_url = "https://xwicf69omc.execute-api.eu-west-1.amazonaws.com/dev"
     authStateChanged = pyqtSignal(bool, arguments=["isLoggedIn"])
 
     def __init__(self):

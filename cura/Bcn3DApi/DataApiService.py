@@ -6,7 +6,7 @@ from .SessionManager import SessionManager
 
 
 class DataApiService:
-    data_api_url = "https://i0fsfve8ha.execute-api.eu-west-1.amazonaws.com/dev"
+    data_api_url = "https://pu9tqbowx0.execute-api.eu-west-1.amazonaws.com/dev"
 
     def __init__(self):
         super().__init__()
