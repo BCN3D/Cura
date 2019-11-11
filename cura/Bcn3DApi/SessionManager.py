@@ -46,6 +46,7 @@ class SessionManager:
         self._access_token = None
         self._refresh_token = None
         self._current_user = None
+        self._preferences.resetPreference(self.bcn3d_auth_data_key)
 
     @classmethod
     def getInstance(cls) -> "SessionManager":

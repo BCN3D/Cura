@@ -41,7 +41,7 @@ class CloudOutputDevice(OutputDevice):
             self._progress_message.hide()
             Message("The selected printer doesn't exist or you don't have permissions to print.", title="Can't send gcode to printer").show()
             return
-        if printer.state != "Idle":
+        if printer["state"] != "Idle":
             self._progress_message.hide()
             Message("The selected printer isn't ready to print.", title="Can't send gcode to printer").show()
             return

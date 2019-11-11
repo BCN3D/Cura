@@ -81,9 +81,8 @@ class AuthApiService(QObject):
 
     @pyqtSlot(result=bool)
     def signOut(self):
-        headers = {"Authorization": "Bearer {}".format(self._access_token)}
+        headers = {"Authorization": "Bearer {}".format(self._session_manager.getAccessToken())}
         response = requests.post(self.api_url + "/sign_out", headers=headers)
-        self._preferences.resetPreference(self.bcn3d_auth_data_key)
         if 200 <= response.status_code < 300:
             self._session_manager.clearSession()
             self._email = None
