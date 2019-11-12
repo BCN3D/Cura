@@ -6,7 +6,7 @@
         "author": "BCN3D Technologies",
         "category": "BCN3D Technologies",
         "additional_info": "Or with R19 upgrade kit installed",
-        "weight": "1",
+        "weight": "2",
         "manufacturer": "BCN3D Technologies",
         "file_formats": "text/x-gcode",
         "platform": "bcn3dsigmax_bed.stl",
@@ -39,7 +39,7 @@
         "avoid_grinding_filament": { "value": false },
         "retraction_speed": { "maximum_value_warning": "machine_max_feedrate_e" },
         "retraction_amount_multiplier": { "value": 1 },
-        "retraction_count_max": { "value": 100 },
+        "retraction_count_max": { "value": 10 },
         "retraction_retract_speed":
         {
             "value": "min(retraction_speed, machine_max_feedrate_e)",

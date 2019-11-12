@@ -75,5 +75,12 @@
                 <setting key="hardware compatible">no</setting>
            </hotend>
         </machine>
+        <machine>
+            <machine_identifier manufacturer="BCN3D Technologies" product="bcn3depsilon" />
+            <hotend id="e3D - 0.4mm - Brass" >
+                <setting key="hardware compatible">no</setting>
+            </hotend>
+            <hotend id="e3D - 0.6mm - NozzleX" />
+        </machine>
     </settings>
 </fdmmaterial>

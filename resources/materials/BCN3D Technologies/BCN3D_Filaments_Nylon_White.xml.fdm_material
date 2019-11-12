@@ -3,7 +3,7 @@
     <metadata>
         <name>
             <brand>BCN3D Filaments</brand>
-            <material>Nylon</material>
+            <material>PA</material>
             <color>White</color>
         </name>
         <GUID>ee757db6-d265-5f4f-99b3-9eddf349c4a2</GUID>
@@ -71,6 +71,14 @@
            <hotend id="e3D - 0.6mm - Brass" />
            <hotend id="e3D - 0.8mm - Brass" />
            <hotend id="e3D - 1.0mm - Brass" />
+        </machine>
+        <machine>
+            <machine_identifier manufacturer="BCN3D Technologies" product="bcn3depsilon" />
+            <setting key="heated bed temperature">95</setting>
+            <hotend id="e3D - 0.4mm - Brass" />
+            <hotend id="e3D - 0.6mm - NozzleX">
+                <setting key="hardware compatible">no</setting>
+            </hotend>
         </machine>
     </settings>
 </fdmmaterial>

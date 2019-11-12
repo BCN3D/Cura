@@ -54,6 +54,7 @@ if Platform.isLinux(): # Needed for platform.linux_distribution, which is not av
 
 # When frozen, i.e. installer version, don't let PYTHONPATH mess up the search path for DLLs.
 if Platform.isWindows() and hasattr(sys, "frozen"):
+    os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.path.dirname(sys.executable), "cacert.pem")
     try:
         del os.environ["PYTHONPATH"]
     except KeyError:

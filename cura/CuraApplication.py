@@ -78,6 +78,7 @@ from cura.Settings.ExtruderManager import ExtruderManager
 from cura.Settings.UserChangesModel import UserChangesModel
 from cura.Settings.ExtrudersModel import ExtrudersModel
 from cura.Settings.PrintModesModel import PrintModesModel
+from cura.Settings.PrintersModel import PrintersModel
 from cura.Settings.PostSlicing import PostSlicing
 from cura.Settings.ContainerSettingsModel import ContainerSettingsModel
 from cura.Settings.MaterialSettingsVisibilityHandler import MaterialSettingsVisibilityHandler
@@ -395,6 +396,7 @@ class CuraApplication(QtApplication):
                 material_print_temperature
                 material_print_temperature_layer_0
                 material_bed_temperature
+                build_volume_temperature
                 material_diameter
                 material_flow
                 retraction_enable
@@ -879,6 +881,7 @@ class CuraApplication(QtApplication):
         qmlRegisterType(InstanceContainer, "Cura", 1, 0, "InstanceContainer")
         qmlRegisterType(ExtrudersModel, "Cura", 1, 0, "ExtrudersModel")
         qmlRegisterType(PrintModesModel, "Cura", 1, 0, "PrintModesModel")
+        qmlRegisterType(PrintersModel, "Cura", 1, 0, "PrintersModel")
         qmlRegisterType(PostSlicing, "Cura", 1, 0, "PostSlicing")
         qmlRegisterType(ContainerSettingsModel, "Cura", 1, 0, "ContainerSettingsModel")
         qmlRegisterSingletonType(ProfilesModel, "Cura", 1, 0, "ProfilesModel", ProfilesModel.createProfilesModel)

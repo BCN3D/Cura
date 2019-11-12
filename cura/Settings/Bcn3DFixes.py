@@ -130,7 +130,7 @@ class Bcn3DFixes(Job):
         # Add build chamber temperature gcode
         layer = self._gcode_list[1]
         lines = layer.split("\n")
-        lines[0] += "\nM141 S" + str(self._container.getProperty("material_build_chamber_temperature", "value"))
+        lines[0] += "\nM141 S" + str(self._container.getProperty("build_volume_temperature", "value"))
         self._gcode_list[1] = "\n".join(lines)
 
         # Write BCN3DFixes info

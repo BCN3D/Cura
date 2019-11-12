@@ -38,6 +38,7 @@ UM.Dialog
     {
         // Reset selection and machine name
         if (visible) {
+            machineList.model.updateNetworkPrinters();
             activeCategory = preferredCategory;
             machineList.currentIndex = 0;
             machineName.text = getMachineName();
@@ -68,7 +69,7 @@ UM.Dialog
         {
             id: machineList
 
-            model: UM.DefinitionContainersModel
+            model: Cura.PrintersModel
             {
                 id: machineDefinitionsModel
                 filter: { "visible": true }
@@ -226,7 +227,7 @@ UM.Dialog
     {
         base.visible = false
         var item = machineList.model.getItem(machineList.currentIndex);
-        Cura.MachineManager.addMachine(machineName.text, item.id)
+        Cura.MachineManager.addMachine(machineName.text, item.id, item.is_network_machine, item.serial_number)
         base.machineAdded(item.id) // Emit signal that the user added a machine.
     }
 
