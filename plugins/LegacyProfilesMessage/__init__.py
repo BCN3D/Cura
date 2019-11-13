@@ -1,4 +1,4 @@
-from . import FirstRun
+from . import LegacyProfilesMessage
 
 from UM.i18n import i18nCatalog
 i18n_catalog = i18nCatalog("cura")
@@ -8,5 +8,5 @@ def getMetaData():
 
 def register(app):
     return {
-        "extension": FirstRun.FirstRun()
+        "extension": LegacyProfilesMessage.LegacyProfilesMessage()
     }
