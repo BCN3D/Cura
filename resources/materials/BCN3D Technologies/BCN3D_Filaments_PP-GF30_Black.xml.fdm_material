@@ -38,7 +38,7 @@
         </supplier>
     </metadata>
     <properties>
-        <density>1.25</density>
+        <density>0.94</density>
         <diameter>2.85</diameter>
     </properties>
     <settings>
