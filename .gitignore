@@ -30,6 +30,7 @@ dist/
 *.qm
 .idea
 cura.desktop
+.vscode
 
 # Eclipse+PyDev
 .project
