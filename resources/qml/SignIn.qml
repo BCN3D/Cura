@@ -7,75 +7,106 @@ import UM 1.3 as UM
 import Cura 1.0 as Cura
 
 Item {
+    id: base
 
     anchors.verticalCenter: parent.verticalCenter
 
-    Button {
-        id: signInButton
-
-        anchors.verticalCenter: parent.verticalCenter
-        width: 80
-
-        style: ButtonStyle {
-            background: Rectangle {
-                color: control.hovered ? UM.Theme.getColor("primary_hover") : "transparent"
-                border.color: "white"
-                border.width: 1
-            }
-            label: Text {
-                color: "white"
-                text: "Sign In"
-                horizontalAlignment: Text.AlignHCenter
-            }
-        }
-
-        onClicked: signInDialog.open()
-
-    }
-
-    ToolButton {
-        id: userButton
+    RowLayout {
 
         anchors.verticalCenter: parent.verticalCenter
 
-        text: Cura.AuthenticationService.email
+        Button {
+            id: cloudButton
 
-        style: ButtonStyle {
-            background: Rectangle {
-                color: {
-                    if(control.pressed) {
-                        return UM.Theme.getColor("sidebar_header_active");
-                    }
-                    else if(control.hovered) {
-                        return UM.Theme.getColor("sidebar_header_hover");
-                    }
-                    else {
-                        return UM.Theme.getColor("topbar_background_color");
-                    }
+            Layout.rightMargin: UM.Theme.getSize("default_margin").width
+
+            anchors.verticalCenter: parent.verticalCenter
+            width: 80
+
+            style: ButtonStyle {
+                background: Rectangle {
+                    color: control.hovered ? UM.Theme.getColor("primary_hover") : "transparent"
+                    border.color: "white"
+                    border.width: 1
                 }
-                Behavior on color { ColorAnimation { duration: 50; } }
+                label: Text {
+                    color: "white"
+                    text: "Go to the cloud"
+                    horizontalAlignment: Text.AlignHCenter
+                }
             }
-            label: Label {
-                id: label
-                color: UM.Theme.getColor("sidebar_header_text_active")
-                text: control.text;
-                elide: Text.ElideRight;
-                anchors.left: parent.left;
-                anchors.leftMargin: UM.Theme.getSize("default_margin").width / 2
-                anchors.rightMargin: control.rightMargin;
-                anchors.verticalCenter: parent.verticalCenter;
-                font: UM.Theme.getFont("default_bold")
-            }
+
+            onClicked: Qt.openUrlExternally("https://cloud.bcn3d.com");
         }
 
-        menu: Menu {
-            id: userMenu
-            MenuItem {
-                text: "Logout"
-                onTriggered: signInDialog.signOut()
+        Button {
+            id: signInButton
+
+            anchors.verticalCenter: parent.verticalCenter
+            width: 80
+
+            style: ButtonStyle {
+                background: Rectangle {
+                    color: control.hovered ? UM.Theme.getColor("primary_hover") : "transparent"
+                    border.color: "white"
+                    border.width: 1
+                }
+                label: Text {
+                    color: "white"
+                    text: "Sign In"
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+
+            onClicked: signInDialog.open()
+
+        }
+
+        ToolButton {
+            id: userButton
+
+            anchors.verticalCenter: parent.verticalCenter
+
+            text: Cura.AuthenticationService.email
+
+            style: ButtonStyle {
+                background: Rectangle {
+                    color: {
+                        if(control.pressed) {
+                            return UM.Theme.getColor("sidebar_header_active");
+                        }
+                        else if(control.hovered) {
+                            return UM.Theme.getColor("sidebar_header_hover");
+                        }
+                        else {
+                            return UM.Theme.getColor("topbar_background_color");
+                        }
+                    }
+                    Behavior on color { ColorAnimation { duration: 50; } }
+                }
+                label: Label {
+                    id: label
+                    color: UM.Theme.getColor("sidebar_header_text_active")
+                    text: control.text;
+                    elide: Text.ElideRight;
+                    anchors.left: parent.left;
+                    anchors.leftMargin: UM.Theme.getSize("default_margin").width / 2
+                    anchors.rightMargin: control.rightMargin;
+                    anchors.verticalCenter: parent.verticalCenter;
+                    font: UM.Theme.getFont("default_bold")
+                }
+            }
+
+            menu: Menu {
+                id: userMenu
+                MenuItem {
+                    text: "Logout"
+                    onTriggered: signInDialog.signOut()
+                }
             }
         }
     }
+
 
     Connections {
         target: Cura.AuthenticationService
