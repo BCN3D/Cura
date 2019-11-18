@@ -1,0 +1,8 @@
+{
+    "name": "Initial messages",
+    "author": "BCN3D Technologies",
+    "version": "1.0.0",
+    "description": "Show messages on start up",
+    "api": 4,
+    "i18n-catalog": "cura"
+}
