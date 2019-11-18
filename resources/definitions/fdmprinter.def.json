@@ -19,6 +19,7 @@
             "0": "fdmextruder"
         },
         "supports_usb_connection": true,
+        "supports_firmware_updates": true,
         "supports_cloud_connection":  false
     },
     "settings":

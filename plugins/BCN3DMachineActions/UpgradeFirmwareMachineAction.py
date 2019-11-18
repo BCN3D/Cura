@@ -18,7 +18,7 @@ class UpgradeFirmwareMachineAction(MachineAction):
 
     def _onContainerAdded(self, container):
         # Add this action as a supported action to all machine definitions if they support USB connection
-        if isinstance(container, DefinitionContainer) and container.getMetaDataEntry("type") == "machine" and container.getMetaDataEntry("supports_usb_connection"):
+        if isinstance(container, DefinitionContainer) and container.getMetaDataEntry("type") == "machine" and container.getMetaDataEntry("supports_firmware_updates"):
             Application.getInstance().getMachineActionManager().addSupportedAction(container.getId(), self.getKey())
 
     @pyqtSlot(result=str)

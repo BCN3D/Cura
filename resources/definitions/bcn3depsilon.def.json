@@ -25,7 +25,8 @@
             "0": "bcn3depsilon_extruder_left",
             "1": "bcn3depsilon_extruder_right"
         },
-        "supports_cloud_connection": true
+        "supports_cloud_connection": true,
+        "supports_firmware_updates": false
     },
     "overrides": {
         "acceleration_enabled": { "value": true },
