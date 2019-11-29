@@ -8,7 +8,7 @@
         </name>
         <GUID>8b911804-d64e-52b3-b786-db9a3f147662</GUID>
         <version>1</version>
-        <color_code>#0E0E0E</color_code>
+        <color_code>#343537</color_code>
         <instructions>http://bcn3dtechnologies.com/en/3d-printer-filaments</instructions>
         <author>
             <organization>BCN3D Technologies</organization>
@@ -74,6 +74,7 @@
         </machine>
         <machine>
             <machine_identifier manufacturer="BCN3D Technologies" product="bcn3depsilon" />
+            <setting key="adhesion type">raft</setting>
             <hotend id="e3D - 0.4mm - Brass" />
             <hotend id="e3D - 0.6mm - NozzleX">
                 <setting key="hardware compatible">no</setting>

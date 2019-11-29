@@ -3,12 +3,12 @@
     <metadata>
         <name>
             <brand>BCN3D Filaments</brand>
-            <material>ABS</material>
-            <color>White</color>
+            <material>PA</material>
+            <color>Natural</color>
         </name>
-        <GUID>0c313108-583e-59ac-a584-728ba6d4f89c</GUID>
+        <GUID>ee757db6-d265-5f4f-99b3-9eddf349c4a2</GUID>
         <version>1</version>
-        <color_code>#FEFEFE</color_code>
+        <color_code>#E6E3C8</color_code>
         <instructions>http://bcn3dtechnologies.com/en/3d-printer-filaments</instructions>
         <author>
             <organization>BCN3D Technologies</organization>
@@ -38,12 +38,12 @@
         </supplier>
     </metadata>
     <properties>
-        <density>1.075</density>
+        <density>1.115</density>
         <diameter>2.85</diameter>
     </properties>
     <settings>
         <setting key="print temperature">250</setting>
-        <setting key="heated bed temperature">95</setting>
+        <setting key="heated bed temperature">65</setting>
         <setting key="standby temperature">150</setting>
         <setting key="print cooling">0</setting>
         <setting key="retraction amount">6</setting>
@@ -74,7 +74,8 @@
         </machine>
         <machine>
             <machine_identifier manufacturer="BCN3D Technologies" product="bcn3depsilon" />
-            <setting key="adhesion type">raft</setting>
+            <setting key="heated bed temperature">95</setting>
+            <setting key="adhesion type">brim</setting>
             <hotend id="e3D - 0.4mm - Brass" />
             <hotend id="e3D - 0.6mm - NozzleX">
                 <setting key="hardware compatible">no</setting>

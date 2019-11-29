@@ -8,7 +8,7 @@
         </name>
         <GUID>4677bce0-a247-5de0-8664-42cee707aebf</GUID>
         <version>1</version>
-        <color_code>#0E0E0E</color_code>
+        <color_code>#343537</color_code>
         <instructions>http://bcn3dtechnologies.com/en/3d-printer-filaments</instructions>
         <author>
             <organization>BCN3D Technologies</organization>
@@ -42,14 +42,15 @@
         <diameter>2.85</diameter>
     </properties>
     <settings>
-        <setting key="print temperature">200</setting>
-        <setting key="heated bed temperature">80</setting>
+        <setting key="print temperature">250</setting>
+        <setting key="heated bed temperature">65</setting>
         <setting key="standby temperature">150</setting>
         <setting key="print cooling">100</setting>
         <setting key="retraction amount">6.5</setting>
 
         <machine>
             <machine_identifier manufacturer="BCN3D Technologies" product="bcn3depsilon" />
+            <setting key="adhesion type">brim</setting>
             <hotend id="e3D - 0.4mm - Brass">
                 <setting key="hardware compatible">no</setting>
             </hotend>
