@@ -5,11 +5,10 @@ from UM.Message import Message
 from .SessionManager import SessionManager
 
 import requests
-import json
 
 
 class AuthApiService(QObject):
-    api_url = "https://xwicf69omc.execute-api.eu-west-1.amazonaws.com/dev"
+    api_url = "https://8kmoda5of3.execute-api.eu-west-1.amazonaws.com/dev"
     authStateChanged = pyqtSignal(bool, arguments=["isLoggedIn"])
 
     def __init__(self):
