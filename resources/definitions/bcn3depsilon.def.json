@@ -131,7 +131,7 @@
         "ooze_shield_enabled": { "value": false },
         "optimize_wall_printing_order": { "value": true },
         "prime_tower_closest_to": { "default_value": "top" },
-        "prime_tower_enable": { "value": true },
+        "prime_tower_enable": { "value": false },
         "prime_tower_line_width": { "value": "machine_nozzle_size if not prime_tower_enable else (prime_tower_wall_thickness / 2 if prime_tower_wall_thickness <= round(2 * (min(extruderValues('machine_nozzle_size')) + (max(extruderValues('machine_nozzle_size')) - min(extruderValues('machine_nozzle_size'))) / 2), 2) else machine_nozzle_size)" },
         "prime_tower_min_volume": { "value": "2 * smart_purge_minimum_purge_distance * math.pi * (material_diameter/2) ** 2" },
         "prime_tower_size": { "value": "max(25, round(math.sqrt(prime_tower_min_volume/layer_height), 2))" },
@@ -219,7 +219,7 @@
         "support_offset": { "value": "machine_nozzle_size / 2" },
         "support_xy_distance": { "value": "machine_nozzle_size * 2" },
         "support_xy_distance_overhang": {
-            "value":  2,
+            "value":  0.5,
             "maximum_value_warning": "10"
         },
         "support_z_distance": { "value": "max(2 * layer_height, 0.15)" },
