@@ -9,6 +9,8 @@ import Cura 1.0 as Cura
 Item {
     id: base
 
+    property int signInStatusCode: 200
+
     anchors.verticalCenter: parent.verticalCenter
 
     RowLayout {
@@ -197,6 +199,12 @@ Item {
             ColumnLayout {
                 Layout.fillWidth: true
 
+                Label {
+                    text: base.signInStatusCode == 400 ? "Incorrect email or password" : base.signInStatusCode == -1 ? "Can't sign in. Check internet connection." : "Can't sign in. Something went wrong."
+                    color: "red"
+                    visible: base.signInStatusCode != 200
+                }
+
                 Button {
                     id: submitButton
 
@@ -221,8 +229,8 @@ Item {
         }
 
         function signIn() {
-            var success = Cura.AuthenticationService.signIn(email.text, password.text)
-            if (success) {
+            base.signInStatusCode = Cura.AuthenticationService.signIn(email.text, password.text)
+            if (base.signInStatusCode == 200) {
                 signInButton.visible = false
                 userButton.visible = true
                 this.resetForm()
@@ -239,6 +247,7 @@ Item {
         }
 
         function resetForm() {
+            base.signInStatusCode = 200
             // lose focus from the text inputs to prevend editingFinished signal to emit when opening the dialog
             submitButton.forceActiveFocus()
 

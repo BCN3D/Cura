@@ -1,8 +1,7 @@
 from UM.Message import Message
 
-import requests
-
 from .SessionManager import SessionManager
+from .http_helper import get, post
 
 
 class DataApiService:
@@ -20,12 +19,12 @@ class DataApiService:
         headers = {"Authorization": "Bearer {}".format(self._session_manager.getAccessToken())}
         files = {"file": (gcode_path, open(gcode_path, "rb"))}
         data = {"serialNumber": serial_number, "fileName": gcode_name}
-        response = requests.post(self.data_api_url + "/gcodes", json=data, headers=headers)
+        response = post(self.data_api_url + "/gcodes", data, headers)
         if 200 <= response.status_code < 300:
             response_message = response.json()
             presigned_url = response_message["url"]
             fields = response_message["fields"]
-            response2 = requests.post(presigned_url, data=fields, files=files)
+            response2 = post(presigned_url, fields, files=files)
             if 200 <= response2.status_code < 300:
                 message = Message("The gcode has been sent to the cloud successfully", title="Gcode sent")
                 message.show()
@@ -38,7 +37,7 @@ class DataApiService:
 
     def getPrinters(self):
         headers = {"Authorization": "Bearer {}".format(self._session_manager.getAccessToken())}
-        response = requests.get(self.data_api_url + "/printers", headers=headers)
+        response = get(self.data_api_url + "/printers", headers=headers)
         if 200 <= response.status_code < 300:
             return response.json()
         else:
@@ -46,7 +45,7 @@ class DataApiService:
 
     def getPrinter(self, serial_number: str):
         headers = {"Authorization": "Bearer {}".format(self._session_manager.getAccessToken())}
-        response = requests.get(self.data_api_url + "/printers/" + serial_number, headers=headers)
+        response = get(self.data_api_url + "/printers/" + serial_number, headers=headers)
         if 200 <= response.status_code < 300:
             return response.json()
         else:
