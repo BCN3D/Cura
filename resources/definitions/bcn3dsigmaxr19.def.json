@@ -35,7 +35,6 @@
         "machine_acceleration": { "default_value": 600 },
         "machine_max_jerk_xy": { "value": 12.5 },
         "machine_width": { "default_value": 420 },
-        "machine_max_feedrate_e": { "default_value": 35 },
         "avoid_grinding_filament": { "value": false },
         "retraction_speed": { "maximum_value_warning": "machine_max_feedrate_e" },
         "retraction_amount_multiplier": { "value": 1 },
