@@ -43,4 +43,4 @@ class InitialMessages(Extension):
         elif action == "open_link":
             QDesktopServices.openUrl(QUrl("https://www.bcn3d.com"))
         elif action == "filaments":
-            QDesktopServices.openUrl(QUrl("https://www.bcn3d.com"))
+            QDesktopServices.openUrl(QUrl("https://www.bcn3d.com/revamped-industrial-grade-bcn3d-basf-mitsubishi-filaments-portfolio/"))
