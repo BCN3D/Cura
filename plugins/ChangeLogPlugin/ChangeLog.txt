@@ -1,3 +1,8 @@
+[3.0.0]
+*New Epsilon printer
+*Sign in to the cloud and send gcodes to your Epsilon
+*New materials and profiles
+
 [2.1.5]
 *0.4mm hotend default for Sigmax R19
 *Information tooltip explaining the behaviour of quality profiles when using different hotends
