@@ -43,7 +43,7 @@
     </properties>
     <settings>
         <setting key="print temperature">240</setting>
-        <setting key="heated bed temperature">65</setting>
+        <setting key="heated bed temperature">40</setting>
         <setting key="standby temperature">150</setting>
         <setting key="print cooling">100</setting>
         <setting key="retraction amount">9</setting>

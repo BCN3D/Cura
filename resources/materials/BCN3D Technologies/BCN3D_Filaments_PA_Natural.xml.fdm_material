@@ -47,6 +47,7 @@
         <setting key="standby temperature">150</setting>
         <setting key="print cooling">0</setting>
         <setting key="retraction amount">6</setting>
+        <setting key="adhesion type">brim</setting>
 
         <machine>
            <machine_identifier manufacturer="BCN3D Technologies" product="bcn3dsigma" />
@@ -74,7 +75,6 @@
         </machine>
         <machine>
             <machine_identifier manufacturer="BCN3D Technologies" product="bcn3depsilon" />
-            <setting key="adhesion type">brim</setting>
             <hotend id="e3D - 0.4mm - Brass" />
             <hotend id="e3D - 0.6mm - NozzleX">
                 <setting key="hardware compatible">no</setting>
