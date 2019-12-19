@@ -75,6 +75,7 @@
         <machine>
             <machine_identifier manufacturer="BCN3D Technologies" product="bcn3depsilon" />
             <setting key="heated bed temperature">30</setting>
+            <setting key="build volume temperature">40</setting>
             <hotend id="e3D - 0.4mm - Brass" />
             <hotend id="e3D - 0.6mm - NozzleX">
                 <setting key="hardware compatible">no</setting>

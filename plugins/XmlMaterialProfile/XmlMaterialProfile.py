@@ -883,7 +883,8 @@ class XmlMaterialProfile(InstanceContainer):
         "adhesion tendency": "material_adhesion_tendency",
         "surface energy": "material_surface_energy",
         "support offset": "support_offset",
-        "adhesion type": "adhesion_type"
+        "adhesion type": "adhesion_type",
+        "build volume temperature": "build_volume_temperature"
     }
     __unmapped_settings = [
         "hardware compatible"
