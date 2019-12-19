@@ -41,6 +41,6 @@ class InitialMessages(Extension):
             Preferences.getInstance().setValue("cura/info_changed_materials", False)
             message.hide()
         elif action == "open_link":
-            QDesktopServices.openUrl(QUrl("https://www.bcn3d.com"))
+            QDesktopServices.openUrl(QUrl("https://www.bcn3d.com/documents/BCN3D-Cura-old-profiles.pdf"))
         elif action == "filaments":
             QDesktopServices.openUrl(QUrl("https://www.bcn3d.com/revamped-industrial-grade-bcn3d-basf-mitsubishi-filaments-portfolio/"))
