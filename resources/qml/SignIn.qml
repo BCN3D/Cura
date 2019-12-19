@@ -38,7 +38,7 @@ Item {
                 }
             }
 
-            onClicked: Qt.openUrlExternally("https://staging.cloud.bcn3d.com");
+            onClicked: Qt.openUrlExternally("https://cloud.bcn3d.com");
         }
 
         Button {
@@ -215,7 +215,7 @@ Item {
                 }
 
                 Label {
-                    text: "<a href='https://staging.cloud.bcn3d.com/auth/sign-in' title='Register'>Register</a>"
+                    text: "<a href='https://cloud.bcn3d.com/auth/sign-in' title='Register'>Register</a>"
                     onLinkActivated: Qt.openUrlExternally(link)
 
                     MouseArea {

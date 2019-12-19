@@ -7,7 +7,7 @@ from .http_helper import get, post
 
 
 class AuthApiService(QObject):
-    api_url = "https://8kmoda5of3.execute-api.eu-west-1.amazonaws.com/dev"
+    api_url = "https://api.bcn3d.com/auth"
     authStateChanged = pyqtSignal(bool, arguments=["isLoggedIn"])
 
     def __init__(self):

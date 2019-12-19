@@ -5,7 +5,7 @@ from .http_helper import get, post
 
 
 class DataApiService:
-    data_api_url = "https://lzuy8i0wdl.execute-api.eu-west-1.amazonaws.com/dev"
+    data_api_url = "https://api.bcn3d.com/data"
 
     def __init__(self):
         super().__init__()
