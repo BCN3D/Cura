@@ -147,19 +147,25 @@ class Bcn3DFixes(Job):
                 break
 
         # Get info of used extruders
+        materials = []
+        used_extruder_stacks = ExtruderManager.getInstance().getUsedExtruderStacks()
+        used_extruder_stacks.sort(key=lambda x: x.getMetaData()['position'])
+        for extruder_stack in used_extruder_stacks:
+            materials.append(extruder_stack.material.getMetaData()["material"])
+
         if self._MirrorOrDuplicationPrint:
-            extrudersUsed = ";Extruders used: T0 "+str(self._nozzleSize[0])+" T1 "+str(self._nozzleSize[0])
+            extruders_used = ";Extruders used: T0 "+str(self._nozzleSize[0])+" T1 "+str(self._nozzleSize[0])
+            materials_used = ";Materials used: T0 "+str(materials[0])+" T1 "+str(materials[0])
         else:
             if self._MEXPrint:
-                countingForTool = int(ExtruderManager.getInstance().getUsedExtruderStacks()[0].getMetaData()['position'])
-                if countingForTool == 0:
-                    extrudersUsed = ";Extruders used: T0 "+str(self._nozzleSize[0])
-                else:
-                    extrudersUsed = ";Extruders used: T1 "+str(self._nozzleSize[1])
+                countingForTool = int(used_extruder_stacks[0].getMetaData()['position'])
+                extruders_used = ";Extruders used: T" + str(countingForTool) + " " + str(self._nozzleSize[countingForTool])
+                materials_used = ";Materials used: T" + str(countingForTool) + " " + str(materials[countingForTool])
             else:
-                extrudersUsed = ";Extruders used: T0 "+str(self._nozzleSize[0])+" T1 "+str(self._nozzleSize[1])
+                extruders_used = ";Extruders used: T0 "+str(self._nozzleSize[0])+" T1 "+str(self._nozzleSize[1])
+                materials_used = ";Materials used: T0 " + str(materials[0]) + " T1 " + str(materials[1])
 
-        self._gcode_list[0] += extrudersUsed+"\n;BCN3D_FIXES\n"
+        self._gcode_list[0] += extruders_used + "\n" + materials_used + "\n;BCN3D_FIXES\n"
         scene = Application.getInstance().getController().getScene()
         setattr(scene, "gcode_list", self._gcode_list)
         self.setResult(self._gcode_list)
