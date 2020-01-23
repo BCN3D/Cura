@@ -75,6 +75,7 @@
         "material_bed_temp_wait": { "value": true },
         "material_print_temp_wait": { "value": true },
         "material_bed_temp_prepend": { "value": true },
+        "material_bed_temperature": { "maximum_value": 105, "maximum_value_warning": 100 },
         "material_print_temp_prepend": { "value": true },
         "line_width": { "value": "machine_nozzle_size" },
         "wall_line_width": { "value": "line_width" },

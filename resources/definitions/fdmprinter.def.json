@@ -3413,7 +3413,7 @@
                     "default_value": 2,
                     "minimum_value": "0",
                     "minimum_value_warning": "0",
-                    "maximum_value_warning": "5",
+                    "maximum_value_warning": "10",
                     "enabled": "retraction_hop_after_extruder_switch",
                     "settable_per_extruder": false,
                     "comments": "BCN3D setting"

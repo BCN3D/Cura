@@ -38,6 +38,7 @@
         "print_mode": { "enabled": true },
         "machine_disallowed_areas": { "value": "[] if print_mode == 'regular' else [[[-(abs(machine_head_with_fans_polygon[0][0]) + abs(machine_head_with_fans_polygon[2][0])) / 2, machine_depth / 2], [-(abs(machine_head_with_fans_polygon[0][0]) + abs(machine_head_with_fans_polygon[2][0])) / 2, -machine_depth / 2], [machine_width / 2, -machine_depth / 2], [machine_width / 2, machine_depth / 2]]] if print_mode == 'mirror' else [[[0, machine_depth / 2], [0, -machine_depth / 2], [machine_width / 2, -machine_depth / 2], [machine_width / 2, machine_depth / 2]]]" },
         "machine_heated_bed": { "default_value": true },
+        "material_bed_temperature": { "maximum_value": 105, "maximum_value_warning": 100 },
         "machine_extruder_count": { "default_value": 2 },
         "machine_center_is_zero": { "default_value": false },
         "machine_gcode_flavor": { "default_value": "RepRap (Marlin/Sprinter)" },

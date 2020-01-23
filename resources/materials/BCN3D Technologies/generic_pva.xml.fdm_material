@@ -14,12 +14,12 @@
         <density>1.3</density>
         <diameter>2.85</diameter>
     </properties>
-    <settings>
+        <settings>
         <setting key="print temperature">220</setting>
         <setting key="heated bed temperature">65</setting>
         <setting key="standby temperature">150</setting>
         <setting key="print cooling">100</setting>
-        <setting key="retraction amount">3</setting>
+        <setting key="retraction amount">5</setting>
 
         <machine>
            <machine_identifier manufacturer="BCN3D Technologies" product="bcn3dsigma" />
@@ -53,6 +53,7 @@
             <hotend id="e3D - 0.6mm - NozzleX">
                 <setting key="hardware compatible">no</setting>
             </hotend>
+            <hotend id="e3D - 0.8mm - Brass" />
         </machine>
     </settings>
 </fdmmaterial>
