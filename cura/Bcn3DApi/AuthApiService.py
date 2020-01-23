@@ -70,7 +70,7 @@ class AuthApiService(QObject):
             self._session_manager.setRefreshToken(response_message["refreshToken"])
             self._is_logged_in = True
             self.authStateChanged.emit(True)
-            message = Message("Now you can print through the cloud!", title="Sign In successfully")
+            message = Message("Go to Add Printer to see your printers registered to the cloud", title="Sign In successfully")
             message.show()
             self._session_manager.storeSession()
             return 200
