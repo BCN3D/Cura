@@ -81,6 +81,7 @@
                 <setting key="hardware compatible">no</setting>
             </hotend>
             <hotend id="e3D - 0.8mm - Brass" />
+            <hotend id="e3D - 1.0mm - Brass" />
         </machine>
     </settings>
 </fdmmaterial>
