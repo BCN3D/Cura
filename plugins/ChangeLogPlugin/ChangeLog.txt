@@ -1,3 +1,8 @@
+[3.1.0]
+*More hotend sizes for Epsilon
+*Disable tower for Epsilon Dual prints
+*Improved  profiles for Sigma/Sigmax
+
 [3.0.0]
 *New Epsilon printer
 *Sign in to the cloud and send gcodes to your Epsilon
