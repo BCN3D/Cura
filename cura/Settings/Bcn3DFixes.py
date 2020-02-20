@@ -160,7 +160,7 @@ class Bcn3DFixes(Job):
             if self._MEXPrint:
                 countingForTool = int(used_extruder_stacks[0].getMetaData()['position'])
                 extruders_used = ";Extruders used: T" + str(countingForTool) + " " + str(self._nozzleSize[countingForTool])
-                materials_used = ";Materials used: T" + str(countingForTool) + " " + str(materials[countingForTool])
+                materials_used = ";Materials used: T" + str(countingForTool) + " " + str(materials[0])
             else:
                 extruders_used = ";Extruders used: T0 "+str(self._nozzleSize[0])+" T1 "+str(self._nozzleSize[1])
                 materials_used = ";Materials used: T0 " + str(materials[0]) + " T1 " + str(materials[1])
