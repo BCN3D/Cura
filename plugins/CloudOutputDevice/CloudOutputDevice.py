@@ -3,6 +3,7 @@ from UM.OutputDevice.OutputDevice import OutputDevice
 from UM.Message import Message
 
 from cura.Bcn3DApi.DataApiService import DataApiService
+from cura.Settings.ExtruderManager import ExtruderManager
 
 import tempfile
 import os
@@ -45,6 +46,18 @@ class CloudOutputDevice(OutputDevice):
             self._progress_message.hide()
             Message("The selected printer isn't ready to print.", title="Can't send gcode to printer").show()
             return
+        nozzles = printer.get("nozzles")
+        materials = printer.get("materials")
+        if nozzles and materials:
+            extruders_used = ExtruderManager.getInstance().getUsedExtruderStacks()
+            for extruder_stack in extruders_used:
+                position = extruder_stack.getMetaData()['position']
+                material = extruder_stack.material.getMetaData()["material"]
+                nozzle = extruder_stack.getProperty("machine_nozzle_size", "value")
+                if not materials["T" + position] in [material, ""] or not nozzles["T" + position] in [str(nozzle), ""]:
+                    Message("The selected printer has a different configuration.", title="Configuration mismatch").show()
+                    return
+
         self.writeStarted.emit(self)
         active_build_plate = Application.getInstance().getBuildPlateModel().activeBuildPlate
         self._gcode = getattr(Application.getInstance().getController().getScene(), "gcode_dict")[active_build_plate]
