@@ -54,7 +54,16 @@
             <hotend id="e3D - 0.4mm - Brass">
                 <setting key="hardware compatible">no</setting>
             </hotend>
+            <hotend id="e3D - 0.6mm - Brass">
+                <setting key="hardware compatible">no</setting>
+            </hotend>
             <hotend id="e3D - 0.6mm - NozzleX" />
+            <hotend id="e3D - 0.8mm - Brass">
+                <setting key="hardware compatible">no</setting>
+            </hotend>
+            <hotend id="e3D - 1.0mm - Brass">
+                <setting key="hardware compatible">no</setting>
+            </hotend>
         </machine>
     </settings>
 </fdmmaterial>
