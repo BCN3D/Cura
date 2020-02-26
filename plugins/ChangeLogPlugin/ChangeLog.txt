@@ -1,3 +1,7 @@
+[3.2.0]
+*Add 0.6mm hotend from Epsilon
+*Change PLA to use Brim for a better adhesion
+*Minor profile improvements for PP GF30 and PAHT CF15
 [3.1.0]
 *More hotend sizes for Epsilon
 *Disable tower for Epsilon Dual prints
