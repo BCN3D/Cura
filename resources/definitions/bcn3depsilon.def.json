@@ -73,9 +73,7 @@
         "jerk_travel": { "value": "jerk_print if magic_spiralize else machine_max_jerk_xy" },
         "jerk_wall": { "value": "jerk_print * 0.75" },
         "jerk_wall_0": { "value": "jerk_wall * 0.5" },
-        "layer_height": { "maximum_value": "0.75 * min(extruderValues('machine_nozzle_size'))" },
         "layer_height_0": {
-            "maximum_value": "0.75 * min(extruderValues('machine_nozzle_size'))",
             "value": "min(extruderValues('machine_nozzle_size')) / 2"
         },
         "layer_start_x": {

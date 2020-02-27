@@ -64,10 +64,8 @@
             "reset_on_used_extruders_change": true,
             "dual_value":  "'all_at_once'"
         },
-        "layer_height": { "maximum_value": "0.75 * min(extruderValues('machine_nozzle_size'))" },
         "layer_height_0":
         {
-            "maximum_value": "0.75 * min(extruderValues('machine_nozzle_size'))",
             "value": "min(extruderValues('machine_nozzle_size')) / 2"
         },
         "machine_start_gcode": { "default_value": ";Sigma ProGen 2.2.0 (Build 24HJ1318)\n\nG21          ;metric values\nG90          ;absolute positioning\nM204 S{machine_acceleration} ;set default acceleration\nM205 X{machine_max_jerk_xy} Y{machine_max_jerk_xy} ;set default jerk\nM107         ;start with the fan off\nG28 X0 Y0    ;move X/Y to min endstops\nG28 Z0       ;move Z to min endstops\nG1 Z5 F200   ;safety Z axis movement\nT1           ;switch to the right extruder\nG92 E0       ;zero the extruded length\nG1 E10 F35\nG92 E0\nG1 E-{switch_extruder_retraction_amount} F1000\nG92 E0\nT0           ;switch to the left extruder\nG92 E0       ;zero the extruded length\nG1 E10 F35\nG92 E0\nG4 S2     ;stabilize hotendG1 E-0.5 F1000\nG92 E0\n{clone_cool_fan_gcode}\n{print_mode_gcode}\nG4 P1\nG4 P2\nG4 P3\n" },
