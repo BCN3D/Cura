@@ -1,0 +1,38 @@
+{
+    "version": 2,
+    "name": "Liliput2",
+    "inherits": "bcn3depsilon",
+    "metadata": {
+        "author": "BCN3D Technologies",
+        "category": "BCN3D Technologies",
+        "additional_info": "",
+        "weight": "1",
+        "manufacturer": "BCN3D Technologies",
+        "file_formats": "text/x-gcode",
+        "platform": "bcn3depsilon_bed.stl",
+        "platform_offset": [0, 0, 0],
+        "has_machine_quality": true,
+        "visible": true,
+        "has_materials": true,
+        "has_machine_materials": true,
+        "has_variant_materials": true,
+        "has_variants": true,
+        "preferred_material": "*BCN3D_Filaments_PLA_Light_Blue*",
+        "preferred_variant": "bcn3depsilon_e3D_-_0.4mm_-_Brass*",
+        "variant_definition": "bcn3depsilon",
+        "quality_definition": "bcn3depsilon",
+        "preferred_quality": "*High*",
+        "variants_name": "Hotend",
+        "machine_extruder_trains": {
+            "0": "bcn3liliput_extruder_left",
+            "1": "bcn3liliput_extruder_right"
+        },
+        "supports_cloud_connection": true,
+        "supports_firmware_updates": false
+    },
+    "overrides": {
+        "machine_height": { "default_value":  320 },
+         "machine_name": { "default_value": "bcn3dliliput" },
+        "machine_prefix": { "default_value": "Ll" }
+    }
+}
