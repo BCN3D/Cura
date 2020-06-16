@@ -294,12 +294,16 @@ class Bcn3DFixes(Job):
                                 if GCodeUtils.charsInLine(["G0", "X", "Y"], line):
                                     if GCodeUtils.charsInLine(["Z"], line):
                                         zValue = GCodeUtils.getValue(line, "Z")
+                                    else:
+                                        zValue = None
                                     xValue = GCodeUtils.getValue(line, "X")
                                     yValue = GCodeUtils.getValue(line, "Y")
                                     del lines[temp_index + lineCount]
                                     lineCount -= 1
                                 lineCount += 1
-                            lines[temp_index + lineCount] += "\nG0 F" + self._travelSpeed[countingForTool] + " X" + str(xValue) + " Y" + str(yValue) + "\nG0 Z" + str(zValue) + " ;Fixed travel after tool change"
+                            lines[temp_index + lineCount] += "\nG0 F" + self._travelSpeed[countingForTool] + " X" + str(xValue) + " Y" + str(yValue)
+                            if zValue is not None:
+                                lines[temp_index + lineCount] += "\nG0 Z" + str(zValue) + " ;Fixed travel after tool change"
                             break
                         temp_index += lineCount
                     except:
