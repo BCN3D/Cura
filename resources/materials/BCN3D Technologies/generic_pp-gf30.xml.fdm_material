@@ -22,7 +22,7 @@
         <setting key="retraction amount">6.5</setting>
 
         <machine>
-            <machine_identifier manufacturer="BCN3D Technologies" product="bcn3depsilon" />
+            <machine_identifier manufacturer="BCN3D Technologies" product="bcn3dd25" />
             <hotend id="e3D - 0.4mm - Brass">
                 <setting key="hardware compatible">no</setting>
             </hotend>

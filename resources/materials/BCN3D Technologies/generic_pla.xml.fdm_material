@@ -59,5 +59,19 @@
             <hotend id="e3D - 0.8mm - Brass" />
             <hotend id="e3D - 1.0mm - Brass" />
         </machine>
+        <machine>
+            <machine_identifier manufacturer="BCN3D Technologies" product="bcn3dd25" />
+            <setting key="heated bed temperature">30</setting>
+            <setting key="build volume temperature">40</setting>
+            <setting key="coasting enable">False</setting>
+            <hotend id="e3D - 0.4mm - Brass" />
+            <hotend id="e3D - 0.6mm - Brass" />
+            <hotend id="e3D - 0.6mm - NozzleX">
+                <setting key="hardware compatible">no</setting>
+            </hotend>
+            <hotend id="e3D - 0.8mm - Brass" />
+            <hotend id="e3D - 1.0mm - Brass" />
+        </machine>
+
     </settings>
 </fdmmaterial>
