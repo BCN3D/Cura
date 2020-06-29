@@ -280,28 +280,37 @@ class Bcn3DFixes(Job):
                 lines = layer.split("\n")
                 temp_index = 0
                 apply = True
+                z_value, x_value, y_value = None, None, None
                 while temp_index < len(lines):
                     try:
                         line = lines[temp_index]
-                        lineCount = 1
+                        line_count = 1
                         if line.startswith("T0") or line.startswith("T1"):
                             if "T0" in line:
-                                countingForTool = 0
+                                counting_for_tool = 0
                             else:
-                                countingForTool = 1
-                            while not lines[temp_index + lineCount].startswith(";TYPE"):
-                                line = lines[temp_index + lineCount]
+                                counting_for_tool = 1
+                            while not lines[temp_index + line_count].startswith(";TYPE"):
+                                line = lines[temp_index + line_count]
                                 if GCodeUtils.charsInLine(["G0", "X", "Y"], line):
                                     if GCodeUtils.charsInLine(["Z"], line):
-                                        zValue = GCodeUtils.getValue(line, "Z")
-                                    xValue = GCodeUtils.getValue(line, "X")
-                                    yValue = GCodeUtils.getValue(line, "Y")
-                                    del lines[temp_index + lineCount]
-                                    lineCount -= 1
-                                lineCount += 1
-                            lines[temp_index + lineCount] += "\nG0 F" + self._travelSpeed[countingForTool] + " X" + str(xValue) + " Y" + str(yValue) + "\nG0 Z" + str(zValue) + " ;Fixed travel after tool change"
+                                        z_value = GCodeUtils.getValue(line, "Z")
+                                    x_value = GCodeUtils.getValue(line, "X")
+                                    y_value = GCodeUtils.getValue(line, "Y")
+                                    del lines[temp_index + line_count]
+                                    line_count -= 1
+                                line_count += 1
+                            if x_value is not None or y_value is not None or z_value is not None:
+                                lines[temp_index + line_count] += "\nG0 F" + self._travelSpeed[counting_for_tool]
+                                if x_value is not None:
+                                    lines[temp_index + line_count] += " X" + str(x_value)
+                                if y_value is not None:
+                                    lines[temp_index + line_count] += " Y" + str(y_value)
+                                if z_value is not None:
+                                    lines[temp_index + line_count] += "\nG0 Z" + str(z_value)
+                                lines[temp_index + line_count] += " ;Fixed travel after tool change"
                             break
-                        temp_index += lineCount
+                        temp_index += line_count
                     except:
                         if self._container.getProperty("support_interface_enable", "value") \
                                 or self._container.getProperty("support_roof_enable", "value") \
