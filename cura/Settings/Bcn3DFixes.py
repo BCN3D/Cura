@@ -14,7 +14,7 @@ class Bcn3DFixes(Job):
         super().__init__()
         self._container = container
         self._gcode_list = gcode_list
-        
+
         if len(ExtruderManager.getInstance().getExtruderStacks()) == 2:
             extruder_left = ExtruderManager.getInstance().getExtruderStack(0)
             extruder_right = ExtruderManager.getInstance().getExtruderStack(1)
@@ -26,12 +26,14 @@ class Bcn3DFixes(Job):
         # self._activeExtruders = active_extruder.getProperty("active_extruders", "value")
         # self._fixFirstRetract = active_extruder.getProperty("fix_first_retract", "value")
         # self._fixTemperatureOscilation = active_extruder.getProperty("fix_temperature_oscilation", "value")
-        self._nozzleSize = [extruder_left.getProperty("machine_nozzle_size", "value"), extruder_right.getProperty("machine_nozzle_size", "value")]
+        self._nozzleSize = [extruder_left.getProperty("machine_nozzle_size", "value"),
+                            extruder_right.getProperty("machine_nozzle_size", "value")]
 
         self._fixToolChangeTravel = active_extruder.getProperty("fix_tool_change_travel", "value")
         self._layerHeight = active_extruder.getProperty("layer_height", "value")
-        self._retractionHopHeightAfterExtruderSwitch = [extruder_left.getProperty("retraction_hop_height_after_extruder_switch", "value"),
-                                                        extruder_right.getProperty("retraction_hop_height_after_extruder_switch", "value")]
+        self._retractionHopHeightAfterExtruderSwitch = [
+            extruder_left.getProperty("retraction_hop_height_after_extruder_switch", "value"),
+            extruder_right.getProperty("retraction_hop_height_after_extruder_switch", "value")]
         self._retractionHop = [extruder_left.getProperty("retraction_hop", "value"),
                                extruder_right.getProperty("retraction_hop", "value")]
         self._avoidGrindingFilament = [extruder_left.getProperty("avoid_grinding_filament", "value"),
@@ -60,12 +62,13 @@ class Bcn3DFixes(Job):
         #                                         extruder_right.getProperty("switch_extruder_retraction_amount", "value")]
         # self._machineMinCoolHeatTimeWindow = [extruder_left.getProperty("machine_min_cool_heat_time_window", "value"),
         #                                          extruder_right.getProperty("machine_min_cool_heat_time_window", "value")]
-        
+
         # Temperatures
         self._materialStandByTemperature = [extruder_left.getProperty("material_standby_temperature", "value"),
                                             extruder_right.getProperty("material_standby_temperature", "value")]
-        self._materialPrintTemperatureLayer0 = [extruder_left.getProperty("material_print_temperature_layer_0", "value"),
-                                                 extruder_right.getProperty("material_print_temperature_layer_0", "value")]
+        self._materialPrintTemperatureLayer0 = [
+            extruder_left.getProperty("material_print_temperature_layer_0", "value"),
+            extruder_right.getProperty("material_print_temperature_layer_0", "value")]
         # self._materialInitialPrintTemperature = [extruder_left.getProperty("material_initial_print_temperature", "value"),
         #                                          extruder_right.getProperty("material_initial_print_temperature", "value")]
         # self._materialFinalPrintTemperature = [extruder_left.getProperty("material_final_print_temperature", "value"),
@@ -74,7 +77,7 @@ class Bcn3DFixes(Job):
         #                                   extruder_right.getProperty("material_print_temperature", "value")]
         # self._materialFlowDependentTemperature = [extruder_left.getProperty("material_flow_dependent_temperature", "value"),
         #                                          extruder_right.getProperty("material_flow_dependent_temperature", "value")]
-        
+
         # Speeds
         self._travelSpeed = [str(int(extruder_left.getProperty("speed_travel", "value") * 60)),
                              str(int(extruder_right.getProperty("speed_travel", "value") * 60))]
@@ -102,12 +105,15 @@ class Bcn3DFixes(Job):
         #                               extruder_right.getProperty("smart_purge_slope", "value")]
         # self._smartPurgeEParameter = [extruder_left.getProperty("smart_purge_maximum_purge_distance", "value"),
         #                               extruder_right.getProperty("smart_purge_maximum_purge_distance", "value")]
-        
-        self._startGcodeInfo = [";BCN3D Fixes applied"] if len(ExtruderManager.getInstance().getExtruderStacks()) <= 2 else [";Warning! - BCN3D Fixes applied only with T0 values"]
+
+        self._startGcodeInfo = [";BCN3D Fixes applied"] if len(
+            ExtruderManager.getInstance().getExtruderStacks()) <= 2 else [
+            ";Warning! - BCN3D Fixes applied only with T0 values"]
 
         self._IDEXPrint = len(ExtruderManager.getInstance().getUsedExtruderStacks()) > 1
-        self._MEXPrint =  not self._IDEXPrint and self._container.getProperty("print_mode", "value") == 'regular'
-        self._MirrorOrDuplicationPrint = not self._IDEXPrint and self._container.getProperty("print_mode", "value") != 'regular'
+        self._MEXPrint = not self._IDEXPrint and self._container.getProperty("print_mode", "value") == 'regular'
+        self._MirrorOrDuplicationPrint = not self._IDEXPrint and self._container.getProperty("print_mode",
+                                                                                             "value") != 'regular'
 
         self._message = None
         self.progress.connect(self._onProgress)
@@ -138,7 +144,8 @@ class Bcn3DFixes(Job):
         for index, layer in enumerate(self._gcode_list):
             lines = layer.split("\n")
             for temp_index in range(len(lines)):
-                if layer.startswith(";Generated with Cura_SteamEngine ") and lines[temp_index].startswith(";Sigma ProGen"):
+                if layer.startswith(";Generated with Cura_SteamEngine ") and lines[temp_index].startswith(
+                        ";Sigma ProGen"):
                     lines[temp_index] = lines[temp_index] + "\n" + "\n".join(self._startGcodeInfo)
                     written_info = True
             layer = "\n".join(lines)
@@ -154,15 +161,16 @@ class Bcn3DFixes(Job):
             materials.append(extruder_stack.material.getMetaData()["material"])
 
         if self._MirrorOrDuplicationPrint:
-            extruders_used = ";Extruders used: T0 "+str(self._nozzleSize[0])+" T1 "+str(self._nozzleSize[0])
-            materials_used = ";Materials used: T0 "+str(materials[0])+" T1 "+str(materials[0])
+            extruders_used = ";Extruders used: T0 " + str(self._nozzleSize[0]) + " T1 " + str(self._nozzleSize[0])
+            materials_used = ";Materials used: T0 " + str(materials[0]) + " T1 " + str(materials[0])
         else:
             if self._MEXPrint:
                 countingForTool = int(used_extruder_stacks[0].getMetaData()['position'])
-                extruders_used = ";Extruders used: T" + str(countingForTool) + " " + str(self._nozzleSize[countingForTool])
+                extruders_used = ";Extruders used: T" + str(countingForTool) + " " + str(
+                    self._nozzleSize[countingForTool])
                 materials_used = ";Materials used: T" + str(countingForTool) + " " + str(materials[0])
             else:
-                extruders_used = ";Extruders used: T0 "+str(self._nozzleSize[0])+" T1 "+str(self._nozzleSize[1])
+                extruders_used = ";Extruders used: T0 " + str(self._nozzleSize[0]) + " T1 " + str(self._nozzleSize[1])
                 materials_used = ";Materials used: T0 " + str(materials[0]) + " T1 " + str(materials[1])
 
         self._gcode_list[0] += extruders_used + "\n" + materials_used + "\n;BCN3D_FIXES\n"
@@ -175,14 +183,12 @@ class Bcn3DFixes(Job):
             Default behavior:
                 Hotends are heated up at print start.
                 If one hotend takes more than cooldown window to start printing (usual scenario in DUAL prints) then it will be heated up to Standby temperature.
-                -> [Fix 1] if Purge at Start is enabled the Hotend must be heated up to layer 0 temperature 
-
+                -> [Fix 1] if Purge at Start is enabled the Hotend must be heated up to layer 0 temperature
                 Mirror/Duplication prints are internally taken as single extruder prints.
                 Cura only heats up left hotend
-                -> [Fix 2] Must be added the t1 heat up command 
-
+                -> [Fix 2] Must be added the t1 heat up command
                 In Dual prints there may be some cases where hotends are heated up to printing temperature
-                -> [Fix 3] Must be heated up to layer 0 temperature instead 
+                -> [Fix 3] Must be heated up to layer 0 temperature instead
         '''
         # Fix 1: first temperature. Change standby to start if Purge Before Start enabled
         if self._IDEXPrint:
@@ -202,12 +208,17 @@ class Bcn3DFixes(Job):
                         if line.startswith("M104 S") or line.startswith("M109 S"):
                             if self._purgeBeforeStart[countingForTool]:
                                 startTemperatures[countingForTool] = GCodeUtils.getValue(line, "S")
-                                lines[temp_index] = "M104 S"+str(self._materialPrintTemperatureLayer0[countingForTool]) if line.startswith("M104 S") else "M109 S"+str(self._materialPrintTemperatureLayer0[countingForTool])
+                                lines[temp_index] = "M104 S" + str(
+                                    self._materialPrintTemperatureLayer0[countingForTool]) if line.startswith(
+                                    "M104 S") else "M109 S" + str(self._materialPrintTemperatureLayer0[countingForTool])
                         elif line.startswith("M104 T") or line.startswith("M109 T"):
                             toolNumber = int(GCodeUtils.getValue(line, "T"))
                             if self._purgeBeforeStart[toolNumber]:
                                 startTemperatures[toolNumber] = GCodeUtils.getValue(line, "S")
-                                lines[temp_index] = "M104 T" + str(toolNumber) + " S"+str(self._materialPrintTemperatureLayer0[toolNumber]) if line.startswith("M104 T") else "M109 T" + str(toolNumber) + " S" + str(self._materialPrintTemperatureLayer0[toolNumber])
+                                lines[temp_index] = "M104 T" + str(toolNumber) + " S" + str(
+                                    self._materialPrintTemperatureLayer0[toolNumber]) if line.startswith(
+                                    "M104 T") else "M109 T" + str(toolNumber) + " S" + str(
+                                    self._materialPrintTemperatureLayer0[toolNumber])
                         temp_index += 1
                     layer = "\n".join(lines)
                     self._gcode_list[index] = layer
@@ -224,10 +235,12 @@ class Bcn3DFixes(Job):
                 while temp_index < len(lines):
                     try:
                         line = lines[temp_index]
-                        if line.startswith("M104 S"+str(self._materialPrintTemperatureLayer0[0])):
-                            lines[temp_index] += "\nM104 T1 S"+str(self._materialPrintTemperatureLayer0[0])+" ;Fixed T1 temperature"
-                        if line.startswith("M109 S"+str(self._materialPrintTemperatureLayer0[0])):
-                            lines[temp_index] += "\nM109 T1 S"+str(self._materialPrintTemperatureLayer0[0])+" ;Fixed T1 temperature"
+                        if line.startswith("M104 S" + str(self._materialPrintTemperatureLayer0[0])):
+                            lines[temp_index] += "\nM104 T1 S" + str(
+                                self._materialPrintTemperatureLayer0[0]) + " ;Fixed T1 temperature"
+                        if line.startswith("M109 S" + str(self._materialPrintTemperatureLayer0[0])):
+                            lines[temp_index] += "\nM109 T1 S" + str(
+                                self._materialPrintTemperatureLayer0[0]) + " ;Fixed T1 temperature"
                             startGcodeCorrected = True
                             break
                         temp_index += 1
@@ -248,10 +261,12 @@ class Bcn3DFixes(Job):
                 while temp_index < len(lines):
                     try:
                         line = lines[temp_index]
-                        if line.startswith("M104 S"+str(self._materialPrintTemperatureLayer0[0])):
-                            lines[temp_index] = "M104 T0 S"+str(self._materialPrintTemperatureLayer0[0])+" ;Fixed T0 temperature"
-                        if line.startswith("M109 S"+str(self._materialPrintTemperatureLayer0[0])):
-                            lines[temp_index] = "M109 T0 S"+str(self._materialPrintTemperatureLayer0[0])+" ;Fixed T0 temperature"
+                        if line.startswith("M104 S" + str(self._materialPrintTemperatureLayer0[0])):
+                            lines[temp_index] = "M104 T0 S" + str(
+                                self._materialPrintTemperatureLayer0[0]) + " ;Fixed T0 temperature"
+                        if line.startswith("M109 S" + str(self._materialPrintTemperatureLayer0[0])):
+                            lines[temp_index] = "M109 T0 S" + str(
+                                self._materialPrintTemperatureLayer0[0]) + " ;Fixed T0 temperature"
                             startGcodeCorrected = True
                             break
                         temp_index += 1
@@ -268,8 +283,8 @@ class Bcn3DFixes(Job):
             Default behavior:
                 When changing tools, the new tool will go straight to the last position of the first tool.
                 Then move to the position it actually has to print.
-                -> [Fix 1] Proper movement is make the new tool to go straight to the place it has to print and avoid unnecessary travels 
-                
+                -> [Fix 1] Proper movement is make the new tool to go straight to the place it has to print and avoid unnecessary travels
+
                 In random places there's a travel to (layer_start_x, layer_start_y)
                 -> [Fix 2] Remove this travel
         '''
@@ -280,32 +295,37 @@ class Bcn3DFixes(Job):
                 lines = layer.split("\n")
                 temp_index = 0
                 apply = True
+                z_value, x_value, y_value = None, None, None
                 while temp_index < len(lines):
                     try:
                         line = lines[temp_index]
-                        lineCount = 1
+                        line_count = 1
                         if line.startswith("T0") or line.startswith("T1"):
                             if "T0" in line:
-                                countingForTool = 0
+                                counting_for_tool = 0
                             else:
-                                countingForTool = 1
-                            while not lines[temp_index + lineCount].startswith(";TYPE"):
-                                line = lines[temp_index + lineCount]
+                                counting_for_tool = 1
+                            while not lines[temp_index + line_count].startswith(";TYPE"):
+                                line = lines[temp_index + line_count]
                                 if GCodeUtils.charsInLine(["G0", "X", "Y"], line):
                                     if GCodeUtils.charsInLine(["Z"], line):
-                                        zValue = GCodeUtils.getValue(line, "Z")
-                                    else:
-                                        zValue = None
-                                    xValue = GCodeUtils.getValue(line, "X")
-                                    yValue = GCodeUtils.getValue(line, "Y")
-                                    del lines[temp_index + lineCount]
-                                    lineCount -= 1
-                                lineCount += 1
-                            lines[temp_index + lineCount] += "\nG0 F" + self._travelSpeed[countingForTool] + " X" + str(xValue) + " Y" + str(yValue)
-                            if zValue is not None:
-                                lines[temp_index + lineCount] += "\nG0 Z" + str(zValue) + " ;Fixed travel after tool change"
+                                        z_value = GCodeUtils.getValue(line, "Z")
+                                    x_value = GCodeUtils.getValue(line, "X")
+                                    y_value = GCodeUtils.getValue(line, "Y")
+                                    del lines[temp_index + line_count]
+                                    line_count -= 1
+                                line_count += 1
+                            if x_value is not None or y_value is not None or z_value is not None:
+                                lines[temp_index + line_count] += "\nG0 F" + self._travelSpeed[counting_for_tool]
+                                if x_value is not None:
+                                    lines[temp_index + line_count] += " X" + str(x_value)
+                                if y_value is not None:
+                                    lines[temp_index + line_count] += " Y" + str(y_value)
+                                if z_value is not None:
+                                    lines[temp_index + line_count] += "\nG0 Z" + str(z_value)
+                                lines[temp_index + line_count] += " ;Fixed travel after tool change"
                             break
-                        temp_index += lineCount
+                        temp_index += line_count
                     except:
                         if self._container.getProperty("support_interface_enable", "value") \
                                 or self._container.getProperty("support_roof_enable", "value") \
@@ -315,7 +335,8 @@ class Bcn3DFixes(Job):
                 if apply:
                     layer = "\n".join(lines)
                 # Fix 2: Fix strange travel to X105 Y297
-                regex = r"\n.*X" + str(int(self._container.getProperty("layer_start_x", "value"))) + " Y" + str(int(self._container.getProperty("layer_start_y", "value"))) + ".*"
+                regex = r"\n.*X" + str(int(self._container.getProperty("layer_start_x", "value"))) + " Y" + str(
+                    int(self._container.getProperty("layer_start_y", "value"))) + ".*"
                 layer = re.sub(regex, "", layer)
                 self._gcode_list[index] = layer
             Logger.log("d", "fix_tool_change_travel applied")
@@ -327,7 +348,7 @@ class Bcn3DFixes(Job):
                 M109 Sends temperature command + forces the machine to wait until the temperature has been reached
                 When changing tools, the machine comes from an M104, then inserts Extruder GCode (may include purge commands), then sends the M109, and then bak to the part.
                 -> [Fix 1] Send the M109 before the Extruder GCode
-        '''        
+        '''
         # Fix 1: Places M109 temperature commands right after toolchange, before Extruder gcode is executed, to improve all purge commands and machine reliability
         if self._IDEXPrint:
             self._startGcodeInfo.append("; - Temperature Commands Right After Tool Change")
@@ -347,7 +368,8 @@ class Bcn3DFixes(Job):
                                 while not lines[temp_index + lineCount].startswith(";TYPE"):
                                     lineWithTemperatureCommand = lines[temp_index + lineCount]
                                     if GCodeUtils.charsInLine(["M109 S"], lineWithTemperatureCommand):
-                                        lines[temp_index] += '\nM109 S'+str(GCodeUtils.getValue(lineWithTemperatureCommand, "S"))
+                                        lines[temp_index] += '\nM109 S' + str(
+                                            GCodeUtils.getValue(lineWithTemperatureCommand, "S"))
                                         del lines[temp_index + lineCount]
                                         lineCount -= 1
                                         break
@@ -357,7 +379,7 @@ class Bcn3DFixes(Job):
                             break
                     layer = "\n".join(lines)
                     self._gcode_list[index] = layer
-            Logger.log("d", "_handleTemperatureCommandsRightAfterToolChange() applied")            
+            Logger.log("d", "_handleTemperatureCommandsRightAfterToolChange() applied")
 
     def _handleAvoidGrindingFilament(self):
         '''
@@ -377,11 +399,13 @@ class Bcn3DFixes(Job):
                         line = lines[temp_index]
                         if line.startswith("T0"):
                             countingForTool = 0
-                            if not (layer.startswith(";LAYER:0") or layer.startswith(";LAYER:-")) and self._smartPurge[countingForTool]:
+                            if not (layer.startswith(";LAYER:0") or layer.startswith(";LAYER:-")) and self._smartPurge[
+                                countingForTool]:
                                 purgedOffset[countingForTool] += self._smartPurgePParameter[countingForTool]
                         elif line.startswith("T1"):
                             countingForTool = 1
-                            if not (layer.startswith(";LAYER:0") or layer.startswith(";LAYER:-")) and self._smartPurge[countingForTool]:
+                            if not (layer.startswith(";LAYER:0") or layer.startswith(";LAYER:-")) and self._smartPurge[
+                                countingForTool]:
                                 purgedOffset[countingForTool] += self._smartPurgePParameter[countingForTool]
                         elif line.startswith(';TYPE:'):
                             printArea = line
@@ -393,37 +417,64 @@ class Bcn3DFixes(Job):
                                     while lineCount >= 0:
                                         line = lines[lineCount]
                                         if " E" in line and "G92" not in line:
-                                            if eValue < GCodeUtils.getValue(line, "E") and self._avoidGrindingFilament[countingForTool]:
+                                            if eValue < GCodeUtils.getValue(line, "E") and self._avoidGrindingFilament[
+                                                countingForTool]:
                                                 purgeLength = self._retractionExtrusionWindow[countingForTool]
                                                 retractionsPerExtruder[countingForTool].append(eValue)
-                                                if len(retractionsPerExtruder[countingForTool]) > self._maxRetracts[countingForTool]:
-                                                    if (retractionsPerExtruder[countingForTool][-1] - retractionsPerExtruder[countingForTool][0]) < purgeLength + purgedOffset[countingForTool]:
+                                                if len(retractionsPerExtruder[countingForTool]) > self._maxRetracts[
+                                                    countingForTool]:
+                                                    if (retractionsPerExtruder[countingForTool][-1] -
+                                                        retractionsPerExtruder[countingForTool][0]) < purgeLength + \
+                                                            purgedOffset[countingForTool]:
                                                         if printArea != ';TYPE:WALL-OUTER':
                                                             # Delete extra travels
-                                                            while GCodeUtils.charsInLine(["G0", "X", "Y"], lines[temp_index + 1]):
-                                                                xPosition = GCodeUtils.getValue(lines[temp_index + 1], "X")
-                                                                yPosition = GCodeUtils.getValue(lines[temp_index + 1], "Y")
+                                                            while GCodeUtils.charsInLine(["G0", "X", "Y"],
+                                                                                         lines[temp_index + 1]):
+                                                                xPosition = GCodeUtils.getValue(lines[temp_index + 1],
+                                                                                                "X")
+                                                                yPosition = GCodeUtils.getValue(lines[temp_index + 1],
+                                                                                                "Y")
                                                                 del lines[temp_index + 1]
                                                             # Add purge commands
-                                                            lines[temp_index] += "\n;prevent filament grinding on T" + str(countingForTool) + \
-                                                                                "\nG1 F" + self._travelSpeed[countingForTool] + \
-                                                                                "\nG4" + \
-                                                                                "\nG71" + \
-                                                                                "\nG91" + \
-                                                                                "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(self._retractionHopHeightAfterExtruderSwitch[countingForTool]) + \
-                                                                                "\nG90" + \
-                                                                                "\nG1 F" + self._retractionPrimeSpeed[countingForTool] + " E" + str(round(eValue + self._retractionAmount[countingForTool], 5)) + \
-                                                                                "\nG1 F" + self._purgeSpeed[countingForTool] + " E" + str(round(eValue + self._retractionAmount[countingForTool] + purgeLength,5)) + \
-                                                                                "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E" + str(round(eValue + purgeLength, 5)) + \
-                                                                                "\nG4 P2000" + \
-                                                                                "\nG92 E" + str(eValue) + \
-                                                                                "\nG1 F" + self._travelSpeed[countingForTool] + \
-                                                                                "\nG72" + \
-                                                                                "\nG1 F" + self._travelSpeed[countingForTool] + " X" + str(xPosition)+" Y" + str(yPosition) + \
-                                                                                "\nG91" + \
-                                                                                "\nG1 F" + self._travelSpeed[countingForTool] + " Z-" + str(self._retractionHopHeightAfterExtruderSwitch[countingForTool]) + \
-                                                                                "\nG90" + \
-                                                                                "\n;end of the filament grinding prevention protocol"
+                                                            lines[
+                                                                temp_index] += "\n;prevent filament grinding on T" + str(
+                                                                countingForTool) + \
+                                                                               "\nG1 F" + self._travelSpeed[
+                                                                                   countingForTool] + \
+                                                                               "\nG4" + \
+                                                                               "\nG71" + \
+                                                                               "\nG91" + \
+                                                                               "\nG1 F" + self._travelSpeed[
+                                                                                   countingForTool] + " Z" + str(
+                                                                self._retractionHopHeightAfterExtruderSwitch[
+                                                                    countingForTool]) + \
+                                                                               "\nG90" + \
+                                                                               "\nG1 F" + self._retractionPrimeSpeed[
+                                                                                   countingForTool] + " E" + str(
+                                                                round(eValue + self._retractionAmount[countingForTool],
+                                                                      5)) + \
+                                                                               "\nG1 F" + self._purgeSpeed[
+                                                                                   countingForTool] + " E" + str(round(
+                                                                eValue + self._retractionAmount[
+                                                                    countingForTool] + purgeLength, 5)) + \
+                                                                               "\nG1 F" + self._retractionRetractSpeed[
+                                                                                   countingForTool] + " E" + str(
+                                                                round(eValue + purgeLength, 5)) + \
+                                                                               "\nG4 P2000" + \
+                                                                               "\nG92 E" + str(eValue) + \
+                                                                               "\nG1 F" + self._travelSpeed[
+                                                                                   countingForTool] + \
+                                                                               "\nG72" + \
+                                                                               "\nG1 F" + self._travelSpeed[
+                                                                                   countingForTool] + " X" + str(
+                                                                xPosition) + " Y" + str(yPosition) + \
+                                                                               "\nG91" + \
+                                                                               "\nG1 F" + self._travelSpeed[
+                                                                                   countingForTool] + " Z-" + str(
+                                                                self._retractionHopHeightAfterExtruderSwitch[
+                                                                    countingForTool]) + \
+                                                                               "\nG90" + \
+                                                                               "\n;end of the filament grinding prevention protocol"
                                                             retractionsPerExtruder[countingForTool] = []
                                                             purgedOffset[countingForTool] = 0
                                                     else:
@@ -452,17 +503,24 @@ class Bcn3DFixes(Job):
                 while temp_index < len(lines):
                     line = lines[temp_index]
                     temp_index_2 = 1
-                    if self._ZHopAtLayerChange[countingForTool] and line.startswith(";LAYER:") and not (line.startswith(";LAYER:0") or line.startswith(";LAYER:-")):
-                        if not line.startswith(";LAYER:1") or self._container.getProperty("print_mode", "value") == "regular":
+                    if self._ZHopAtLayerChange[countingForTool] and line.startswith(";LAYER:") and not (
+                            line.startswith(";LAYER:0") or line.startswith(";LAYER:-")):
+                        if not line.startswith(";LAYER:1") or self._container.getProperty("print_mode",
+                                                                                          "value") == "regular":
                             lines[temp_index] += "\nG91" + \
-                                                 "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E-" + str(round(self._retractionAmount[countingForTool], 5)) + \
-                                                 "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(round(self._layerHeight + self._ZHopHeightAtLayerChange[countingForTool], 5)) + " ;z hop at layer change" + \
+                                                 "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E-" + str(
+                                round(self._retractionAmount[countingForTool], 5)) + \
+                                                 "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(
+                                round(self._layerHeight + self._ZHopHeightAtLayerChange[countingForTool],
+                                      5)) + " ;z hop at layer change" + \
                                                  "\nG90"
                             while not GCodeUtils.charsInLine(["E"], lines[temp_index + temp_index_2]):
                                 temp_index_2 += 1
                             lines[temp_index + temp_index_2] += "\nG91" + \
-                                                                "\nG1 F" + self._retractionRetractSpeed[countingForTool] + " E" + str(round(self._retractionAmount[countingForTool], 5)) + \
-                                                            "\nG90"
+                                                                "\nG1 F" + self._retractionRetractSpeed[
+                                                                    countingForTool] + " E" + str(
+                                round(self._retractionAmount[countingForTool], 5)) + \
+                                                                "\nG90"
                     elif line.startswith("T0"):
                         countingForTool = 0
                     elif line.startswith("T1"):
@@ -491,7 +549,8 @@ class Bcn3DFixes(Job):
                         line = lines[temp_index]
                         if GCodeUtils.charsInLine(["G0", "X", "Y", "Z"], line):
                             zValue = GCodeUtils.getValue(line, "Z")
-                            lines[temp_index] = line.split("Z")[0] + "\nG0 Z"+str(zValue)+' ;fixed movement coming back to the part'
+                            lines[temp_index] = line.split("Z")[0] + "\nG0 Z" + str(
+                                zValue) + ' ;fixed movement coming back to the part'
                             break
                         temp_index += 1
                 # fix movement leaving the part
@@ -507,8 +566,11 @@ class Bcn3DFixes(Job):
                                     fValue = GCodeUtils.getValue(lines[temp_index_2], "F")
                                     xValue = GCodeUtils.getValue(lines[temp_index_2 + 1], "X")
                                     yValue = GCodeUtils.getValue(lines[temp_index_2 + 1], "Y")
-                                    lines[temp_index_2 + 1] = "G0" + str(" F" + str(fValue) if fValue else "") + " X" + str(xValue) + " Y" + str(yValue) + \
-                                                              "\nG0 Z" + str(zValue) + ' ;fixed movement leaving the part'
+                                    lines[temp_index_2 + 1] = "G0" + str(
+                                        " F" + str(fValue) if fValue else "") + " X" + str(xValue) + " Y" + str(
+                                        yValue) + \
+                                                              "\nG0 Z" + str(
+                                        zValue) + ' ;fixed movement leaving the part'
                                     del lines[temp_index_2]
                                     temp_index_2 -= 1
                                     break
@@ -524,7 +586,8 @@ class Bcn3DFixes(Job):
             Custom feature to add a Z Hop (+retraction) after prime tower
             Note: if it does support after prime tower it will not hop until moving to part!
         '''
-        if (self._ZHopAfterPrimeTower[0] or self._ZHopAfterPrimeTower[1]) and self._IDEXPrint and self._primeTowerEnabled:
+        if (self._ZHopAfterPrimeTower[0] or self._ZHopAfterPrimeTower[
+            1]) and self._IDEXPrint and self._primeTowerEnabled:
             self._startGcodeInfo.append("; - Z Hop After Prime Tower")
             countingForTool = 0
             for index, layer in enumerate(self._gcode_list):
@@ -545,16 +608,23 @@ class Bcn3DFixes(Job):
                                 line = lines[temp_index_2]
                                 if line.startswith(";TYPE:SUPPORT"):
                                     addHop = True
-                                elif addHop and ((line.startswith(";TYPE:") and not line.startswith(";TYPE:SUPPORT")) or line.startswith(";TIME_ELAPSED:")):
+                                elif addHop and ((line.startswith(";TYPE:") and not line.startswith(
+                                        ";TYPE:SUPPORT")) or line.startswith(";TIME_ELAPSED:")):
                                     temp_index_3 = temp_index_2 - 1
                                     while temp_index_3 >= 0:
                                         line = lines[temp_index_3]
                                         if GCodeUtils.charsInLine(["E"], line):
                                             lines[temp_index_3] += "\nG91" + \
-                                                                   "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(round(self._retractionHop[countingForTool], 5)) + " ;z hop after prime tower" + \
+                                                                   "\nG1 F" + self._travelSpeed[
+                                                                       countingForTool] + " Z" + str(
+                                                round(self._retractionHop[countingForTool],
+                                                      5)) + " ;z hop after prime tower" + \
                                                                    "\nG90"
                                             lines[temp_index_2] = "G91" + \
-                                                                  "\nG1 F" + self._travelSpeed[countingForTool] + " Z" + str(-round(self._retractionHop[countingForTool], 5)) + " ;z hop after prime tower" + \
+                                                                  "\nG1 F" + self._travelSpeed[
+                                                                      countingForTool] + " Z" + str(
+                                                -round(self._retractionHop[countingForTool],
+                                                       5)) + " ;z hop after prime tower" + \
                                                                   "\nG90\n" + \
                                                                   lines[temp_index_2]
                                             hopFixed = True
@@ -584,7 +654,9 @@ class Bcn3DFixes(Job):
                             usefulCommand = False
                             temp_index_2 = temp_index + 1
                             while temp_index_2 < len(lines) and not lines[temp_index_2].startswith("M204 S"):
-                                if GCodeUtils.charsInLine(["G0", "X", "Y"], lines[temp_index_2]) or GCodeUtils.charsInLine(["G1", "X", "Y"], lines[temp_index_2]):
+                                if GCodeUtils.charsInLine(["G0", "X", "Y"],
+                                                          lines[temp_index_2]) or GCodeUtils.charsInLine(
+                                        ["G1", "X", "Y"], lines[temp_index_2]):
                                     usefulCommand = True
                                     break
                                 temp_index_2 += 1
@@ -596,7 +668,9 @@ class Bcn3DFixes(Job):
                             usefulCommand = False
                             temp_index_2 = temp_index + 1
                             while temp_index_2 < len(lines) and not lines[temp_index_2].startswith("M204 S"):
-                                if GCodeUtils.charsInLine(["G0", "X", "Y"], lines[temp_index_2]) or GCodeUtils.charsInLine(["G1", "X", "Y"], lines[temp_index_2]):
+                                if GCodeUtils.charsInLine(["G0", "X", "Y"],
+                                                          lines[temp_index_2]) or GCodeUtils.charsInLine(
+                                        ["G1", "X", "Y"], lines[temp_index_2]):
                                     usefulCommand = True
                                     break
                                 temp_index_2 += 1
@@ -623,7 +697,8 @@ class Bcn3DFixes(Job):
                             else:
                                 acceleration = GCodeUtils.getValue(line, "S")
                         elif line.startswith("M205 X") and GCodeUtils.charsInLine(["Y"], line):
-                            if xJerk and GCodeUtils.getValue(line, "X") == xJerk and yJerk and  GCodeUtils.getValue(line, "Y") == yJerk:
+                            if xJerk and GCodeUtils.getValue(line, "X") == xJerk and yJerk and GCodeUtils.getValue(line,
+                                                                                                                   "Y") == yJerk:
                                 del lines[temp_index]
                                 temp_index -= 1
                             else:
@@ -633,7 +708,7 @@ class Bcn3DFixes(Job):
                     layer = "\n".join(lines)
                     self._gcode_list[index] = layer
             Logger.log("d", "_handleFixAccelerationJerkCommands() applied")
-    
+
     # def _handleFixTemperatureOscilation(self):
     #     if self._fixTemperatureOscilation and self._IDEXPrint:
     #         self._startGcodeInfo.append("; - Fix Temperature Oscilation")
