@@ -28,6 +28,8 @@ class Bcn3DFixes(Job):
         # self._fixTemperatureOscilation = active_extruder.getProperty("fix_temperature_oscilation", "value")
         self._nozzleSize = [extruder_left.getProperty("machine_nozzle_size", "value"),
                             extruder_right.getProperty("machine_nozzle_size", "value")]
+        self._nozzleType = [extruder_left.getProperty("machine_nozzle_type", "value"),
+                            extruder_right.getProperty("machine_nozzle_type", "value")]
 
         self._fixToolChangeTravel = active_extruder.getProperty("fix_tool_change_travel", "value")
         self._layerHeight = active_extruder.getProperty("layer_height", "value")
@@ -161,16 +163,16 @@ class Bcn3DFixes(Job):
             materials.append(extruder_stack.material.getMetaData()["material"])
 
         if self._MirrorOrDuplicationPrint:
-            extruders_used = ";Extruders used: T0 " + str(self._nozzleSize[0]) + " T1 " + str(self._nozzleSize[0])
+            extruders_used = ";Extruders used: T0 " + str(self._nozzleSize[0] ) + self._nozzleType[0] + " T1 " + str(self._nozzleSize[0] ) + self._nozzleType[0]
             materials_used = ";Materials used: T0 " + str(materials[0]) + " T1 " + str(materials[0])
         else:
             if self._MEXPrint:
                 countingForTool = int(used_extruder_stacks[0].getMetaData()['position'])
                 extruders_used = ";Extruders used: T" + str(countingForTool) + " " + str(
-                    self._nozzleSize[countingForTool])
+                    self._nozzleSize[countingForTool] ) + self._nozzleType[countingForTool]
                 materials_used = ";Materials used: T" + str(countingForTool) + " " + str(materials[0])
             else:
-                extruders_used = ";Extruders used: T0 " + str(self._nozzleSize[0]) + " T1 " + str(self._nozzleSize[1])
+                extruders_used = ";Extruders used: T0 " + str(self._nozzleSize[0] ) + self._nozzleType[0]  + " T1 " + str(self._nozzleSize[1] ) + self._nozzleType[1]
                 materials_used = ";Materials used: T0 " + str(materials[0]) + " T1 " + str(materials[1])
 
         self._gcode_list[0] += extruders_used + "\n" + materials_used + "\n;BCN3D_FIXES\n"
