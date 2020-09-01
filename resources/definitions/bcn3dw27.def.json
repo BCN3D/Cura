@@ -1,7 +1,7 @@
 {
     "version": 2,
     "name": "Epsilon W27",
-    "inherits": "fdmprinter",
+    "inherits": "bcn3depsilon",
     "metadata": {
         "author": "BCN3D Technologies",
         "category": "BCN3D Technologies",
@@ -13,19 +13,17 @@
         "platform_offset": [0, 0, 0],
         "has_machine_quality": true,
         "visible": true,
-         "variant_definition": "bcn3depsilon",
-        "quality_definition": "bcn3depsilon",
         "has_materials": true,
         "has_machine_materials": true,
         "has_variant_materials": true,
         "has_variants": true,
         "preferred_material": "*BCN3D_Filaments_PLA_Light_Blue*",
-        "preferred_variant": "bcn3dW27_e3D_-_0.4mm_-_Brass*",
+        "preferred_variant": "bcn3dw27_e3D_-_0.4mm_-_Brass*",
         "preferred_quality": "*High*",
         "variants_name": "Hotend",
         "machine_extruder_trains": {
-            "0": "bcn3dW27_extruder_right",
-            "1": "bcn3dW27_extruder_left"
+            "0": "bcn3dw27_extruder_right",
+            "1": "bcn3dw27_extruder_left"
         },
         "supports_cloud_connection": true,
         "supports_firmware_updates": false
