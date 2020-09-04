@@ -101,12 +101,7 @@
             <setting key="support offset">0</setting>
             <setting key="heated bed temperature">45</setting>
             <hotend id="e3D - 0.4mm - Brass" />
-            <hotend id="e3D - 0.6mm - Brass" />
-            <hotend id="e3D - 0.6mm - NozzleX">
-                <setting key="hardware compatible">no</setting>
-            </hotend>
             <hotend id="e3D - 0.8mm - Brass" />
-            <hotend id="e3D - 1.0mm - Brass" />
         </machine>
     </settings>
 </fdmmaterial>
