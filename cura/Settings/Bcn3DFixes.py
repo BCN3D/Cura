@@ -144,7 +144,7 @@ class Bcn3DFixes(Job):
         for index, layer in enumerate(self._gcode_list):
             lines = layer.split("\n")
             for temp_index in range(len(lines)):
-                if layer.startswith(";Generated with Cura_SteamEngine "):
+                if layer.startswith(";Generated with Cura_SteamEngine ") and lines[temp_index].startswith(";Sigma ProGen"):
                     lines[temp_index] = lines[temp_index] + "\n" + "\n".join(self._startGcodeInfo)
                     written_info = True
             layer = "\n".join(lines)
