@@ -162,21 +162,21 @@ class Bcn3DFixes(Job):
             materials.append(extruder_stack.material.getMetaData()["material"])
 
         if self._MirrorOrDuplicationPrint:
-            extruders_used = ";Extruders used: T0 " + str(self._nozzleSize[0] ) + self._nozzleType[0] + " T1 " + str(self._nozzleSize[0] ) + self._nozzleType[0]
+            extruders_used = ";Extruders used: T0 " + str(self._nozzleSize[0]) + self._nozzleType[0] + " T1 " + str(self._nozzleSize[0]) + self._nozzleType[0]
             materials_used = ";Materials used: T0 " + str(materials[0]) + " T1 " + str(materials[0])
         else:
             if self._MEXPrint:
                 countingForTool = int(used_extruder_stacks[0].getMetaData()['position'])
                 extruders_used = ";Extruders used: T" + str(countingForTool) + " " + str(
-                    self._nozzleSize[countingForTool] ) + self._nozzleType[countingForTool]
-                materials_used = ";Materials used: T" + str(countingForTool) + " " + str(materials[0])
+                    self._nozzleSize[countingForTool]) + self._nozzleType[countingForTool]
+                materials_used = ";Materials used: T" + str(countingForTool) + " " + str(materials[countingForTool])
             else:
-                extruders_used = ";Extruders used: T0 " + str(self._nozzleSize[0] ) + self._nozzleType[0]  + " T1 " + str(self._nozzleSize[1] ) + self._nozzleType[1]
+                extruders_used = ";Extruders used: T0 " + str(self._nozzleSize[0]) + self._nozzleType[0] + " T1 " + str(self._nozzleSize[1]) + self._nozzleType[1]
                 materials_used = ";Materials used: T0 " + str(materials[0]) + " T1 " + str(materials[1])
 
-        machineModel = used_extruder_stacks[0].getMetaData()['machine']
+        machine_model = ";Machine Model: " + str(used_extruder_stacks[0].getMetaData()['machine'])
 
-        self._gcode_list[0] += extruders_used + "\n" + materials_used + "\n;BCN3D_FIXES\n" + ";Machine Model: " + str(machineModel) +"\n"
+        self._gcode_list[0] += extruders_used + "\n" + materials_used + "\n" + machine_model + "\n;BCN3D_FIXES\n"
         scene = Application.getInstance().getController().getScene()
         setattr(scene, "gcode_list", self._gcode_list)
         self.setResult(self._gcode_list)
