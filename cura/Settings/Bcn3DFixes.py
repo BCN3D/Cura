@@ -172,7 +172,9 @@ class Bcn3DFixes(Job):
                 extruders_used = ";Extruders used: T0 " + str(self._nozzleSize[0]) + " T1 " + str(self._nozzleSize[1])
                 materials_used = ";Materials used: T0 " + str(materials[0]) + " T1 " + str(materials[1])
 
-        self._gcode_list[0] += extruders_used + "\n" + materials_used + "\n;BCN3D_FIXES\n"
+        machineModel = used_extruder_stacks[0].getMetaData()['machine']
+
+        self._gcode_list[0] += extruders_used + "\n" + materials_used + "\n;BCN3D_FIXES\n" + ";Machine Model: " + str(machineModel) +"\n"
         scene = Application.getInstance().getController().getScene()
         setattr(scene, "gcode_list", self._gcode_list)
         self.setResult(self._gcode_list)
