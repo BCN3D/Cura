@@ -51,7 +51,7 @@
             <setting key="heated bed temperature">30</setting>
             <setting key="build volume temperature">40</setting>
             <setting key="coasting enable">False</setting>
-            <hotend id="e3D - 0.4mm - Brass" />
+
             <hotend id="e3D - 0.6mm - Brass" />
             <hotend id="e3D - 0.6mm - NozzleX">
                 <setting key="hardware compatible">no</setting>
@@ -64,7 +64,7 @@
             <setting key="heated bed temperature">30</setting>
             <setting key="build volume temperature">40</setting>
             <setting key="coasting enable">False</setting>
-            <hotend id="e3D - 0.4mm - Brass" />
+
             <hotend id="e3D - 0.6mm - Brass" />
             <hotend id="e3D - 0.6mm - NozzleX">
                 <setting key="hardware compatible">no</setting>
@@ -77,7 +77,7 @@
             <setting key="heated bed temperature">30</setting>
             <setting key="build volume temperature">40</setting>
             <setting key="coasting enable">False</setting>
-            <hotend id="e3D - 0.4mm - Brass" />
+
             <hotend id="e3D - 0.6mm - Brass" />
             <hotend id="e3D - 0.6mm - NozzleX">
                 <setting key="hardware compatible">no</setting>
