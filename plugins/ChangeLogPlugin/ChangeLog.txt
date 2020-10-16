@@ -5,15 +5,11 @@
 *Improved profiles for Epsilon W50 with PET-G, PAHT CF15 and ABS
 *Better PP on all BCN3D printers
 
-[3.1.0]
-*More hotend sizes for Epsilon
-*Disable tower for Epsilon Dual prints
-*Improved  profiles for Sigma/Sigmax
+
 [3.2.0]
 *Add 0.6mm hotend from Epsilon
 *Change PLA to use Brim for a better adhesion
 *Minor profile improvements for PP GF30 and PAHT CF15
-
 [3.1.0]
 *More hotend sizes for Epsilon
 *Disable tower for Epsilon Dual prints
