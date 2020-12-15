@@ -1,3 +1,9 @@
+[3.3.1]
+*Fix a bug with the machine name in the Gcode
+*Improve general performance
+*Correct internal bugs
+
+
 [3.3.0]
 *Change name for Epsilon to Epsilon W50
 *New Epsilon W27 printer with Standard, Fine and Fast profiles
